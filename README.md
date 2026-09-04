@@ -1,0 +1,77 @@
+# Space Marine 2 Crusade Command
+
+Development foundation for a responsive Crusade event web application. Phase 2
+provides the migration-driven authoritative database. Phase 3 adds Supabase
+Auth identities, protected application roles, deny-by-default RLS, secured
+mutation RPCs, and a narrow public ACTIVE-mission read model. Realtime,
+campaign-management screens, Discord integration, and map graphics remain
+intentionally unimplemented.
+
+## Prerequisites
+
+- Node.js 22.22.2 or newer (Node.js 24 LTS is recommended)
+- pnpm 11.19.0 (Corepack can install the pinned version from `package.json`)
+- Git
+- Docker Desktop or another Docker-compatible container runtime for local
+  Supabase database work
+
+## Local setup
+
+```powershell
+corepack enable
+pnpm install --frozen-lockfile
+Copy-Item .env.example .env.local
+pnpm dev
+```
+
+Supabase values remain optional for the landing screen. Without browser-safe
+local values, the application explicitly remains in public read-only mode and
+disables command staff sign-in.
+
+Open `http://localhost:5173` after the Vite server starts.
+
+## Quality checks
+
+```powershell
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+```
+
+## Local database checks
+
+The Supabase CLI is installed as a project dependency. With Docker running:
+
+```powershell
+pnpm db:start
+pnpm db:reset
+pnpm db:lint
+pnpm db:test
+pnpm db:types
+```
+
+Use `pnpm db:stop` when local database work is complete. Database architecture
+and security decisions are documented in `docs/phase-2-database.md` and
+`docs/phase-3-auth-authorization.md`. The later Kill Team feature specification
+is preserved in `docs/future-kill-team-tactical-layer.md`; it is not implemented
+in Phase 3. The approved future Discord registration/evidence workflow and
+player guide are preserved in `docs/discord-kill-team-workflow.md` and
+`docs/KILL_TEAM_QUICK_GUIDE.md`.
+
+## Source boundaries
+
+```text
+src/
+├── components/       Reusable UI components
+├── config/           Browser-safe configuration parsing
+├── data/services/    Centralized external data access
+├── pages/            Page-level views
+├── shared/types/     Shared TypeScript domain types
+├── state/            Shared and local state management
+├── styles/           Global styles and design tokens
+├── test/             Test environment setup
+└── validation/       Runtime input and response validation
+
+supabase/migrations/  Versioned authoritative PostgreSQL schema and functions
+```

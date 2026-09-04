@@ -1,0 +1,91 @@
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --color-void: #080908;
+  --color-canvas: #0d0f0e;
+  --color-iron-deep: #131615;
+  --color-iron: #1a1e1d;
+  --color-iron-raised: #222726;
+  --color-iron-inset: #101312;
+  --color-steel: #343a39;
+  --color-steel-bright: #505856;
+
+  /* Text */
+  --color-bone: #eee8d7;
+  --color-parchment: #c8c0ad;
+  --color-ash: #96978f;
+  --color-soot: #090a09;
+
+  /* Command accents */
+  --color-brass: #a88a47;
+  --color-brass-bright: #c5a862;
+  --color-brass-dark: #69552e;
+  --color-crimson: #872f35;
+  --color-crimson-bright: #a84449;
+  --color-crimson-dark: #521b20;
+  --color-amber: #b17a35;
+  --color-amber-dark: #68471f;
+  --color-secured: #6f815e;
+  --color-secured-dark: #3d4934;
+
+  /* Semantic aliases */
+  --surface-page: var(--color-canvas);
+  --surface-panel: var(--color-iron);
+  --surface-panel-raised: var(--color-iron-raised);
+  --surface-panel-inset: var(--color-iron-inset);
+  --text-primary: var(--color-bone);
+  --text-secondary: var(--color-parchment);
+  --text-muted: var(--color-ash);
+  --border-structural: var(--color-steel);
+  --border-emphasis: var(--color-steel-bright);
+  --accent-primary: var(--color-brass);
+  --accent-primary-hover: var(--color-brass-bright);
+  --accent-danger: var(--color-crimson);
+  --accent-danger-hover: var(--color-crimson-bright);
+  --accent-warning: var(--color-amber);
+  --accent-success: var(--color-secured);
+  --focus-ring: var(--color-brass-bright);
+
+  /* Typography */
+  --font-display: Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-interface: 'Arial Narrow', 'Aptos Narrow', 'Roboto Condensed',
+    'Segoe UI', sans-serif;
+  --font-technical: 'Cascadia Mono', 'SFMono-Regular', Consolas,
+    'Liberation Mono', monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-display: clamp(2.7rem, 9vw, 6.4rem);
+  --line-tight: 1;
+  --line-copy: 1.65;
+  --tracking-interface: 0.09em;
+  --tracking-command: 0.16em;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Structure */
+  --border-thin: 1px;
+  --border-heavy: 3px;
+  --cut-small: 0.375rem;
+  --cut-panel: 0.875rem;
+  --control-height: 2.75rem;
+  --content-width: 68rem;
+  --shadow-panel: 0 1.75rem 5rem rgb(0 0 0 / 42%);
+  --shadow-inset: inset 0 0 0 1px rgb(238 232 215 / 3%);
+  --grid-line: rgb(168 138 71 / 7%);
+  --scan-line: rgb(238 232 215 / 2.5%);
+  --overlay-dark: rgb(8 9 8 / 84%);
+}

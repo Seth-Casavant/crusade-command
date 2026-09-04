@@ -1,0 +1,579 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  public: {
+    Tables: {
+      app_users: {
+        Row: {
+          created_at: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      battlefields: {
+        Row: {
+          asset_reference: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          asset_reference?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          asset_reference?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      campaign_updates: {
+        Row: {
+          actor_id: string | null
+          campaign_id: string
+          change_type: Database["public"]["Enums"]["campaign_update_type"]
+          id: string
+          mission_id: string | null
+          new_revision: number
+          new_values: Json
+          occurred_at: string
+          old_values: Json
+          previous_revision: number
+        }
+        Insert: {
+          actor_id?: string | null
+          campaign_id: string
+          change_type: Database["public"]["Enums"]["campaign_update_type"]
+          id?: string
+          mission_id?: string | null
+          new_revision: number
+          new_values: Json
+          occurred_at?: string
+          old_values: Json
+          previous_revision: number
+        }
+        Update: {
+          actor_id?: string | null
+          campaign_id?: string
+          change_type?: Database["public"]["Enums"]["campaign_update_type"]
+          id?: string
+          mission_id?: string | null
+          new_revision?: number
+          new_values?: Json
+          occurred_at?: string
+          old_values?: Json
+          previous_revision?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_updates_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_updates_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["campaign_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["campaign_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["campaign_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      live_campaign_states: {
+        Row: {
+          campaign_id: string
+          campaign_progress: number
+          current_mission_id: string | null
+          last_update_id: string
+          revision: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          campaign_id: string
+          campaign_progress?: number
+          current_mission_id?: string | null
+          last_update_id?: string
+          revision?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          campaign_progress?: number
+          current_mission_id?: string | null
+          last_update_id?: string
+          revision?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_campaign_states_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_campaign_states_current_mission_campaign_fk"
+            columns: ["campaign_id", "current_mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["campaign_id", "id"]
+          },
+        ]
+      }
+      mission_enemy_entries: {
+        Row: {
+          created_at: string
+          description: string | null
+          enemy_type: string | null
+          id: string
+          mission_id: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enemy_type?: string | null
+          id?: string
+          mission_id: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enemy_type?: string | null
+          id?: string
+          mission_id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_enemy_entries_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          battlefield_id: string | null
+          campaign_id: string
+          created_at: string
+          description: string | null
+          enemy_faction: string | null
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["mission_status"]
+          updated_at: string
+        }
+        Insert: {
+          battlefield_id?: string | null
+          campaign_id: string
+          created_at?: string
+          description?: string | null
+          enemy_faction?: string | null
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["mission_status"]
+          updated_at?: string
+        }
+        Update: {
+          battlefield_id?: string | null
+          campaign_id?: string
+          created_at?: string
+          description?: string | null
+          enemy_faction?: string | null
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["mission_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "missions_battlefield_id_fkey"
+            columns: ["battlefield_id"]
+            isOneToOne: false
+            referencedRelation: "battlefields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "missions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      objectives: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          mission_id: string
+          sort_order: number
+          status: Database["public"]["Enums"]["objective_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          mission_id: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["objective_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          mission_id?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["objective_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objectives_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_campaign_sync_signals: {
+        Row: {
+          campaign_id: string
+          is_active: boolean
+          published_at: string
+          revision: number
+          update_id: string
+        }
+        Insert: {
+          campaign_id: string
+          is_active: boolean
+          published_at: string
+          revision: number
+          update_id: string
+        }
+        Update: {
+          campaign_id?: string
+          is_active?: boolean
+          published_at?: string
+          revision?: number
+          update_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_campaign_sync_signals_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_campaign_sync_signals_update_id_fkey"
+            columns: ["update_id"]
+            isOneToOne: true
+            referencedRelation: "campaign_updates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      assert_mission_activation_ready: {
+        Args: {
+          p_battlefield_id: string
+          p_campaign_id: string
+          p_mission_id: string
+        }
+        Returns: undefined
+      }
+      assign_moderator: { Args: { p_user_id: string }; Returns: undefined }
+      current_app_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_public_active_campaign: {
+        Args: never
+        Returns: {
+          battlefield_description: string
+          battlefield_id: string
+          battlefield_name: string
+          campaign_description: string
+          campaign_id: string
+          campaign_name: string
+          campaign_progress: number
+          enemies: Json
+          enemy_faction: string
+          mission_description: string
+          mission_id: string
+          mission_name: string
+          mission_status: Database["public"]["Enums"]["mission_status"]
+          objectives: Json
+          revision: number
+          updated_at: string
+        }[]
+      }
+      get_public_latest_sync_signal: {
+        Args: never
+        Returns: {
+          campaign_id: string
+          is_active: boolean
+          published_at: string
+          revision: number
+          update_id: string
+        }[]
+      }
+      get_public_sync_snapshot: { Args: never; Returns: Json }
+      transition_mission_state: {
+        Args: {
+          p_actor_id?: string
+          p_expected_revision: number
+          p_mission_id: string
+          p_new_status: Database["public"]["Enums"]["mission_status"]
+        }
+        Returns: {
+          mission_state: Database["public"]["Enums"]["mission_status"]
+          new_revision: number
+          update_id: string
+        }[]
+      }
+      update_campaign_live_state: {
+        Args: {
+          p_actor_id?: string
+          p_campaign_id: string
+          p_expected_revision: number
+          p_new_objective_status?: Database["public"]["Enums"]["objective_status"]
+          p_new_progress?: number
+          p_objective_id?: string
+        }
+        Returns: {
+          new_revision: number
+          update_id: string
+        }[]
+      }
+    }
+    Enums: {
+      app_role: "ADMINISTRATOR" | "MODERATOR" | "PLAYER"
+      campaign_status: "DRAFT" | "ACTIVE" | "COMPLETE"
+      campaign_update_type: "MISSION_TRANSITION" | "LIVE_STATE_UPDATE"
+      mission_status: "DRAFT" | "READY" | "ACTIVE" | "COMPLETE" | "ABORTED"
+      objective_status: "PENDING" | "ACTIVE" | "COMPLETE"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["ADMINISTRATOR", "MODERATOR", "PLAYER"],
+      campaign_status: ["DRAFT", "ACTIVE", "COMPLETE"],
+      campaign_update_type: ["MISSION_TRANSITION", "LIVE_STATE_UPDATE"],
+      mission_status: ["DRAFT", "READY", "ACTIVE", "COMPLETE", "ABORTED"],
+      objective_status: ["PENDING", "ACTIVE", "COMPLETE"],
+    },
+  },
+} as const
