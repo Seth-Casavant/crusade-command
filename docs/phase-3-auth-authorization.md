@@ -1,8 +1,9 @@
 # Phase 3 authentication and authorization
 
-Phase 3 establishes identity and database authorization only. Realtime,
-Discord OAuth, campaign-management screens, map graphics, and the Kill Team
-tactical layer remain deferred.
+Phase 3 establishes identity and database authorization. Phase 4.5 finalizes
+email OTP as the primary command-staff sign-in method without changing the
+database role model. Campaign-management screens, map graphics, Discord OAuth,
+and the Kill Team tactical layer remain deferred.
 
 ## Identity and roles
 
@@ -17,11 +18,20 @@ indexes enforce one Administrator and at most one Moderator. A trigger prevents
 ordinary updates or deletion of the primary Administrator row. There is no
 account-transfer path in this phase.
 
-The sandbox seed creates non-login test identities with no password or reusable
+The sandbox seed creates test identities with no password or reusable
 credential. pgTAP tests simulate the trusted JWT claims that Supabase/PostgREST
 normally derives from a verified session. The frontend provides a minimal
-email/password Supabase Auth entry point for externally provisioned command
-staff accounts; Discord OAuth remains the preferred future sign-in mechanism.
+email-OTP entry point for pre-provisioned command-staff accounts. OTP requests
+explicitly disable automatic user creation.
+
+Email OTP is the primary Version 1 login method for both Administrator and
+Moderator. It avoids requiring a browser/device redirect. Magic links may be a
+future alternative. Discord OAuth is optional future convenience only and must
+never be the Administrator's sole access path.
+
+Discord bot identity is separate from web authentication. Future bot commands
+identify Players by immutable Discord user IDs received from Discord; those
+Players do not need to authenticate to the web application with Discord.
 
 ## Authorization boundary
 
@@ -57,14 +67,27 @@ them. The function does not expose or implement realtime subscriptions.
 
 ## Sandbox and production provisioning
 
-Sandbox users in `supabase/seed.sql` exist only to exercise database policies.
-They cannot log in because no password or provider credential is seeded.
+Sandbox users in `supabase/seed.sql` have confirmed local email identities and
+no password. Local `signInWithOtp` sends their one-time codes to the
+Mailpit/Inbucket viewer at `http://127.0.0.1:54324`. The committed local
+magic-link template contains `{{ .Token }}` rather than a confirmation URL, so
+testing does not depend on an email redirect. No production email provider is
+required during local work. Run `pnpm test:auth:local` with the stack running to
+exercise the anonymous read/no-write boundary and complete email-OTP role
+resolution for the seeded Administrator and Moderator. The test discovers the
+local browser-safe configuration and never prints OTP or session values.
 
 For a hosted environment, create the primary Administrator through a trusted
 deployment/bootstrap operation after its Supabase Auth identity exists. Do not
 expose an open "first user becomes Administrator" flow. Moderator assignment
 then uses the protected Administrator path. Production provisioning and future
 account transfer require an explicit later operational design.
+
+The local and hosted Auth configurations keep general signup disabled while the
+email provider remains enabled for pre-provisioned identities.
+`shouldCreateUser: false` is also supplied by the client as defense in depth. A
+successfully authenticated but unmapped Auth user resolves to no application
+role and remains read-only.
 
 Only `VITE_SUPABASE_URL` and a browser-safe publishable/anon key belong in the
 frontend environment. Service-role keys, database passwords, provider secrets,

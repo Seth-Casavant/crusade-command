@@ -8,7 +8,16 @@ insert into auth.users (
   aud,
   role,
   email,
+  encrypted_password,
   email_confirmed_at,
+  confirmation_token,
+  recovery_token,
+  email_change_token_new,
+  email_change,
+  phone_change,
+  phone_change_token,
+  email_change_token_current,
+  reauthentication_token,
   raw_app_meta_data,
   raw_user_meta_data,
   created_at,
@@ -22,7 +31,16 @@ insert into auth.users (
     'authenticated',
     'authenticated',
     'administrator@crusade-command.invalid',
+    '',
     statement_timestamp(),
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
     '{"provider":"email","providers":["email"]}'::jsonb,
     '{"sandbox":true}'::jsonb,
     statement_timestamp(),
@@ -36,7 +54,16 @@ insert into auth.users (
     'authenticated',
     'authenticated',
     'moderator@crusade-command.invalid',
+    '',
     statement_timestamp(),
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
     '{"provider":"email","providers":["email"]}'::jsonb,
     '{"sandbox":true}'::jsonb,
     statement_timestamp(),
@@ -50,7 +77,16 @@ insert into auth.users (
     'authenticated',
     'authenticated',
     'player@crusade-command.invalid',
+    '',
     statement_timestamp(),
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
     '{"provider":"email","providers":["email"]}'::jsonb,
     '{"sandbox":true}'::jsonb,
     statement_timestamp(),
@@ -59,6 +95,50 @@ insert into auth.users (
     false
   )
 on conflict (id) do nothing;
+
+-- GoTrue requires a provider identity as well as an auth.users row before an
+-- existing passwordless email account can request and verify a one-time code.
+insert into auth.identities (
+  id,
+  provider_id,
+  user_id,
+  identity_data,
+  provider,
+  last_sign_in_at,
+  created_at,
+  updated_at
+) values
+  (
+    'b0000000-0000-4000-8000-000000000001',
+    'a0000000-0000-4000-8000-000000000001',
+    'a0000000-0000-4000-8000-000000000001',
+    '{"sub":"a0000000-0000-4000-8000-000000000001","email":"administrator@crusade-command.invalid","email_verified":true,"phone_verified":false}'::jsonb,
+    'email',
+    statement_timestamp(),
+    statement_timestamp(),
+    statement_timestamp()
+  ),
+  (
+    'b0000000-0000-4000-8000-000000000002',
+    'a0000000-0000-4000-8000-000000000002',
+    'a0000000-0000-4000-8000-000000000002',
+    '{"sub":"a0000000-0000-4000-8000-000000000002","email":"moderator@crusade-command.invalid","email_verified":true,"phone_verified":false}'::jsonb,
+    'email',
+    statement_timestamp(),
+    statement_timestamp(),
+    statement_timestamp()
+  ),
+  (
+    'b0000000-0000-4000-8000-000000000003',
+    'a0000000-0000-4000-8000-000000000003',
+    'a0000000-0000-4000-8000-000000000003',
+    '{"sub":"a0000000-0000-4000-8000-000000000003","email":"player@crusade-command.invalid","email_verified":true,"phone_verified":false}'::jsonb,
+    'email',
+    statement_timestamp(),
+    statement_timestamp(),
+    statement_timestamp()
+  )
+on conflict (provider_id, provider) do nothing;
 
 insert into public.app_users (user_id, role)
 values

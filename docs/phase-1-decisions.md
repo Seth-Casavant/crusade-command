@@ -20,17 +20,25 @@ security choices assigned to later phases.
 
 ## Decisions deliberately deferred
 
-- Whether players use public read-only access or authenticated sessions.
-- How the single Administrator and single Moderator are provisioned and mapped
-  to Supabase identities.
 - The exact normalized PostgreSQL schema, RLS policies, transaction functions,
   audit format, and recovery process.
 - Which mission fields remain editable during an active mission.
 - Battlefield asset formats and tactical map representation.
-- Discord OAuth configuration.
 - Current free-tier quotas and inactivity behavior. These are operationally
   changeable and must be verified against the provider documentation when the
   sandbox projects are created.
+
+## Decisions finalized after Phase 1
+
+- Public Players use unauthenticated, intentionally narrow ACTIVE-campaign
+  reads and never receive authoritative write access.
+- One Administrator and at most one Moderator map Supabase Auth identities to
+  protected database roles.
+- Email OTP is the primary Administrator/Moderator login method. Discord OAuth
+  is only an optional future convenience and is separate from future Discord
+  bot identity.
+- Detailed current decisions live in `PROJECT_SCOPE.md`,
+  `phase-3-auth-authorization.md`, and `phase-4-synchronization.md`.
 
 ## Scope observations for later phases
 

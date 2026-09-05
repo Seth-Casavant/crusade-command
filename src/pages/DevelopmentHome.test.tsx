@@ -19,7 +19,7 @@ describe('DevelopmentHome', () => {
       screen.getByText('Revision-based synchronization'),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('region', { name: 'Phase 3 Access' }),
+      screen.getByRole('region', { name: 'Command Staff Access' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('region', { name: 'Campaign Synchronization' }),

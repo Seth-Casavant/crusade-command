@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
 
 import {
-  signInCommandStaff,
+  requestCommandStaffOtp,
   signOutCommandStaff,
+  verifyCommandStaffOtp,
 } from '../../data/services/auth'
 import { useAuthentication } from '../../state/auth/useAuthentication'
 import { Button, Panel, StatusBadge } from '../ui'
@@ -16,8 +17,10 @@ const roleLabels = {
 export function AuthPanel() {
   const { state, error: sessionError } = useAuthentication()
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [requestedEmail, setRequestedEmail] = useState<string | null>(null)
+  const [verificationCode, setVerificationCode] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
+  const [actionMessage, setActionMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isConfigured = state.status !== 'unconfigured'
@@ -28,21 +31,54 @@ export function AuthPanel() {
       : 'Authenticated read-only viewer'
     : 'Public read-only viewer'
 
-  const handleSignIn = async (event: FormEvent<HTMLFormElement>) => {
+  const handleRequestOtp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setActionError(null)
+    setActionMessage(null)
     setIsSubmitting(true)
 
     try {
-      await signInCommandStaff(email, password)
+      const normalizedEmail = await requestCommandStaffOtp(email)
+      setEmail(normalizedEmail)
+      setRequestedEmail(normalizedEmail)
+      setActionMessage(
+        'If this is a provisioned command-staff account, a one-time code has been sent.',
+      )
     } catch (error) {
       setActionError(
-        error instanceof Error ? error.message : 'Sign-in failed.',
+        error instanceof Error
+          ? error.message
+          : 'A verification code could not be requested.',
       )
     } finally {
-      setPassword('')
       setIsSubmitting(false)
     }
+  }
+
+  const handleVerifyOtp = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setActionError(null)
+    setActionMessage(null)
+    setIsSubmitting(true)
+
+    try {
+      await verifyCommandStaffOtp(requestedEmail ?? email, verificationCode)
+      setVerificationCode('')
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : 'Verification failed.',
+      )
+      setVerificationCode('')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const resetOtpRequest = () => {
+    setRequestedEmail(null)
+    setVerificationCode('')
+    setActionError(null)
+    setActionMessage(null)
   }
 
   const handleSignOut = async () => {
@@ -65,7 +101,7 @@ export function AuthPanel() {
       className="auth-foundation-panel"
       eyebrow="Identity boundary"
       footer="Database authorization remains authoritative"
-      title="Phase 3 Access"
+      title="Command Staff Access"
     >
       <div className="auth-foundation__identity">
         <StatusBadge
@@ -93,43 +129,76 @@ export function AuthPanel() {
           </Button>
         </div>
       ) : (
-        <form className="auth-foundation__form" onSubmit={handleSignIn}>
-          <p className="specimen-label">Command staff sign-in</p>
-          <label>
-            Email
-            <input
-              autoComplete="username"
-              disabled={!isConfigured || isSubmitting}
-              onChange={(event) => setEmail(event.target.value)}
-              type="email"
-              value={email}
-            />
-          </label>
-          <label>
-            Password
-            <input
-              autoComplete="current-password"
-              disabled={!isConfigured || isSubmitting}
-              onChange={(event) => setPassword(event.target.value)}
-              type="password"
-              value={password}
-            />
-          </label>
-          <Button
-            disabled={!isConfigured}
-            isLoading={isSubmitting}
-            loadingLabel="Authenticating"
-            type="submit"
-          >
-            Authenticate
-          </Button>
-        </form>
+        requestedEmail ? (
+          <form className="auth-foundation__form" onSubmit={handleVerifyOtp}>
+            <p className="specimen-label">Verify command staff email</p>
+            <p className="auth-foundation__otp-recipient">
+              Enter the code sent to {requestedEmail}.
+            </p>
+            <label>
+              One-time code
+              <input
+                autoComplete="one-time-code"
+                disabled={!isConfigured || isSubmitting}
+                inputMode="numeric"
+                maxLength={12}
+                onChange={(event) => setVerificationCode(event.target.value)}
+                pattern="[0-9]*"
+                type="text"
+                value={verificationCode}
+              />
+            </label>
+            <Button
+              disabled={!isConfigured}
+              isLoading={isSubmitting}
+              loadingLabel="Verifying"
+              type="submit"
+            >
+              Verify code
+            </Button>
+            <Button
+              disabled={isSubmitting}
+              onClick={resetOtpRequest}
+              variant="secondary"
+            >
+              Use a different email
+            </Button>
+          </form>
+        ) : (
+          <form className="auth-foundation__form" onSubmit={handleRequestOtp}>
+            <p className="specimen-label">Command staff email OTP</p>
+            <label>
+              Email
+              <input
+                autoComplete="email"
+                disabled={!isConfigured || isSubmitting}
+                onChange={(event) => setEmail(event.target.value)}
+                type="email"
+                value={email}
+              />
+            </label>
+            <Button
+              disabled={!isConfigured}
+              isLoading={isSubmitting}
+              loadingLabel="Requesting code"
+              type="submit"
+            >
+              Send verification code
+            </Button>
+          </form>
+        )
       )}
 
       {!isConfigured && (
         <p className="auth-foundation__notice">
           Add browser-safe Supabase values to the ignored local environment file
           to enable command staff authentication.
+        </p>
+      )}
+
+      {actionMessage && (
+        <p className="auth-foundation__notice" role="status">
+          {actionMessage}
         </p>
       )}
 

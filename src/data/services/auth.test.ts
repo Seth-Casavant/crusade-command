@@ -1,7 +1,8 @@
 import {
   getAuthenticationState,
-  signInCommandStaff,
+  requestCommandStaffOtp,
   signOutCommandStaff,
+  verifyCommandStaffOtp,
 } from './auth'
 
 describe('authentication service without browser configuration', () => {
@@ -15,7 +16,10 @@ describe('authentication service without browser configuration', () => {
 
   it('does not attempt writer authentication without Supabase configuration', async () => {
     await expect(
-      signInCommandStaff('admin@example.test', 'not-stored'),
+      requestCommandStaffOtp('admin@example.test'),
+    ).rejects.toThrow('Supabase is not configured')
+    await expect(
+      verifyCommandStaffOtp('admin@example.test', '123456'),
     ).rejects.toThrow('Supabase is not configured')
     await expect(signOutCommandStaff()).resolves.toBeUndefined()
   })

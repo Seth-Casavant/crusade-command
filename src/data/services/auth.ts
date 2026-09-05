@@ -127,27 +127,61 @@ export function subscribeToAuthentication(
   }
 }
 
-export async function signInCommandStaff(
+function normalizedEmailAddress(email: string): string {
+  const normalizedEmail = email.trim().toLowerCase()
+
+  if (!normalizedEmail) {
+    throw new Error('Email is required.')
+  }
+
+  return normalizedEmail
+}
+
+export async function requestCommandStaffOtp(email: string): Promise<string> {
+  if (!supabase) {
+    throw new Error('Supabase is not configured for this browser build.')
+  }
+
+  const normalizedEmail = normalizedEmailAddress(email)
+  const { error } = await supabase.auth.signInWithOtp({
+    email: normalizedEmail,
+    options: { shouldCreateUser: false },
+  })
+
+  if (error) {
+    throw new Error(
+      'A verification code could not be requested. Try again shortly.',
+    )
+  }
+
+  return normalizedEmail
+}
+
+export async function verifyCommandStaffOtp(
   email: string,
-  password: string,
+  token: string,
 ): Promise<void> {
   if (!supabase) {
     throw new Error('Supabase is not configured for this browser build.')
   }
 
-  const normalizedEmail = email.trim()
+  const normalizedEmail = normalizedEmailAddress(email)
+  const normalizedToken = token.trim()
 
-  if (!normalizedEmail || !password) {
-    throw new Error('Email and password are required.')
+  if (!normalizedToken) {
+    throw new Error('Verification code is required.')
   }
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.verifyOtp({
     email: normalizedEmail,
-    password,
+    token: normalizedToken,
+    type: 'email',
   })
 
-  if (error) {
-    throw new Error('Sign-in failed. Verify the command staff credentials.')
+  if (error || !data.session) {
+    throw new Error(
+      'Verification failed. Request a new code and try again.',
+    )
   }
 }
 

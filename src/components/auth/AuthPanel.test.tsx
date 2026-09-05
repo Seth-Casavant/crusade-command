@@ -10,7 +10,7 @@ describe('AuthPanel', () => {
       expect(screen.getByText('Public read-only viewer')).toBeInTheDocument()
     })
     expect(
-      screen.getByRole('button', { name: 'Authenticate' }),
+      screen.getByRole('button', { name: 'Send verification code' }),
     ).toBeDisabled()
   })
 
@@ -20,9 +20,10 @@ describe('AuthPanel', () => {
     expect(
       await screen.findByText(/browser-safe Supabase values/i),
     ).toBeInTheDocument()
-    expect(screen.getByLabelText('Password')).toHaveAttribute(
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Email')).toHaveAttribute(
       'autocomplete',
-      'current-password',
+      'email',
     )
   })
 })

@@ -12,6 +12,12 @@ application remains responsible for the tactical display, map positions,
 progress visualization, campaign and mission state, administrative views, and
 realtime display.
 
+Discord bot identity is separate from web authentication. Administrator and
+Moderator primarily use Supabase email OTP for the web application. Discord
+OAuth may be added later as convenience, but it is not required for command
+staff or Players. Slash-command Players are identified by immutable Discord
+user IDs delivered by Discord, not by a web session or self-reported identity.
+
 The future authoritative path is:
 
 ```text

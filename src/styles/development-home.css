@@ -122,6 +122,7 @@
 
 .auth-foundation__identity p,
 .auth-foundation__account,
+.auth-foundation__otp-recipient,
 .auth-foundation__notice,
 .auth-foundation__error {
   margin: 0;
@@ -129,6 +130,7 @@
 }
 
 .auth-foundation__identity p,
+.auth-foundation__otp-recipient,
 .auth-foundation__notice {
   color: var(--text-secondary);
 }
@@ -138,6 +140,7 @@
 }
 
 .auth-foundation__form .specimen-label,
+.auth-foundation__form .auth-foundation__otp-recipient,
 .auth-foundation__form .command-button {
   grid-column: 1 / -1;
 }

@@ -75,7 +75,8 @@ remain authoritative. There is no campaign editor in Phase 4.
 Supabase auth events immediately replace an expired or signed-out session with
 the public, role-null state. Delayed role or initial-session lookups are
 revision-guarded so stale asynchronous results cannot restore privileged UI
-state.
+state. Phase 4.5 uses email OTP for command-staff Supabase sessions; the
+synchronization and database authorization behavior is provider-neutral.
 
 Campaign `updated_at` and signal `published_at` values come from PostgreSQL.
 The panel's “Last sync” value is only local receipt telemetry and is not used
