@@ -272,6 +272,51 @@ describe('useCampaignSynchronization', () => {
     await act(async () => {
       resolveFetch?.(createSnapshot(4))
     })
+
+    act(() => harness.emitStatus('SUBSCRIBED'))
+    expect(harness.fetchSnapshot).toHaveBeenCalledTimes(2)
+  })
+
+  it('stays visibly offline after a manual fetch while realtime is disconnected', async () => {
+    const harness = createHarness()
+    const { result } = renderHook(() =>
+      useCampaignSynchronization(harness.dependencies),
+    )
+    await waitFor(() => expect(harness.subscribe).toHaveBeenCalledTimes(1))
+    act(() => harness.emitStatus('DISCONNECTED'))
+    harness.fetchSnapshot.mockResolvedValueOnce(createSnapshot(4))
+
+    await act(async () => result.current.manualResynchronize())
+
+    expect(result.current.campaign?.revision).toBe(4)
+    expect(result.current.connectionStatus).toBe('OFFLINE')
+    expect(result.current.errorCode).toBe('REALTIME_DISCONNECTED')
+  })
+
+  it('retains state through browser offline and fully resyncs before returning live', async () => {
+    const harness = createHarness()
+    const { result } = renderHook(() =>
+      useCampaignSynchronization(harness.dependencies),
+    )
+    await waitFor(() => expect(harness.subscribe).toHaveBeenCalledTimes(1))
+
+    act(() => harness.emitStatus('SUBSCRIBED'))
+    await waitFor(() => expect(result.current.connectionStatus).toBe('LIVE'))
+
+    act(() => window.dispatchEvent(new Event('offline')))
+    expect(result.current.connectionStatus).toBe('OFFLINE')
+    expect(result.current.campaign?.revision).toBe(3)
+
+    harness.fetchSnapshot.mockResolvedValue(createSnapshot(4))
+    act(() => window.dispatchEvent(new Event('online')))
+    await waitFor(() =>
+      expect(result.current.connectionStatus).toBe('RECONNECTING'),
+    )
+    expect(result.current.campaign?.revision).toBe(4)
+
+    act(() => harness.emitStatus('SUBSCRIBED'))
+    await waitFor(() => expect(result.current.connectionStatus).toBe('LIVE'))
+    expect(harness.subscribe).toHaveBeenCalledTimes(1)
   })
 
   it('verifies state when a suspended tab becomes visible', async () => {

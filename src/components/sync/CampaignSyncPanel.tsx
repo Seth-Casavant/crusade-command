@@ -78,6 +78,16 @@ export function CampaignSyncPanel() {
               )}
             </dd>
           </div>
+          <div>
+            <dt>State updated</dt>
+            <dd>
+              {synchronization.campaign
+                ? new Date(
+                    synchronization.campaign.authoritativeUpdatedAt,
+                  ).toLocaleString()
+                : '—'}
+            </dd>
+          </div>
         </dl>
         <Button
           disabled={!synchronization.isConfigured}

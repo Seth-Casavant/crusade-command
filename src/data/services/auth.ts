@@ -70,15 +70,61 @@ export function subscribeToAuthentication(
     return () => undefined
   }
 
+  let isActive = true
+  let eventRevision = 0
+  let pendingResolution: ReturnType<typeof setTimeout> | null = null
+
   const {
     data: { subscription },
   } = supabase.auth.onAuthStateChange(
     (_event: AuthChangeEvent, session: Session | null) => {
-      void resolveSession(session).then(onStateChange).catch(onError)
+      eventRevision += 1
+      const currentRevision = eventRevision
+
+      if (pendingResolution !== null) {
+        clearTimeout(pendingResolution)
+        pendingResolution = null
+      }
+
+      if (!session) {
+        onStateChange({ status: 'public', session: null, role: null })
+        return
+      }
+
+      // Defer database work until after Supabase releases its auth callback.
+      // The revision guard prevents a delayed role lookup from restoring writer
+      // state after a later SIGNED_OUT or token-expiration event.
+      pendingResolution = setTimeout(() => {
+        pendingResolution = null
+        void resolveSession(session)
+          .then((state) => {
+            if (isActive && currentRevision === eventRevision) {
+              onStateChange(state)
+            }
+          })
+          .catch((error: unknown) => {
+            if (isActive && currentRevision === eventRevision) {
+              onError(
+                error instanceof Error
+                  ? error
+                  : new Error('Authentication state resolution failed.'),
+              )
+            }
+          })
+      }, 0)
     },
   )
 
-  return () => subscription.unsubscribe()
+  return () => {
+    isActive = false
+    eventRevision += 1
+
+    if (pendingResolution !== null) {
+      clearTimeout(pendingResolution)
+    }
+
+    subscription.unsubscribe()
+  }
 }
 
 export async function signInCommandStaff(

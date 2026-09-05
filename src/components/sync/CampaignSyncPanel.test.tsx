@@ -20,6 +20,7 @@ describe('CampaignSyncPanel', () => {
 
     expect(screen.getByText('Revision')).toBeInTheDocument()
     expect(screen.getByText('Last sync')).toBeInTheDocument()
+    expect(screen.getByText('State updated')).toBeInTheDocument()
     expect(
       screen.getByText(/Realtime signals trigger complete public-state/i),
     ).toBeInTheDocument()

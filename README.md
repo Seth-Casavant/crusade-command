@@ -3,7 +3,9 @@
 Development foundation for a responsive Crusade event web application. Phase 2
 provides the migration-driven authoritative database. Phase 3 adds Supabase
 Auth identities, protected application roles, deny-by-default RLS, secured
-mutation RPCs, and a narrow public ACTIVE-mission read model. Realtime,
+mutation RPCs, and a narrow public ACTIVE-mission read model. Phase 4 adds a
+minimal public Realtime notification channel, complete authoritative client
+refreshes, revision verification, and offline/reconnect recovery. Finished
 campaign-management screens, Discord integration, and map graphics remain
 intentionally unimplemented.
 
@@ -53,9 +55,11 @@ pnpm db:types
 
 Use `pnpm db:stop` when local database work is complete. Database architecture
 and security decisions are documented in `docs/phase-2-database.md` and
-`docs/phase-3-auth-authorization.md`. The later Kill Team feature specification
-is preserved in `docs/future-kill-team-tactical-layer.md`; it is not implemented
-in Phase 3. The approved future Discord registration/evidence workflow and
+`docs/phase-3-auth-authorization.md`. Phase 4 synchronization and its local
+multi-client verification procedure are documented in
+`docs/phase-4-synchronization.md`. The later Kill Team feature specification is
+preserved in `docs/future-kill-team-tactical-layer.md`; it is not implemented
+in Phase 4. The approved future Discord registration/evidence workflow and
 player guide are preserved in `docs/discord-kill-team-workflow.md` and
 `docs/KILL_TEAM_QUICK_GUIDE.md`.
 

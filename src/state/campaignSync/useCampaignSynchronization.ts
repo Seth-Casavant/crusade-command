@@ -41,6 +41,11 @@ export type CampaignSynchronizationDependencies = {
   resumeThrottleMs: number
 }
 
+type RealtimeConnectionState =
+  | 'CONNECTING'
+  | 'SUBSCRIBED'
+  | 'DISCONNECTED'
+
 const defaultDependencies: CampaignSynchronizationDependencies = {
   isConfigured: publicEnvironment.isSupabaseConfigured,
   fetchSnapshot: fetchPublicCampaignSnapshot,
@@ -71,6 +76,16 @@ function errorCodeFor(
   return error instanceof SynchronizationError ? error.code : fallbackCode
 }
 
+function statusForRealtime(
+  realtimeStatus: RealtimeConnectionState,
+): ConnectionStatus {
+  if (realtimeStatus === 'SUBSCRIBED') {
+    return 'LIVE'
+  }
+
+  return realtimeStatus === 'DISCONNECTED' ? 'OFFLINE' : 'RECONNECTING'
+}
+
 export function useCampaignSynchronization(
   dependencies = defaultDependencies,
 ) {
@@ -79,7 +94,7 @@ export function useCampaignSynchronization(
   )
   const stateRef = useRef(state)
   const isMountedRef = useRef(false)
-  const realtimeConnectedRef = useRef(false)
+  const realtimeStatusRef = useRef<RealtimeConnectionState>('CONNECTING')
   const synchronizationRef = useRef<Promise<void> | null>(null)
   const subscriptionRef = useRef<PublicSyncSubscription | null>(null)
   const pendingSignalRef = useRef<PublicSyncSignal | null>(null)
@@ -105,27 +120,36 @@ export function useCampaignSynchronization(
   )
 
   const synchronize = useCallback(
-    (fallbackCode: SyncErrorCode = 'RESYNC_FAILED') => {
+    (
+      fallbackCode: SyncErrorCode = 'RESYNC_FAILED',
+      inProgressStatus: ConnectionStatus = 'SYNCING',
+    ) => {
       if (synchronizationRef.current) {
         return synchronizationRef.current
       }
 
       updateState((currentState) => ({
         ...currentState,
-        connectionStatus: 'SYNCING',
+        connectionStatus:
+          realtimeStatusRef.current === 'DISCONNECTED'
+            ? 'OFFLINE'
+            : inProgressStatus,
         isResynchronizing: true,
       }))
 
       const operation = dependencies
         .fetchSnapshot()
         .then((snapshot) => {
+          const realtimeStatus = realtimeStatusRef.current
+
           updateState(() => ({
             ...snapshot,
-            connectionStatus: realtimeConnectedRef.current
-              ? 'LIVE'
-              : 'RECONNECTING',
+            connectionStatus: statusForRealtime(realtimeStatus),
             lastSynchronizedAt: new Date(dependencies.now()).toISOString(),
-            errorCode: null,
+            errorCode:
+              realtimeStatus === 'DISCONNECTED'
+                ? 'REALTIME_DISCONNECTED'
+                : null,
             isResynchronizing: false,
           }))
         })
@@ -164,13 +188,16 @@ export function useCampaignSynchronization(
         return
       }
 
+      const realtimeStatus = realtimeStatusRef.current
+
       updateState((currentState) => ({
         ...currentState,
-        connectionStatus: realtimeConnectedRef.current
-          ? 'LIVE'
-          : 'RECONNECTING',
+        connectionStatus: statusForRealtime(realtimeStatus),
         lastSynchronizedAt: new Date(dependencies.now()).toISOString(),
-        errorCode: null,
+        errorCode:
+          realtimeStatus === 'DISCONNECTED'
+            ? 'REALTIME_DISCONNECTED'
+            : null,
       }))
     } catch (error) {
       updateState((currentState) => ({
@@ -224,7 +251,11 @@ export function useCampaignSynchronization(
 
     const handleRealtimeStatus = (status: RealtimeTransportStatus) => {
       if (status === 'DISCONNECTED') {
-        realtimeConnectedRef.current = false
+        if (realtimeStatusRef.current === 'DISCONNECTED') {
+          return
+        }
+
+        realtimeStatusRef.current = 'DISCONNECTED'
         updateState((currentState) => ({
           ...currentState,
           connectionStatus: 'OFFLINE',
@@ -233,12 +264,16 @@ export function useCampaignSynchronization(
         return
       }
 
-      realtimeConnectedRef.current = true
+      if (realtimeStatusRef.current === 'SUBSCRIBED') {
+        return
+      }
+
+      realtimeStatusRef.current = 'SUBSCRIBED'
       updateState((currentState) => ({
         ...currentState,
         connectionStatus: 'RECONNECTING',
       }))
-      void synchronize('RESYNC_FAILED')
+      void synchronize('RESYNC_FAILED', 'RECONNECTING')
     }
 
     const handleRealtimeError = (error: SynchronizationError) => {
@@ -247,6 +282,30 @@ export function useCampaignSynchronization(
         connectionStatus: 'OFFLINE',
         errorCode: error.code,
       }))
+      void synchronize(error.code)
+    }
+
+    const handleBrowserOffline = () => {
+      realtimeStatusRef.current = 'DISCONNECTED'
+      updateState((currentState) => ({
+        ...currentState,
+        connectionStatus: 'OFFLINE',
+        errorCode: 'NETWORK_UNAVAILABLE',
+      }))
+    }
+
+    const handleBrowserOnline = () => {
+      if (realtimeStatusRef.current !== 'DISCONNECTED') {
+        return
+      }
+
+      realtimeStatusRef.current = 'CONNECTING'
+      updateState((currentState) => ({
+        ...currentState,
+        connectionStatus: 'RECONNECTING',
+        errorCode: null,
+      }))
+      void synchronize('RESYNC_FAILED', 'RECONNECTING')
     }
 
     const handleResume = () => {
@@ -270,6 +329,8 @@ export function useCampaignSynchronization(
 
     document.addEventListener('visibilitychange', handleResume)
     window.addEventListener('focus', handleResume)
+    window.addEventListener('offline', handleBrowserOffline)
+    window.addEventListener('online', handleBrowserOnline)
 
     const verificationTimer = window.setInterval(
       () => void verifyRevision(),
@@ -290,10 +351,13 @@ export function useCampaignSynchronization(
 
     return () => {
       isMountedRef.current = false
-      realtimeConnectedRef.current = false
+      realtimeStatusRef.current = 'DISCONNECTED'
+      pendingSignalRef.current = null
       window.clearInterval(verificationTimer)
       document.removeEventListener('visibilitychange', handleResume)
       window.removeEventListener('focus', handleResume)
+      window.removeEventListener('offline', handleBrowserOffline)
+      window.removeEventListener('online', handleBrowserOnline)
 
       if (subscriptionRef.current) {
         const subscription = subscriptionRef.current
