@@ -2,7 +2,7 @@
 
 This file is the durable high-level product specification for the Space Marine
 2 Crusade Command application. It consolidates approved decisions through Phase
-4.5. Detailed implementation contracts remain in `docs/` and should be read
+5A. Detailed implementation contracts remain in `docs/` and should be read
 when working in their area.
 
 ## Product and deployment
@@ -28,6 +28,12 @@ ACTIVE Crusade information: the current campaign, mission, locked battlefield,
 progress, objectives, and enemy information. They cannot read drafts, audit
 history, application roles, private administration data, evidence, or actor
 identities, and they cannot perform authoritative writes.
+
+The Phase 5A Player dashboard presents that snapshot as the primary public
+experience, including deliberate loading, no-active-operation, error, and
+offline-last-known-state views. It consumes the existing centralized Phase 4
+synchronization coordinator and never queries or subscribes independently. See
+`docs/phase-5a-public-dashboard.md`.
 
 Version 1 has one Administrator and at most one designated Moderator as its
 normal direct writers. Both authenticate through Supabase Auth, primarily with
@@ -102,6 +108,6 @@ transaction. See `docs/discord-kill-team-workflow.md` and
 ## Scope discipline
 
 Implement only the explicitly requested phase or subphase. Do not automatically
-begin the next phase. Finished dashboard work, tactical maps, Kill Team schema,
-Discord commands, and evidence storage remain deferred until separately
+begin the next phase. Command-staff dashboard work, tactical maps, Kill Team
+schema, Discord commands, and evidence storage remain deferred until separately
 authorized.

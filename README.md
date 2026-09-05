@@ -11,6 +11,9 @@ intentionally unimplemented.
 
 Phase 4.5 adds durable repository scope/rules and makes Supabase email OTP the
 primary command-staff authentication path. Public viewing remains sign-in free.
+Phase 5A adds the responsive public Player dashboard over the same validated
+ACTIVE-campaign snapshot and synchronization coordinator; it does not add a
+tactical map or public write path.
 
 ## Prerequisites
 
@@ -29,9 +32,9 @@ Copy-Item .env.example .env.local
 pnpm dev
 ```
 
-Supabase values remain optional for the landing screen. Without browser-safe
-local values, the application explicitly remains in public read-only mode and
-disables command staff sign-in.
+Browser-safe Supabase values are required to retrieve the public campaign
+snapshot. Without them, the dashboard shows its controlled unavailable state
+and keeps command-staff sign-in disabled; it never falls back to sample data.
 
 Open `http://localhost:5173` after the Vite server starts.
 
@@ -71,10 +74,12 @@ Use `pnpm db:stop` when local database work is complete. Database architecture
 and security decisions are documented in `docs/phase-2-database.md` and
 `docs/phase-3-auth-authorization.md`. Phase 4 synchronization and its local
 multi-client verification procedure are documented in
-`docs/phase-4-synchronization.md`. The later Kill Team feature specification is
-preserved in `docs/future-kill-team-tactical-layer.md`; it is not implemented
-in Phase 4. The approved future Discord registration/evidence workflow and
-player guide are preserved in `docs/discord-kill-team-workflow.md` and
+`docs/phase-4-synchronization.md`. The public dashboard presentation and manual
+visual-test procedure are documented in `docs/phase-5a-public-dashboard.md`.
+The later Kill Team feature specification is preserved in
+`docs/future-kill-team-tactical-layer.md`; it is not implemented in Phase 5A.
+The approved future Discord registration/evidence workflow and player guide are
+preserved in `docs/discord-kill-team-workflow.md` and
 `docs/KILL_TEAM_QUICK_GUIDE.md`.
 
 `PROJECT_SCOPE.md` is the durable product authority, and `AGENTS.md` contains

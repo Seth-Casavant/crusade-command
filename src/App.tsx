@@ -1,5 +1,5 @@
-import { DevelopmentHome } from './pages/DevelopmentHome'
+import { PlayerDashboardPage } from './pages/PlayerDashboard'
 
 export function App() {
-  return <DevelopmentHome />
+  return <PlayerDashboardPage />
 }
