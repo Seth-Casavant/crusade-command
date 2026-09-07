@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 
 import {
   resolveBattlefieldDefinition,
-  resolveTacticalAsset,
+  resolveBattlefieldAssetCandidates,
   type BattlefieldDefinition,
   type TacticalAssetDefinition,
 } from '../../data/battlefields'
@@ -20,58 +20,89 @@ export type TacticalBattlefieldProps = {
 type TacticalAssetStatus = 'loading' | 'ready' | 'error'
 
 type ResolvedTacticalBattlefieldProps = TacticalBattlefieldProps & {
-  asset: TacticalAssetDefinition
+  assetCandidates: readonly TacticalAssetDefinition[]
   definition: BattlefieldDefinition
 }
 
+type TacticalAssetState = Readonly<{
+  candidateIndex: number
+  status: TacticalAssetStatus
+}>
+
 function ResolvedTacticalBattlefield({
-  asset,
+  assetCandidates,
   battlefieldName,
   children,
   definition,
 }: ResolvedTacticalBattlefieldProps) {
-  const [assetStatus, setAssetStatus] =
-    useState<TacticalAssetStatus>('loading')
+  const [assetState, setAssetState] = useState<TacticalAssetState>({
+    candidateIndex: 0,
+    status: 'loading',
+  })
+  const asset = assetCandidates[assetState.candidateIndex]
 
-  if (assetStatus === 'error') {
+  if (!asset || assetState.status === 'error') {
     return (
       <TacticalBattlefieldFallback
         battlefieldName={battlefieldName}
-        dimensions={definition.dimensions}
+        dimensions={asset?.dimensions ?? definition.dimensions}
       />
     )
+  }
+
+  const handleAssetError = () => {
+    setAssetState((currentState) => {
+      const nextCandidateIndex = currentState.candidateIndex + 1
+
+      if (nextCandidateIndex < assetCandidates.length) {
+        return { candidateIndex: nextCandidateIndex, status: 'loading' }
+      }
+
+      return { ...currentState, status: 'error' }
+    })
   }
 
   return (
     <TacticalBattlefieldFrame
       battlefieldName={battlefieldName}
-      dimensions={definition.dimensions}
-      isBusy={assetStatus === 'loading'}
+      dimensions={asset.dimensions}
+      isInteractive
+      isBusy={assetState.status === 'loading'}
+      key={asset.id}
+      statusLayer={
+        assetState.status === 'loading' ? (
+          <div
+            aria-live="polite"
+            className="tactical-battlefield__state tactical-battlefield__state--loading"
+            role="status"
+          >
+            Loading Tactical Cartography...
+          </div>
+        ) : null
+      }
     >
       <img
         alt={`Tactical schematic for ${battlefieldName}`}
-        aria-hidden={assetStatus === 'loading'}
+        aria-hidden={assetState.status === 'loading'}
         className="tactical-battlefield__asset"
-        data-status={assetStatus}
+        data-status={assetState.status}
+        data-tactical-asset-id={asset.id}
         draggable={false}
         height={asset.dimensions.height}
-        onError={() => setAssetStatus('error')}
-        onLoad={() => setAssetStatus('ready')}
+        onError={handleAssetError}
+        onLoad={() =>
+          setAssetState((currentState) => ({
+            ...currentState,
+            status: 'ready',
+          }))
+        }
         src={asset.src}
         width={asset.dimensions.width}
       />
 
-      {assetStatus === 'loading' ? (
-        <div
-          aria-live="polite"
-          className="tactical-battlefield__state tactical-battlefield__state--loading"
-          role="status"
-        >
-          Loading Tactical Cartography...
-        </div>
-      ) : (
+      {assetState.status === 'ready' ? (
         <TacticalOverlay>{children}</TacticalOverlay>
-      )}
+      ) : null}
     </TacticalBattlefieldFrame>
   )
 }
@@ -82,9 +113,11 @@ function TacticalBattlefieldContent({
   children,
 }: TacticalBattlefieldProps) {
   const definition = resolveBattlefieldDefinition(battlefieldId)
-  const asset = resolveTacticalAsset(definition?.tacticalAssetId)
+  const assetCandidates = definition
+    ? resolveBattlefieldAssetCandidates(definition)
+    : []
 
-  if (!definition || !asset) {
+  if (!definition || assetCandidates.length === 0) {
     return (
       <TacticalBattlefieldFallback
         battlefieldName={battlefieldName}
@@ -93,11 +126,13 @@ function TacticalBattlefieldContent({
     )
   }
 
-  const identityKey = `${battlefieldId}:${asset.id}`
+  const identityKey = `${battlefieldId}:${assetCandidates
+    .map(({ id }) => id)
+    .join(':')}`
 
   return (
     <ResolvedTacticalBattlefield
-      asset={asset}
+      assetCandidates={assetCandidates}
       battlefieldId={battlefieldId}
       battlefieldName={battlefieldName}
       definition={definition}

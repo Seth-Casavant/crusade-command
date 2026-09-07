@@ -1,19 +1,24 @@
 import { useId, type ReactNode } from 'react'
 
 import type { TacticalDimensions } from '../../data/battlefields'
+import { TacticalBattlefieldViewport } from './TacticalBattlefieldViewport'
 
 export type TacticalBattlefieldFrameProps = {
   battlefieldName: string
   children: ReactNode
   dimensions: TacticalDimensions
+  isInteractive?: boolean
   isBusy?: boolean
+  statusLayer?: ReactNode
 }
 
 export function TacticalBattlefieldFrame({
   battlefieldName,
   children,
   dimensions,
+  isInteractive = false,
   isBusy = false,
+  statusLayer,
 }: TacticalBattlefieldFrameProps) {
   const headingId = useId()
   const battlefieldNameId = useId()
@@ -36,13 +41,25 @@ export function TacticalBattlefieldFrame({
         </p>
       </header>
 
-      <div
-        aria-busy={isBusy || undefined}
-        className="tactical-battlefield__viewport"
-        style={{ aspectRatio: `${dimensions.width} / ${dimensions.height}` }}
-      >
-        {children}
-      </div>
+      {isInteractive ? (
+        <TacticalBattlefieldViewport
+          battlefieldName={battlefieldName}
+          dimensions={dimensions}
+          disabled={isBusy}
+          isBusy={isBusy}
+          statusLayer={statusLayer}
+        >
+          {children}
+        </TacticalBattlefieldViewport>
+      ) : (
+        <div
+          aria-busy={isBusy || undefined}
+          className="tactical-battlefield__viewport"
+          style={{ aspectRatio: `${dimensions.width} / ${dimensions.height}` }}
+        >
+          {children}
+        </div>
+      )}
     </section>
   )
 }

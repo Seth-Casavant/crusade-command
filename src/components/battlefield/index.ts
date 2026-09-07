@@ -13,6 +13,10 @@ export {
   type TacticalBattlefieldFallbackProps,
 } from './TacticalBattlefieldFallback'
 export {
+  TacticalBattlefieldViewport,
+  type TacticalBattlefieldViewportProps,
+} from './TacticalBattlefieldViewport'
+export {
   TacticalOverlay,
   TacticalOverlayItem,
   type TacticalOverlayItemProps,
@@ -24,3 +28,13 @@ export {
   type NormalizedPositionStyle,
   type NormalizedTacticalPoint,
 } from './normalizedCoordinates'
+export {
+  TACTICAL_VIEWPORT_MAX_ZOOM,
+  TACTICAL_VIEWPORT_MIN_ZOOM,
+  TACTICAL_VIEWPORT_ZOOM_STEP,
+  calculateTacticalViewportTransform,
+  clampTacticalViewportZoom,
+  type TacticalViewportPan,
+  type TacticalViewportSize,
+  type TacticalViewportTransform,
+} from './tacticalViewportMath'

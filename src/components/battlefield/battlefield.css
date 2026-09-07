@@ -73,12 +73,62 @@
   text-transform: uppercase;
 }
 
+.tactical-battlefield__toolbar {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: var(--border-thin) solid var(--border-structural);
+  background: var(--surface-panel-inset);
+}
+
+.tactical-battlefield__toolbar button {
+  min-width: 5.5rem;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-thin) solid var(--border-emphasis);
+  color: var(--text-secondary);
+  background: var(--surface-panel-raised);
+  font-family: var(--font-technical);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: var(--tracking-interface);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tactical-battlefield__toolbar button:hover:not(:disabled) {
+  border-color: var(--accent-primary-hover);
+  color: var(--text-primary);
+}
+
+.tactical-battlefield__toolbar button:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.tactical-battlefield__toolbar output {
+  min-width: 4.5rem;
+  margin-left: auto;
+  color: var(--accent-primary-hover);
+  font-family: var(--font-technical);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  letter-spacing: var(--tracking-interface);
+  text-align: right;
+}
+
 .tactical-battlefield__viewport {
   position: relative;
   isolation: isolate;
   width: 100%;
+  height: clamp(22rem, 62vh, 44rem);
+  min-height: 0;
   max-width: 100%;
   overflow: hidden;
+  touch-action: pan-y;
   background:
     repeating-linear-gradient(
       0deg,
@@ -97,6 +147,23 @@
     var(--surface-panel-inset);
 }
 
+.tactical-battlefield__viewport[data-pannable='true'] {
+  cursor: grab;
+}
+
+.tactical-battlefield__viewport[data-dragging='true'] {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.tactical-battlefield__scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  contain: layout paint style;
+  transform-origin: 0 0;
+}
+
 .tactical-battlefield__asset,
 .tactical-overlay,
 .tactical-battlefield__state {
@@ -112,6 +179,8 @@
   max-width: 100%;
   object-fit: contain;
   opacity: 1;
+  pointer-events: none;
+  user-select: none;
 }
 
 .tactical-battlefield__asset[data-status='loading'] {
@@ -179,8 +248,35 @@
     text-align: left;
   }
 
+  .tactical-battlefield__toolbar {
+    flex-wrap: wrap;
+    padding: var(--space-3);
+  }
+
+  .tactical-battlefield__toolbar button {
+    flex: 1 1 5.5rem;
+    min-width: 0;
+    padding-inline: var(--space-2);
+  }
+
+  .tactical-battlefield__toolbar output {
+    flex: 1 0 100%;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .tactical-battlefield__viewport {
+    height: clamp(18rem, 56svh, 30rem);
+  }
+
   .tactical-battlefield__state {
     padding: var(--space-4);
     letter-spacing: 0.05em;
+  }
+}
+
+@media (max-height: 32rem) and (orientation: landscape) {
+  .tactical-battlefield__viewport {
+    height: clamp(14rem, 65svh, 22rem);
   }
 }
