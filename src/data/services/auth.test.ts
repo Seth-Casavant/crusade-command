@@ -1,3 +1,9 @@
+import { vi } from 'vitest'
+
+vi.mock('./supabase', () => ({
+  supabase: null,
+}))
+
 import {
   getAuthenticationState,
   requestCommandStaffOtp,

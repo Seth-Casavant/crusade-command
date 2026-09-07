@@ -1,4 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import { vi } from 'vitest'
+
+vi.mock('../../data/services/supabase', () => ({
+  supabase: null,
+}))
 
 import { AuthPanel } from './AuthPanel'
 

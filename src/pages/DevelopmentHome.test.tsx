@@ -1,4 +1,13 @@
 import { render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
+
+vi.mock('../config/env', () => ({
+  publicEnvironment: {
+    supabaseUrl: null,
+    supabasePublishableKey: null,
+    isSupabaseConfigured: false,
+  },
+}))
 
 import { DevelopmentHome } from './DevelopmentHome'
 
