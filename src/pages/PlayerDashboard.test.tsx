@@ -268,6 +268,15 @@ describe('PlayerDashboard', () => {
     expect(tacticalAsset).not.toBeNull()
     fireEvent.error(tacticalAsset as HTMLImageElement)
 
+    const trackedFallback = container.querySelector<HTMLImageElement>(
+      '.tactical-battlefield__asset',
+    )
+    expect(trackedFallback).toHaveAttribute(
+      'data-tactical-asset-id',
+      'termination-development',
+    )
+    fireEvent.error(trackedFallback as HTMLImageElement)
+
     expect(
       screen.getByText('Tactical Cartography Unavailable'),
     ).toBeInTheDocument()

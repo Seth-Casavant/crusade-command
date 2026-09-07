@@ -2,8 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 
 import {
+  resolveBattlefieldAssetCandidates,
   resolveBattlefieldDefinition,
-  resolveTacticalAsset,
 } from '../../data/battlefields'
 import { TacticalBattlefield, TacticalOverlayItem } from './index'
 
@@ -45,7 +45,9 @@ describe('TacticalBattlefield', () => {
 
   it('renders the registered ACTIVE battlefield with a stable loading frame', () => {
     const definition = resolveBattlefieldDefinition(terminationId)
-    const expectedAsset = resolveTacticalAsset(definition?.tacticalAssetId)
+    const expectedAsset = definition
+      ? resolveBattlefieldAssetCandidates(definition)[0]
+      : null
     const { container } = render(
       <TacticalBattlefield
         battlefieldId={terminationId}
@@ -65,11 +67,18 @@ describe('TacticalBattlefield', () => {
       'status',
     )
     expect(viewport).toHaveAttribute('aria-busy', 'true')
-    expect(viewport).toHaveStyle({ aspectRatio: '1600 / 900' })
+    expect(viewport).toHaveStyle({ aspectRatio: '1179 / 1546' })
     expect(asset).toHaveAttribute('src', expectedAsset?.src ?? '')
-    expect(asset).toHaveAttribute('width', '1600')
-    expect(asset).toHaveAttribute('height', '900')
+    expect(asset).toHaveAttribute(
+      'data-tactical-asset-id',
+      'kimber-prime-termination-local',
+    )
+    expect(asset).toHaveAttribute('width', '1179')
+    expect(asset).toHaveAttribute('height', '1546')
     expect(asset).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getByRole('button', { name: 'Zoom In' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Zoom Out' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Fit Map' })).toBeDisabled()
     expect(boundaryMocks.channel).not.toHaveBeenCalled()
   })
 
@@ -116,8 +125,8 @@ describe('TacticalBattlefield', () => {
     expect(container.querySelector('img')).not.toBeInTheDocument()
   })
 
-  it('fails safely when a registered battlefield has no tactical asset', () => {
-    render(
+  it('fails safely when a registered local-only battlefield asset is missing', () => {
+    const { container } = render(
       <TacticalBattlefield
         battlefieldId={voxLiberatisId}
         battlefieldName="Vox Liberatis"
@@ -129,10 +138,21 @@ describe('TacticalBattlefield', () => {
         name: 'Tactical Battlefield Vox Liberatis',
       }),
     ).toBeInTheDocument()
+    expect(getAsset(container)).toHaveAttribute(
+      'data-tactical-asset-id',
+      'kimber-prime-vox-liberatis-local',
+    )
+
+    fireEvent.error(getAsset(container))
+
+    expect(
+      screen.getByText('Tactical Cartography Unavailable'),
+    ).toBeInTheDocument()
     expect(screen.getByText('Battlefield: Vox Liberatis')).toBeInTheDocument()
+    expect(container.querySelector('img')).not.toBeInTheDocument()
   })
 
-  it('replaces a failed image without exposing a broken asset icon', () => {
+  it('advances from the missing local asset to the tracked Termination fixture', () => {
     const { container } = render(
       <TacticalBattlefield
         battlefieldId={terminationId}
@@ -140,6 +160,38 @@ describe('TacticalBattlefield', () => {
       />,
     )
 
+    fireEvent.error(getAsset(container))
+
+    const fixture = getAsset(container)
+    const viewport = container.querySelector('.tactical-battlefield__viewport')
+
+    expect(fixture).toHaveAttribute(
+      'data-tactical-asset-id',
+      'termination-development',
+    )
+    expect(fixture).toHaveAttribute('width', '1600')
+    expect(fixture).toHaveAttribute('height', '900')
+    expect(viewport).toHaveStyle({ aspectRatio: '1600 / 900' })
+    expect(screen.getByText('Loading Tactical Cartography...')).toBeInTheDocument()
+
+    fireEvent.load(fixture)
+    expect(fixture).toHaveAttribute('data-status', 'ready')
+    expect(
+      screen.getByRole('img', {
+        name: 'Tactical schematic for Termination',
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('contains failure after both local and tracked candidates fail', () => {
+    const { container } = render(
+      <TacticalBattlefield
+        battlefieldId={terminationId}
+        battlefieldName="Termination"
+      />,
+    )
+
+    fireEvent.error(getAsset(container))
     fireEvent.error(getAsset(container))
 
     expect(
@@ -158,6 +210,11 @@ describe('TacticalBattlefield', () => {
     )
     fireEvent.error(getAsset(container))
 
+    expect(getAsset(container)).toHaveAttribute(
+      'data-tactical-asset-id',
+      'termination-development',
+    )
+
     rerender(
       <TacticalBattlefield
         battlefieldId={voxLiberatisId}
@@ -171,6 +228,10 @@ describe('TacticalBattlefield', () => {
       />,
     )
 
+    expect(getAsset(container)).toHaveAttribute(
+      'data-tactical-asset-id',
+      'kimber-prime-termination-local',
+    )
     expect(getAsset(container)).toHaveAttribute('data-status', 'loading')
     expect(screen.getByText('Loading Tactical Cartography...')).toBeInTheDocument()
   })

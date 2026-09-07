@@ -270,6 +270,18 @@ export function TacticalBattlefieldViewport({
     [],
   )
 
+  const cancelPointerInteraction = useCallback(() => {
+    const activePointer = activePointerRef.current
+    const viewport = viewportRef.current
+
+    if (activePointer && viewport) {
+      safelyReleasePointer(viewport, activePointer.id)
+    }
+
+    activePointerRef.current = null
+    setIsDragging(false)
+  }, [])
+
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (
       !canPan ||
@@ -420,9 +432,17 @@ export function TacticalBattlefieldViewport({
         </output>
       </div>
 
+      <div aria-label="Pan map" className="tactical-battlefield__toolbar tactical-battlefield__pan-controls" role="group">
+        <button type="button" aria-label="Pan left" disabled={!canPan || transform.pan.x >= transform.maxPan.x} onClick={() => panBy(KEYBOARD_PAN_STEP * 3, 0)}>←</button>
+        <button type="button" aria-label="Pan up" disabled={!canPan || transform.pan.y >= transform.maxPan.y} onClick={() => panBy(0, KEYBOARD_PAN_STEP * 3)}>↑</button>
+        <button type="button" aria-label="Pan down" disabled={!canPan || transform.pan.y <= -transform.maxPan.y} onClick={() => panBy(0, -KEYBOARD_PAN_STEP * 3)}>↓</button>
+        <button type="button" aria-label="Pan right" disabled={!canPan || transform.pan.x <= -transform.maxPan.x} onClick={() => panBy(-KEYBOARD_PAN_STEP * 3, 0)}>→</button>
+      </div>
+
       <p className="screen-reader-only" id={instructionsId}>
         Use Zoom In and Zoom Out to change scale. When zoomed, drag the map or
-        use the arrow keys to pan. Press Home or zero to fit the complete map.
+        use the pan buttons or arrow keys to pan. Vertical touch swipes scroll
+        the page. Press Home or zero to fit the complete map.
       </p>
 
       <div
@@ -438,6 +458,7 @@ export function TacticalBattlefieldViewport({
         data-pan-y={toStableCssNumber(transform.pan.y)}
         data-pannable={canPan}
         data-zoom={transform.zoom}
+        onBlur={cancelPointerInteraction}
         onKeyDown={handleKeyDown}
         onLostPointerCapture={finishPointerInteraction}
         onPointerCancel={finishPointerInteraction}

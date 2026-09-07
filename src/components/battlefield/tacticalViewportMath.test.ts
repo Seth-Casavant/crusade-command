@@ -45,6 +45,71 @@ describe('tactical viewport transform math', () => {
     expect(veryTall.translate.y).toBeCloseTo(0)
   })
 
+  it.each([
+    ['Termination', { width: 1179, height: 1546 }],
+    ['Exfiltration', { width: 1179, height: 2556 }],
+    ['Fall of Atreus', { width: 1179, height: 1225 }],
+    ['Purgation', { width: 3990, height: 5000 }],
+  ] as const)(
+    'fits the complete native %s battlefield and centers its scene',
+    (_name, dimensions) => {
+      const viewport = { width: 960, height: 640 }
+      const transform = calculateTacticalViewportTransform(
+        viewport,
+        dimensions,
+        1,
+        { x: 0, y: 0 },
+      )
+      const renderedWidth = dimensions.width * transform.effectiveScale
+      const renderedHeight = dimensions.height * transform.effectiveScale
+
+      expect(transform.fitScale).toBe(
+        Math.min(
+          viewport.width / dimensions.width,
+          viewport.height / dimensions.height,
+        ),
+      )
+      expect(renderedWidth).toBeLessThanOrEqual(viewport.width + 0.000001)
+      expect(renderedHeight).toBeLessThanOrEqual(
+        viewport.height + 0.000001,
+      )
+      expect(transform.pan).toEqual({ x: 0, y: 0 })
+      expect(transform.translate).toEqual({
+        x: (viewport.width - renderedWidth) / 2,
+        y: (viewport.height - renderedHeight) / 2,
+      })
+    },
+  )
+
+  it.each([
+    ['1920px desktop', { width: 1920, height: 1080 }, { width: 1179, height: 1546 }],
+    ['1366px laptop', { width: 1366, height: 768 }, { width: 3990, height: 5000 }],
+    ['768px tablet', { width: 768, height: 1024 }, { width: 1179, height: 2556 }],
+    ['390px mobile', { width: 390, height: 844 }, { width: 1179, height: 1546 }],
+  ] as const)(
+    'keeps the complete battlefield finite and contained at %s',
+    (_label, viewport, dimensions) => {
+      const transform = calculateTacticalViewportTransform(
+        viewport,
+        dimensions,
+        1,
+        { x: 0, y: 0 },
+      )
+
+      expect(transform.effectiveScale).toBeGreaterThan(0)
+      expect(Number.isFinite(transform.effectiveScale)).toBe(true)
+      expect(dimensions.width * transform.effectiveScale).toBeLessThanOrEqual(
+        viewport.width + 0.000001,
+      )
+      expect(dimensions.height * transform.effectiveScale).toBeLessThanOrEqual(
+        viewport.height + 0.000001,
+      )
+      expect(Object.values(transform.translate).every(Number.isFinite)).toBe(
+        true,
+      )
+    },
+  )
+
   it('clamps zoom and pan to finite controlled bounds', () => {
     expect(clampTacticalViewportZoom(Number.NaN)).toBe(
       TACTICAL_VIEWPORT_MIN_ZOOM,

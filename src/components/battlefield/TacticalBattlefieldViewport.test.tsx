@@ -12,6 +12,8 @@ type ResizeObserverCallbackForTest = (
 ) => void
 
 const landscapeDimensions = { width: 1600, height: 900 }
+const terminationDimensions = { width: 1179, height: 1546 }
+const purgationDimensions = { width: 3990, height: 5000 }
 
 function installElementMeasurement(width = 800, height = 600) {
   return vi
@@ -139,6 +141,212 @@ describe('TacticalBattlefieldViewport', () => {
     expect(viewport).toHaveAttribute('data-pan-x', '0')
     expect(viewport).toHaveAttribute('data-pan-y', '0')
     expect(viewport).toHaveAttribute('data-fit', 'true')
+  })
+
+  it('provides bounded touch-friendly pan controls and Fit Map reset', () => {
+    vi.stubGlobal('ResizeObserver', undefined)
+    installElementMeasurement()
+    render(
+      <TacticalBattlefieldViewport
+        battlefieldName="Termination"
+        dimensions={landscapeDimensions}
+      >
+        <span>Map</span>
+      </TacticalBattlefieldViewport>,
+    )
+
+    const viewport = getViewport()
+    const panLeft = screen.getByRole('button', { name: 'Pan left' })
+    const panUp = screen.getByRole('button', { name: 'Pan up' })
+    const panDown = screen.getByRole('button', { name: 'Pan down' })
+    const panRight = screen.getByRole('button', { name: 'Pan right' })
+
+    expect(panLeft).toBeDisabled()
+    expect(panUp).toBeDisabled()
+    expect(panDown).toBeDisabled()
+    expect(panRight).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom In' }))
+    expect(panDown).toBeEnabled()
+    fireEvent.click(panDown)
+
+    expect(viewport).toHaveAttribute('data-pan-y', '-37.5')
+    expect(panDown).toBeDisabled()
+    expect(panUp).toBeEnabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fit Map' }))
+    expect(viewport).toHaveAttribute('data-zoom', '1')
+    expect(viewport).toHaveAttribute('data-pan-y', '0')
+    expect(viewport).toHaveAttribute('data-fit', 'true')
+    expect(panLeft).toBeDisabled()
+    expect(panUp).toBeDisabled()
+    expect(panDown).toBeDisabled()
+    expect(panRight).toBeDisabled()
+  })
+
+  it('clears an active drag when the viewport loses focus', () => {
+    vi.stubGlobal('ResizeObserver', undefined)
+    installElementMeasurement()
+    render(
+      <TacticalBattlefieldViewport
+        battlefieldName="Termination"
+        dimensions={landscapeDimensions}
+      >
+        <span>Map</span>
+      </TacticalBattlefieldViewport>,
+    )
+
+    const viewport = getViewport()
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom In' }))
+    fireEvent.pointerDown(viewport, {
+      button: 0,
+      clientX: 100,
+      clientY: 100,
+      pointerId: 8,
+      pointerType: 'mouse',
+    })
+    expect(viewport).toHaveAttribute('data-dragging', 'true')
+
+    fireEvent.blur(viewport)
+    fireEvent.pointerMove(viewport, {
+      clientX: 500,
+      clientY: 500,
+      pointerId: 8,
+      pointerType: 'mouse',
+    })
+
+    expect(viewport).not.toHaveAttribute('data-dragging')
+    expect(viewport).toHaveAttribute('data-pan-x', '0')
+    expect(viewport).toHaveAttribute('data-pan-y', '0')
+  })
+
+  it('recovers a fitted native map after transient zero-size and orientation measurements', () => {
+    let resizeCallback: ResizeObserverCallbackForTest | null = null
+
+    class ResizeObserverForTest {
+      constructor(callback: ResizeObserverCallbackForTest) {
+        resizeCallback = callback
+      }
+
+      observe = vi.fn()
+      disconnect = vi.fn()
+    }
+
+    vi.stubGlobal('ResizeObserver', ResizeObserverForTest)
+    installElementMeasurement(768, 512)
+    const { container } = render(
+      <TacticalBattlefieldViewport
+        battlefieldName="Termination"
+        dimensions={terminationDimensions}
+      >
+        <TacticalOverlay>
+          <TacticalOverlayItem position={{ x: 0.4, y: 0.6 }}>
+            <span data-testid="orientation-marker">Marker</span>
+          </TacticalOverlayItem>
+        </TacticalOverlay>
+      </TacticalBattlefieldViewport>,
+    )
+
+    const viewport = getViewport()
+    const scene = getScene(container)
+    const initialTransform = scene.style.transform
+
+    act(() => {
+      resizeCallback?.([{ contentRect: { width: 0, height: 0 } }])
+    })
+    expect(scene.style.transform).toBe(initialTransform)
+
+    act(() => {
+      resizeCallback?.([{ contentRect: { width: 390, height: 760 } }])
+    })
+
+    expect(viewport).toHaveAttribute('data-fit', 'true')
+    expect(scene.style.transform).toContain('scale(0.330789)')
+    expect(scene.style.transform).not.toContain('NaN')
+    expect(scene.style.transform).not.toContain('Infinity')
+    expect(screen.getByTestId('orientation-marker').parentElement).toHaveStyle({
+      left: '40%',
+      top: '60%',
+    })
+  })
+
+  it('clamps a zoomed and panned scene after a narrow orientation resize', () => {
+    let resizeCallback: ResizeObserverCallbackForTest | null = null
+
+    class ResizeObserverForTest {
+      constructor(callback: ResizeObserverCallbackForTest) {
+        resizeCallback = callback
+      }
+
+      observe = vi.fn()
+      disconnect = vi.fn()
+    }
+
+    vi.stubGlobal('ResizeObserver', ResizeObserverForTest)
+    installElementMeasurement(960, 640)
+    const { container } = render(
+      <TacticalBattlefieldViewport
+        battlefieldName="Purgation"
+        dimensions={purgationDimensions}
+      >
+        <TacticalOverlay>
+          <TacticalOverlayItem position={{ x: 0.2, y: 0.8 }}>
+            <span data-testid="purgation-marker">Marker</span>
+          </TacticalOverlayItem>
+        </TacticalOverlay>
+      </TacticalBattlefieldViewport>,
+    )
+
+    const viewport = screen.getByRole('group', {
+      name: 'Interactive tactical map for Purgation',
+    })
+    const scene = getScene(container)
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom In' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom In' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Pan down' }))
+
+    expect(viewport).toHaveAttribute('data-zoom', '2')
+    expect(viewport).toHaveAttribute('data-pan-y', '-96')
+
+    act(() => {
+      resizeCallback?.([{ contentRect: { width: 390, height: 760 } }])
+    })
+
+    expect(viewport).toHaveAttribute('data-zoom', '2')
+    expect(viewport).toHaveAttribute('data-pan-y', '-96')
+    expect(scene.style.transform).toContain('scale(0.195489)')
+    expect(scene.style.transform).not.toContain('NaN')
+    expect(scene.style.transform).not.toContain('Infinity')
+    expect(screen.getByTestId('purgation-marker').parentElement).toHaveStyle({
+      left: '20%',
+      top: '80%',
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fit Map' }))
+    expect(viewport).toHaveAttribute('data-zoom', '1')
+    expect(viewport).toHaveAttribute('data-pan-x', '0')
+    expect(viewport).toHaveAttribute('data-pan-y', '0')
+  })
+
+  it('keeps controls accessible for a 390px-wide Exfiltration viewport', () => {
+    vi.stubGlobal('ResizeObserver', undefined)
+    installElementMeasurement(390, 440)
+    render(
+      <TacticalBattlefieldViewport
+        battlefieldName="Exfiltration"
+        dimensions={{ width: 1179, height: 2556 }}
+      >
+        <span>Map</span>
+      </TacticalBattlefieldViewport>,
+    )
+
+    expect(
+      screen.getByRole('group', { name: 'Tactical map controls' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Zoom In' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Zoom Out' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Fit Map' })).toBeEnabled()
+    expect(screen.getByRole('group', { name: 'Pan map' })).toBeInTheDocument()
   })
 
   it('keeps the image and normalized overlay in one transform-owning scene', () => {
