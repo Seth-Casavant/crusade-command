@@ -309,10 +309,10 @@ describe('useCampaignSynchronization', () => {
 
     harness.fetchSnapshot.mockResolvedValue(createSnapshot(4))
     act(() => window.dispatchEvent(new Event('online')))
-    await waitFor(() =>
-      expect(result.current.connectionStatus).toBe('RECONNECTING'),
-    )
-    expect(result.current.campaign?.revision).toBe(4)
+    await waitFor(() => {
+      expect(result.current.connectionStatus).toBe('RECONNECTING')
+      expect(result.current.campaign?.revision).toBe(4)
+    })
 
     act(() => harness.emitStatus('SUBSCRIBED'))
     await waitFor(() => expect(result.current.connectionStatus).toBe('LIVE'))

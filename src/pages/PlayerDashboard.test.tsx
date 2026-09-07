@@ -91,7 +91,13 @@ describe('PlayerDashboard', () => {
       screen.getByRole('heading', { level: 1, name: 'The Kharon Purgation' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
-    expect(screen.getByText('Termination')).toBeInTheDocument()
+    expect(screen.getAllByText('Termination')).toHaveLength(2)
+    expect(
+      screen.getByRole('region', {
+        name: 'Tactical Battlefield Termination',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Loading Tactical Cartography...')).toBeInTheDocument()
     expect(screen.getByText('67%')).toBeInTheDocument()
     expect(screen.getByRole('progressbar')).toHaveAttribute(
       'aria-valuenow',
@@ -102,6 +108,8 @@ describe('PlayerDashboard', () => {
     expect(screen.queryByText('Phase 4 Foundation')).not.toBeInTheDocument()
     expect(screen.queryByText('Revision')).not.toBeInTheDocument()
     expect(screen.queryByText(campaign.campaignId)).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /battlefield/i })).not.toBeInTheDocument()
   })
 
   it.each([0, 100])('renders authoritative progress at %i percent', (value) => {
@@ -218,6 +226,86 @@ describe('PlayerDashboard', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Awaiting deployment orders.')).toBeInTheDocument()
     expect(screen.queryByText('Operation Ashen Spear')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('region', { name: /Tactical Battlefield/i }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('keeps all operational information and RESYNC available while the map loads', () => {
+    const manualResynchronize = vi.fn(async () => undefined)
+    render(
+      <PlayerDashboard
+        synchronization={createSynchronization({ manualResynchronize })}
+      />,
+    )
+
+    expect(screen.getByText('Loading Tactical Cartography...')).toBeInTheDocument()
+    expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
+    expect(screen.getByText('67%')).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: 'Current Objectives' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: 'Threat Assessment' }),
+    ).toBeInTheDocument()
+    expect(screen.getAllByText('Live').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Resync' }))
+    expect(manualResynchronize).toHaveBeenCalledTimes(1)
+  })
+
+  it('contains an asset failure without disabling the Player dashboard', () => {
+    const manualResynchronize = vi.fn(async () => undefined)
+    const { container } = render(
+      <PlayerDashboard
+        synchronization={createSynchronization({ manualResynchronize })}
+      />,
+    )
+    const tacticalAsset = container.querySelector<HTMLImageElement>(
+      '.tactical-battlefield__asset',
+    )
+
+    expect(tacticalAsset).not.toBeNull()
+    fireEvent.error(tacticalAsset as HTMLImageElement)
+
+    expect(
+      screen.getByText('Tactical Cartography Unavailable'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('The Kharon Purgation')).toBeInTheDocument()
+    expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
+    expect(screen.getByText('67%')).toBeInTheDocument()
+    expect(screen.getByText('Secure the relay nexus')).toBeInTheDocument()
+    expect(screen.getByText('Neurothrope')).toBeInTheDocument()
+    expect(screen.getAllByText('Live').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Resync' }))
+    expect(manualResynchronize).toHaveBeenCalledTimes(1)
+  })
+
+  it('uses a safe map fallback for an unregistered authoritative battlefield', () => {
+    render(
+      <PlayerDashboard
+        synchronization={createSynchronization({
+          campaign: {
+            ...campaign,
+            battlefieldId: '00000000-0000-4000-8000-000000000999',
+            battlefieldName: 'Uncharted Bastion',
+          },
+        })}
+      />,
+    )
+
+    expect(
+      screen.getByRole('region', {
+        name: 'Tactical Battlefield Uncharted Bastion',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Tactical Cartography Unavailable'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Battlefield: Uncharted Bastion')).toBeInTheDocument()
+    expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Resync' })).toBeEnabled()
   })
 
   it('renders a controlled initial error and retries through the coordinator', () => {

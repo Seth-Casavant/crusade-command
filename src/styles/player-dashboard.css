@@ -44,7 +44,33 @@
   position: relative;
   z-index: 1;
   width: min(100%, 78rem);
+  min-width: 0;
   margin-inline: auto;
+}
+
+.player-dashboard__primary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(18rem, 0.75fr);
+  align-items: start;
+  gap: var(--space-6);
+  width: 100%;
+  min-width: 0;
+  margin-top: var(--space-6);
+  overflow-wrap: anywhere;
+}
+
+.player-dashboard__primary > *,
+.player-dashboard__primary-rail,
+.player-dashboard__primary-rail > * {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.player-dashboard__primary-rail {
+  display: grid;
+  align-content: start;
+  gap: var(--space-6);
 }
 
 .player-dashboard__grid {
@@ -56,7 +82,9 @@
 
 .player-dashboard__grid > *,
 .player-dashboard__system {
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
 }
 
 .player-dashboard__grid .synchronization-status {
@@ -148,6 +176,7 @@
 }
 
 @media (max-width: 56rem) {
+  .player-dashboard__primary,
   .player-dashboard__grid {
     grid-template-columns: 1fr;
   }

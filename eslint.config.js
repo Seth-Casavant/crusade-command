@@ -33,4 +33,31 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: [
+      'src/components/battlefield/**/*.{ts,tsx}',
+      'src/data/battlefields/**/*.{ts,tsx}',
+    ],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@supabase/*',
+                '../../data/services/**',
+                '../services/**',
+                '../../state/campaignSync/**',
+                '../../../state/campaignSync/**',
+              ],
+              message:
+                'Battlefield rendering is presentation-only; synchronization and Supabase access stay at the page/service boundary.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 )

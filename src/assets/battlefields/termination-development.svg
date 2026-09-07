@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <title>Termination tactical development schematic</title>
+  <desc>An original monochrome command schematic with fortified sectors, a route, and tactical grid coordinates.</desc>
+  <defs>
+    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#171b1a"/>
+      <stop offset="1" stop-color="#0b0e0d"/>
+    </linearGradient>
+    <pattern id="minor-grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M50 0H0V50" fill="none" stroke="#a88a47" stroke-opacity=".1" stroke-width="2"/>
+    </pattern>
+    <pattern id="major-grid" width="200" height="200" patternUnits="userSpaceOnUse">
+      <rect width="200" height="200" fill="url(#minor-grid)"/>
+      <path d="M200 0H0V200" fill="none" stroke="#c5a862" stroke-opacity=".18" stroke-width="3"/>
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#surface)"/>
+  <rect x="24" y="24" width="1552" height="852" fill="url(#major-grid)" stroke="#69552e" stroke-width="4"/>
+
+  <g fill="none" stroke="#505856" stroke-width="8">
+    <path d="M120 690L290 585 430 610 555 490 705 500 825 385 1020 420 1165 300 1460 270"/>
+    <path d="M165 760L330 670 475 700 635 565 795 590 930 490 1110 520 1260 410 1480 385" stroke-width="3" stroke-dasharray="18 14"/>
+  </g>
+
+  <g fill="#131615" stroke="#a88a47" stroke-width="5">
+    <path d="M70 622L210 570 282 654 180 772 72 720Z"/>
+    <path d="M360 520L495 475 570 545 515 660 370 640 325 575Z"/>
+    <path d="M650 398L790 350 885 430 840 555 688 565 610 485Z"/>
+    <path d="M980 325L1130 272 1225 348 1180 474 1030 490 945 410Z"/>
+    <path d="M1280 155L1495 145 1530 320 1375 390 1250 300Z"/>
+  </g>
+
+  <g fill="#c5a862" stroke="#090a09" stroke-width="5">
+    <circle cx="175" cy="671" r="17"/>
+    <circle cx="447" cy="563" r="17"/>
+    <circle cx="755" cy="457" r="17"/>
+    <circle cx="1082" cy="383" r="17"/>
+    <circle cx="1400" cy="260" r="21"/>
+  </g>
+
+  <g fill="#872f35" stroke="#a84449" stroke-width="4">
+    <path d="M1305 620l34-58 34 58-34 58Z"/>
+    <path d="M1410 570l29-50 29 50-29 50Z"/>
+    <path d="M1190 710l29-50 29 50-29 50Z"/>
+  </g>
+
+  <g fill="#c8c0ad" font-family="Arial, sans-serif" font-size="24" letter-spacing="5">
+    <text x="74" y="72">CRUSADE COMMAND // DEVELOPMENT CARTOGRAPHY</text>
+    <text x="1290" y="72">GRID 16:9</text>
+  </g>
+  <g fill="#96978f" font-family="Consolas, monospace" font-size="18" letter-spacing="3">
+    <text x="80" y="842">SCHEMATIC ONLY // NO AUTHORITATIVE UNIT POSITIONS</text>
+    <text x="1384" y="842">NORTH</text>
+  </g>
+  <path d="M1450 790V720m0 0l-20 32m20-32l20 32" fill="none" stroke="#c8c0ad" stroke-width="5"/>
+</svg>

@@ -1,3 +1,4 @@
+import { TacticalBattlefield } from '../components/battlefield'
 import {
   CampaignProgress,
   ConnectionIndicator,
@@ -141,9 +142,18 @@ export function PlayerDashboard({
               connectionStatus={connectionStatus}
             />
 
+            <div className="player-dashboard__primary">
+              <TacticalBattlefield
+                battlefieldId={campaign.battlefieldId}
+                battlefieldName={campaign.battlefieldName}
+              />
+              <div className="player-dashboard__primary-rail">
+                <MissionSummary campaign={campaign} />
+                <CampaignProgress value={campaign.campaignProgress} />
+              </div>
+            </div>
+
             <div className="player-dashboard__grid">
-              <MissionSummary campaign={campaign} />
-              <CampaignProgress value={campaign.campaignProgress} />
               <ObjectivePanel objectives={campaign.objectives} />
               <ThreatPanel
                 enemies={campaign.enemies}
