@@ -265,6 +265,60 @@ insert into public.mission_crusade_scoring_targets (
   )
 on conflict (mission_id, target_key) do nothing;
 
+insert into public.kill_teams (
+  id,
+  mission_id,
+  name
+) values
+  (
+    '00000000-0000-4000-8000-000000000501',
+    '00000000-0000-4000-8000-000000000201',
+    'Sandbox Kill Team Alpha'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000502',
+    '00000000-0000-4000-8000-000000000201',
+    'Sandbox Kill Team Beta'
+  )
+on conflict (id) do nothing;
+
+insert into public.kill_team_members (
+  id,
+  kill_team_id,
+  mission_id,
+  discord_user_id,
+  display_name
+) values
+  (
+    '00000000-0000-4000-8000-000000000601',
+    '00000000-0000-4000-8000-000000000501',
+    '00000000-0000-4000-8000-000000000201',
+    '900000000000000001',
+    'Sandbox Alpha One'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000602',
+    '00000000-0000-4000-8000-000000000501',
+    '00000000-0000-4000-8000-000000000201',
+    '900000000000000002',
+    'Sandbox Alpha Two'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000603',
+    '00000000-0000-4000-8000-000000000502',
+    '00000000-0000-4000-8000-000000000201',
+    '900000000000000003',
+    'Sandbox Beta One'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000604',
+    '00000000-0000-4000-8000-000000000502',
+    '00000000-0000-4000-8000-000000000201',
+    '900000000000000004',
+    'Sandbox Beta Two'
+  )
+on conflict (id) do nothing;
+
 do $$
 declare
   v_status public.mission_status;

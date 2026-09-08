@@ -141,6 +141,73 @@ export type Database = {
         }
         Relationships: []
       }
+      kill_team_members: {
+        Row: {
+          created_at: string
+          discord_user_id: string
+          display_name: string
+          id: string
+          kill_team_id: string
+          mission_id: string
+        }
+        Insert: {
+          created_at?: string
+          discord_user_id: string
+          display_name: string
+          id?: string
+          kill_team_id: string
+          mission_id: string
+        }
+        Update: {
+          created_at?: string
+          discord_user_id?: string
+          display_name?: string
+          id?: string
+          kill_team_id?: string
+          mission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kill_team_members_team_mission_fk"
+            columns: ["kill_team_id", "mission_id"]
+            isOneToOne: false
+            referencedRelation: "kill_teams"
+            referencedColumns: ["id", "mission_id"]
+          },
+        ]
+      }
+      kill_teams: {
+        Row: {
+          created_at: string
+          id: string
+          mission_id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mission_id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mission_id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kill_teams_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_campaign_states: {
         Row: {
           campaign_id: string
@@ -413,9 +480,34 @@ export type Database = {
         Returns: undefined
       }
       assign_moderator: { Args: { p_user_id: string }; Returns: undefined }
+      create_kill_team: {
+        Args: {
+          p_actor_id?: string
+          p_expected_revision: number
+          p_members: Json
+          p_mission_id: string
+          p_name: string
+        }
+        Returns: {
+          kill_team_id: string
+          new_revision: number
+          update_id: string
+        }[]
+      }
       current_app_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      delete_kill_team: {
+        Args: {
+          p_actor_id?: string
+          p_expected_revision: number
+          p_kill_team_id: string
+        }
+        Returns: {
+          new_revision: number
+          update_id: string
+        }[]
       }
       get_public_active_campaign: {
         Args: never
@@ -430,6 +522,7 @@ export type Database = {
           crusade_scoring_targets: Json
           enemies: Json
           enemy_faction: string
+          kill_teams: Json
           mission_boss: Json
           mission_description: string
           mission_id: string
@@ -478,11 +571,27 @@ export type Database = {
           update_id: string
         }[]
       }
+      update_kill_team: {
+        Args: {
+          p_actor_id?: string
+          p_expected_revision: number
+          p_kill_team_id: string
+          p_members: Json
+          p_name: string
+        }
+        Returns: {
+          new_revision: number
+          update_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "ADMINISTRATOR" | "MODERATOR" | "PLAYER"
       campaign_status: "DRAFT" | "ACTIVE" | "COMPLETE"
-      campaign_update_type: "MISSION_TRANSITION" | "LIVE_STATE_UPDATE"
+      campaign_update_type:
+        | "MISSION_TRANSITION"
+        | "LIVE_STATE_UPDATE"
+        | "KILL_TEAM_REGISTRATION"
       mission_status: "DRAFT" | "READY" | "ACTIVE" | "COMPLETE" | "ABORTED"
       objective_status: "PENDING" | "ACTIVE" | "COMPLETE"
     }
@@ -614,7 +723,11 @@ export const Constants = {
     Enums: {
       app_role: ["ADMINISTRATOR", "MODERATOR", "PLAYER"],
       campaign_status: ["DRAFT", "ACTIVE", "COMPLETE"],
-      campaign_update_type: ["MISSION_TRANSITION", "LIVE_STATE_UPDATE"],
+      campaign_update_type: [
+        "MISSION_TRANSITION",
+        "LIVE_STATE_UPDATE",
+        "KILL_TEAM_REGISTRATION",
+      ],
       mission_status: ["DRAFT", "READY", "ACTIVE", "COMPLETE", "ABORTED"],
       objective_status: ["PENDING", "ACTIVE", "COMPLETE"],
     },

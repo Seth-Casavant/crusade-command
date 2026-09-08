@@ -55,6 +55,21 @@ const validCampaign = {
       sort_order: 1,
     },
   ],
+  kill_teams: [
+    {
+      id: '00000000-0000-4000-8000-000000000501',
+      name: 'Sandbox Kill Team Alpha',
+      members: [
+        { display_name: 'Sandbox Alpha One' },
+        { display_name: 'Sandbox Alpha Two' },
+      ],
+    },
+    {
+      id: '00000000-0000-4000-8000-000000000502',
+      name: 'Sandbox Kill Team Beta',
+      members: [{ display_name: 'Sandbox Beta One' }],
+    },
+  ],
 }
 
 const validSignal = {
@@ -86,6 +101,19 @@ describe('public campaign response validation', () => {
         { name: 'Sandbox Terminus Target Alpha' },
         { name: 'Sandbox Terminus Target Beta' },
       ],
+      killTeams: [
+        {
+          name: 'Sandbox Kill Team Alpha',
+          members: [
+            { displayName: 'Sandbox Alpha One' },
+            { displayName: 'Sandbox Alpha Two' },
+          ],
+        },
+        {
+          name: 'Sandbox Kill Team Beta',
+          members: [{ displayName: 'Sandbox Beta One' }],
+        },
+      ],
     })
     expect(result.signal?.updateId).toBe(validSignal.update_id)
   })
@@ -96,6 +124,7 @@ describe('public campaign response validation', () => {
     }
     delete campaignWithoutTerminus.mission_boss
     delete campaignWithoutTerminus.crusade_scoring_targets
+    delete campaignWithoutTerminus.kill_teams
 
     const result = parsePublicCampaignSnapshot({
       active_campaign_count: 1,
@@ -106,6 +135,7 @@ describe('public campaign response validation', () => {
     expect(result.campaign).toMatchObject({
       missionBoss: null,
       crusadeScoringTargets: [],
+      killTeams: [],
     })
   })
 
@@ -116,6 +146,7 @@ describe('public campaign response validation', () => {
         ...validCampaign,
         mission_boss: null,
         crusade_scoring_targets: null,
+        kill_teams: null,
       },
       signal: validSignal,
     })
@@ -123,6 +154,62 @@ describe('public campaign response validation', () => {
     expect(result.campaign).toMatchObject({
       missionBoss: null,
       crusadeScoringTargets: [],
+      killTeams: [],
+    })
+  })
+
+  it('accepts an explicit empty Kill Team list', () => {
+    const result = parsePublicCampaignSnapshot({
+      active_campaign_count: 1,
+      campaign: { ...validCampaign, kill_teams: [] },
+      signal: validSignal,
+    })
+
+    expect(result.campaign?.killTeams).toEqual([])
+  })
+
+  it('rejects malformed optional Kill Team transport data', () => {
+    expect(() =>
+      parsePublicCampaignSnapshot({
+        active_campaign_count: 1,
+        campaign: {
+          ...validCampaign,
+          kill_teams: [
+            {
+              id: '00000000-0000-4000-8000-000000000501',
+              name: 'Malformed Team',
+              members: [{ display_name: 42 }],
+            },
+          ],
+        },
+        signal: validSignal,
+      }),
+    ).toThrow(SynchronizationError)
+  })
+
+  it('does not map Discord identities into the public Kill Team model', () => {
+    const result = parsePublicCampaignSnapshot({
+      active_campaign_count: 1,
+      campaign: {
+        ...validCampaign,
+        kill_teams: [
+          {
+            id: '00000000-0000-4000-8000-000000000501',
+            name: 'Sandbox Kill Team Alpha',
+            members: [
+              {
+                display_name: 'Sandbox Alpha One',
+                discord_user_id: '900000000000000001',
+              },
+            ],
+          },
+        ],
+      },
+      signal: validSignal,
+    })
+
+    expect(result.campaign?.killTeams[0]?.members[0]).toEqual({
+      displayName: 'Sandbox Alpha One',
     })
   })
 

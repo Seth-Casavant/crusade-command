@@ -50,6 +50,16 @@ export type PublicCrusadeScoringTarget = {
   sortOrder: number
 }
 
+export type PublicKillTeamMember = {
+  displayName: string
+}
+
+export type PublicKillTeam = {
+  id: string
+  name: string
+  members: PublicKillTeamMember[]
+}
+
 export type PublicCampaignState = {
   campaignId: string
   campaignName: string
@@ -69,6 +79,7 @@ export type PublicCampaignState = {
   enemies: PublicEnemy[]
   missionBoss: PublicMissionBoss | null
   crusadeScoringTargets: PublicCrusadeScoringTarget[]
+  killTeams: PublicKillTeam[]
 }
 
 export type PublicSyncSignal = {
@@ -248,6 +259,28 @@ function parseCrusadeScoringTarget(
   }
 }
 
+function parseKillTeamMember(value: unknown): PublicKillTeamMember {
+  if (!isRecord(value)) {
+    return invalidPublicState('Kill Team member entries must be objects')
+  }
+
+  return {
+    displayName: readString(value, 'display_name'),
+  }
+}
+
+function parseKillTeam(value: unknown): PublicKillTeam {
+  if (!isRecord(value)) {
+    return invalidPublicState('Kill Team entries must be objects')
+  }
+
+  return {
+    id: readUuid(value, 'id'),
+    name: readString(value, 'name'),
+    members: readArray(value, 'members').map(parseKillTeamMember),
+  }
+}
+
 function parseOptionalMissionBoss(
   record: Record<string, unknown>,
 ): PublicMissionBoss | null {
@@ -271,6 +304,14 @@ function parseOptionalCrusadeScoringTargets(
   return readArray(record, 'crusade_scoring_targets').map(
     parseCrusadeScoringTarget,
   )
+}
+
+function parseOptionalKillTeams(record: Record<string, unknown>): PublicKillTeam[] {
+  if (!Object.hasOwn(record, 'kill_teams') || record.kill_teams === null) {
+    return []
+  }
+
+  return readArray(record, 'kill_teams').map(parseKillTeam)
 }
 
 export function parsePublicCampaignState(value: unknown): PublicCampaignState {
@@ -301,6 +342,7 @@ export function parsePublicCampaignState(value: unknown): PublicCampaignState {
     enemies: readArray(value, 'enemies').map(parseEnemy),
     missionBoss: parseOptionalMissionBoss(value),
     crusadeScoringTargets: parseOptionalCrusadeScoringTargets(value),
+    killTeams: parseOptionalKillTeams(value),
   }
 }
 

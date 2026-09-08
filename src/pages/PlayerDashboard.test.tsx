@@ -69,6 +69,7 @@ const campaign: PublicCampaignState = {
       sortOrder: 1,
     },
   ],
+  killTeams: [],
 }
 
 const signal: PublicSyncSignal = {
@@ -219,6 +220,7 @@ describe('PlayerDashboard', () => {
             ...campaign,
             missionBoss: null,
             crusadeScoringTargets: [],
+            killTeams: [],
           },
         })}
       />,

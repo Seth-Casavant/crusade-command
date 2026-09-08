@@ -44,6 +44,7 @@ function createSnapshot(revision: number): PublicCampaignSnapshot {
     enemies: [],
     missionBoss: null,
     crusadeScoringTargets: [],
+    killTeams: [],
   }
 
   return { campaign, signal: createSignal(revision) }
