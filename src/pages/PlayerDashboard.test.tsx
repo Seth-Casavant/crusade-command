@@ -69,7 +69,24 @@ const campaign: PublicCampaignState = {
       sortOrder: 1,
     },
   ],
-  killTeams: [],
+  killTeams: [
+    {
+      id: '00000000-0000-4000-8000-000000000501',
+      name: 'Sandbox Kill Team Alpha',
+      members: [
+        { displayName: 'Sandbox Alpha One' },
+        { displayName: 'Sandbox Alpha Two' },
+      ],
+    },
+    {
+      id: '00000000-0000-4000-8000-000000000502',
+      name: 'Sandbox Kill Team Beta',
+      members: [
+        { displayName: 'Sandbox Beta One' },
+        { displayName: 'Sandbox Beta Two' },
+      ],
+    },
+  ],
 }
 
 const signal: PublicSyncSignal = {
@@ -118,6 +135,13 @@ describe('PlayerDashboard', () => {
     )
     expect(screen.getAllByText('Live').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Active').length).toBeGreaterThan(0)
+    expect(
+      screen.getByRole('region', { name: 'Friendly Forces' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Sandbox Kill Team Alpha')).toBeInTheDocument()
+    expect(screen.getByText('Sandbox Kill Team Beta')).toBeInTheDocument()
+    expect(screen.getByText('Sandbox Alpha One')).toBeInTheDocument()
+    expect(screen.getByText('Sandbox Beta Two')).toBeInTheDocument()
     expect(screen.queryByText('Phase 4 Foundation')).not.toBeInTheDocument()
     expect(screen.queryByText('Revision')).not.toBeInTheDocument()
     expect(screen.queryByText(campaign.campaignId)).not.toBeInTheDocument()
@@ -210,6 +234,31 @@ describe('PlayerDashboard', () => {
     expect(
       within(threatRegion).queryByText('Sandbox Vanguard'),
     ).not.toBeInTheDocument()
+    expect(screen.queryByText('Sandbox Vanguard')).not.toBeInTheDocument()
+  })
+
+  it('keeps friendly Kill Teams semantically separate from Terminus threats', () => {
+    render(<PlayerDashboard synchronization={createSynchronization()} />)
+
+    const friendlyRegion = screen.getByRole('region', {
+      name: 'Friendly Forces',
+    })
+    const threatRegion = screen.getByRole('region', {
+      name: 'Threat Assessment',
+    })
+
+    expect(
+      within(friendlyRegion).getByText('Sandbox Kill Team Alpha'),
+    ).toBeInTheDocument()
+    expect(
+      within(friendlyRegion).queryByText('Sandbox Mission Boss'),
+    ).not.toBeInTheDocument()
+    expect(
+      within(threatRegion).getByText('Sandbox Mission Boss'),
+    ).toBeInTheDocument()
+    expect(
+      within(threatRegion).queryByText('Sandbox Kill Team Alpha'),
+    ).not.toBeInTheDocument()
   })
 
   it('renders a safe empty Terminus threat state without inventing configuration', () => {
@@ -231,6 +280,9 @@ describe('PlayerDashboard', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByText('No Crusade scoring targets are currently configured.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('No Kill Teams are currently assigned to this mission.'),
     ).toBeInTheDocument()
   })
 
@@ -291,6 +343,9 @@ describe('PlayerDashboard', () => {
     expect(
       screen.getByRole('region', { name: 'Threat Assessment' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: 'Friendly Forces' }),
+    ).toBeInTheDocument()
     expect(screen.getAllByText('Live').length).toBeGreaterThan(0)
 
     fireEvent.click(screen.getByRole('button', { name: 'Resync' }))
@@ -328,6 +383,7 @@ describe('PlayerDashboard', () => {
     expect(screen.getByText('67%')).toBeInTheDocument()
     expect(screen.getByText('Secure the relay nexus')).toBeInTheDocument()
     expect(screen.getByText('Sandbox Mission Boss')).toBeInTheDocument()
+    expect(screen.getByText('Sandbox Kill Team Alpha')).toBeInTheDocument()
     expect(screen.getAllByText('Live').length).toBeGreaterThan(0)
 
     fireEvent.click(screen.getByRole('button', { name: 'Resync' }))

@@ -9,6 +9,10 @@ export {
   type ConnectionIndicatorProps,
 } from './ConnectionIndicator'
 export {
+  FriendlyForcesPanel,
+  type FriendlyForcesPanelProps,
+} from './FriendlyForcesPanel'
+export {
   CrusadeHeader,
   type CrusadeHeaderCampaign,
   type CrusadeHeaderProps,

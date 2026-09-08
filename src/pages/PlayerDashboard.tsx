@@ -3,6 +3,7 @@ import {
   CampaignProgress,
   ConnectionIndicator,
   CrusadeHeader,
+  FriendlyForcesPanel,
   MissionSummary,
   NoActiveCrusade,
   ObjectivePanel,
@@ -159,6 +160,7 @@ export function PlayerDashboard({
                 crusadeScoringTargets={campaign.crusadeScoringTargets}
                 missionBoss={campaign.missionBoss}
               />
+              <FriendlyForcesPanel killTeams={campaign.killTeams} />
               <SynchronizationStatus
                 authoritativeUpdatedAt={campaign.authoritativeUpdatedAt}
                 connectionStatus={connectionStatus}
