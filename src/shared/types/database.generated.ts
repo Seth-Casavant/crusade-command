@@ -179,6 +179,7 @@ export type Database = {
       kill_teams: {
         Row: {
           created_at: string
+          current_checkpoint_id: string | null
           id: string
           mission_id: string
           name: string
@@ -186,6 +187,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          current_checkpoint_id?: string | null
           id?: string
           mission_id: string
           name: string
@@ -193,12 +195,20 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          current_checkpoint_id?: string | null
           id?: string
           mission_id?: string
           name?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "kill_teams_current_checkpoint_mission_fk"
+            columns: ["mission_id", "current_checkpoint_id"]
+            isOneToOne: false
+            referencedRelation: "mission_battlefield_checkpoints"
+            referencedColumns: ["mission_id", "id"]
+          },
           {
             foreignKeyName: "kill_teams_mission_id_fkey"
             columns: ["mission_id"]
@@ -250,6 +260,50 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "missions"
             referencedColumns: ["campaign_id", "id"]
+          },
+        ]
+      }
+      mission_battlefield_checkpoints: {
+        Row: {
+          checkpoint_key: string
+          created_at: string
+          id: string
+          mission_id: string
+          name: string
+          normalized_x: number
+          normalized_y: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          checkpoint_key: string
+          created_at?: string
+          id?: string
+          mission_id: string
+          name: string
+          normalized_x: number
+          normalized_y: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          checkpoint_key?: string
+          created_at?: string
+          id?: string
+          mission_id?: string
+          name?: string
+          normalized_x?: number
+          normalized_y?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_battlefield_checkpoints_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -479,6 +533,18 @@ export type Database = {
         }
         Returns: undefined
       }
+      assign_kill_team_checkpoint: {
+        Args: {
+          p_actor_id?: string
+          p_checkpoint_id: string
+          p_expected_revision: number
+          p_kill_team_id: string
+        }
+        Returns: {
+          new_revision: number
+          update_id: string
+        }[]
+      }
       assign_moderator: { Args: { p_user_id: string }; Returns: undefined }
       create_kill_team: {
         Args: {
@@ -490,6 +556,23 @@ export type Database = {
         }
         Returns: {
           kill_team_id: string
+          new_revision: number
+          update_id: string
+        }[]
+      }
+      create_mission_battlefield_checkpoint: {
+        Args: {
+          p_actor_id?: string
+          p_checkpoint_key: string
+          p_expected_revision: number
+          p_mission_id: string
+          p_name: string
+          p_normalized_x: number
+          p_normalized_y: number
+          p_sort_order: number
+        }
+        Returns: {
+          checkpoint_id: string
           new_revision: number
           update_id: string
         }[]
@@ -509,9 +592,21 @@ export type Database = {
           update_id: string
         }[]
       }
+      delete_mission_battlefield_checkpoint: {
+        Args: {
+          p_actor_id?: string
+          p_checkpoint_id: string
+          p_expected_revision: number
+        }
+        Returns: {
+          new_revision: number
+          update_id: string
+        }[]
+      }
       get_public_active_campaign: {
         Args: never
         Returns: {
+          battlefield_checkpoints: Json
           battlefield_description: string
           battlefield_id: string
           battlefield_name: string
@@ -584,6 +679,21 @@ export type Database = {
           update_id: string
         }[]
       }
+      update_mission_battlefield_checkpoint: {
+        Args: {
+          p_actor_id?: string
+          p_checkpoint_id: string
+          p_expected_revision: number
+          p_name: string
+          p_normalized_x: number
+          p_normalized_y: number
+          p_sort_order: number
+        }
+        Returns: {
+          new_revision: number
+          update_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "ADMINISTRATOR" | "MODERATOR" | "PLAYER"
@@ -592,6 +702,7 @@ export type Database = {
         | "MISSION_TRANSITION"
         | "LIVE_STATE_UPDATE"
         | "KILL_TEAM_REGISTRATION"
+        | "KILL_TEAM_POSITION"
       mission_status: "DRAFT" | "READY" | "ACTIVE" | "COMPLETE" | "ABORTED"
       objective_status: "PENDING" | "ACTIVE" | "COMPLETE"
     }
@@ -727,6 +838,7 @@ export const Constants = {
         "MISSION_TRANSITION",
         "LIVE_STATE_UPDATE",
         "KILL_TEAM_REGISTRATION",
+        "KILL_TEAM_POSITION",
       ],
       mission_status: ["DRAFT", "READY", "ACTIVE", "COMPLETE", "ABORTED"],
       objective_status: ["PENDING", "ACTIVE", "COMPLETE"],

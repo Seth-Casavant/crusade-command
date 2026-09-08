@@ -265,20 +265,61 @@ insert into public.mission_crusade_scoring_targets (
   )
 on conflict (mission_id, target_key) do nothing;
 
+insert into public.mission_battlefield_checkpoints (
+  id,
+  mission_id,
+  checkpoint_key,
+  name,
+  normalized_x,
+  normalized_y,
+  sort_order
+) values
+  (
+    '00000000-0000-4000-8000-000000000711',
+    '00000000-0000-4000-8000-000000000201',
+    'sandbox-deployment',
+    'Sandbox Deployment Point',
+    0.18,
+    0.24,
+    0
+  ),
+  (
+    '00000000-0000-4000-8000-000000000712',
+    '00000000-0000-4000-8000-000000000201',
+    'sandbox-relay',
+    'Sandbox Relay Node',
+    0.48,
+    0.46,
+    1
+  ),
+  (
+    '00000000-0000-4000-8000-000000000713',
+    '00000000-0000-4000-8000-000000000201',
+    'sandbox-extraction',
+    'Sandbox Extraction Zone',
+    0.76,
+    0.72,
+    2
+  )
+on conflict (id) do nothing;
+
 insert into public.kill_teams (
   id,
   mission_id,
-  name
+  name,
+  current_checkpoint_id
 ) values
   (
     '00000000-0000-4000-8000-000000000501',
     '00000000-0000-4000-8000-000000000201',
-    'Sandbox Kill Team Alpha'
+    'Sandbox Kill Team Alpha',
+    '00000000-0000-4000-8000-000000000712'
   ),
   (
     '00000000-0000-4000-8000-000000000502',
     '00000000-0000-4000-8000-000000000201',
-    'Sandbox Kill Team Beta'
+    'Sandbox Kill Team Beta',
+    '00000000-0000-4000-8000-000000000712'
   )
 on conflict (id) do nothing;
 

@@ -1,4 +1,7 @@
-import { TacticalBattlefield } from '../components/battlefield'
+import {
+  KillTeamCheckpointMarkers,
+  TacticalBattlefield,
+} from '../components/battlefield'
 import {
   CampaignProgress,
   ConnectionIndicator,
@@ -147,7 +150,12 @@ export function PlayerDashboard({
               <TacticalBattlefield
                 battlefieldId={campaign.battlefieldId}
                 battlefieldName={campaign.battlefieldName}
-              />
+              >
+                <KillTeamCheckpointMarkers
+                  checkpoints={campaign.battlefieldCheckpoints}
+                  killTeams={campaign.killTeams}
+                />
+              </TacticalBattlefield>
               <div className="player-dashboard__primary-rail">
                 <MissionSummary campaign={campaign} />
                 <CampaignProgress value={campaign.campaignProgress} />

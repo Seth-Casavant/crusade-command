@@ -58,6 +58,16 @@ export type PublicKillTeam = {
   id: string
   name: string
   members: PublicKillTeamMember[]
+  currentCheckpointId: string | null
+}
+
+export type PublicBattlefieldCheckpoint = {
+  id: string
+  key: string
+  name: string
+  x: number
+  y: number
+  sortOrder: number
 }
 
 export type PublicCampaignState = {
@@ -79,6 +89,7 @@ export type PublicCampaignState = {
   enemies: PublicEnemy[]
   missionBoss: PublicMissionBoss | null
   crusadeScoringTargets: PublicCrusadeScoringTarget[]
+  battlefieldCheckpoints: PublicBattlefieldCheckpoint[]
   killTeams: PublicKillTeam[]
 }
 
@@ -175,6 +186,26 @@ function readInteger(
   return value
 }
 
+function readNumberInRange(
+  record: Record<string, unknown>,
+  key: string,
+  minimum: number,
+  maximum: number,
+): number {
+  const value = record[key]
+
+  if (
+    typeof value !== 'number' ||
+    !Number.isFinite(value) ||
+    value < minimum ||
+    value > maximum
+  ) {
+    return invalidPublicState(`${key} is outside its valid range`)
+  }
+
+  return value
+}
+
 function readNullableString(
   record: Record<string, unknown>,
   key: string,
@@ -183,6 +214,23 @@ function readNullableString(
 
   if (value !== null && typeof value !== 'string') {
     return invalidPublicState(`${key} must be text or null`)
+  }
+
+  return value
+}
+
+function readNullableUuid(
+  record: Record<string, unknown>,
+  key: string,
+): string | null {
+  const value = record[key]
+
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  if (typeof value !== 'string' || !uuidPattern.test(value)) {
+    return invalidPublicState(`${key} must be a UUID or null`)
   }
 
   return value
@@ -278,6 +326,24 @@ function parseKillTeam(value: unknown): PublicKillTeam {
     id: readUuid(value, 'id'),
     name: readString(value, 'name'),
     members: readArray(value, 'members').map(parseKillTeamMember),
+    currentCheckpointId: readNullableUuid(value, 'current_checkpoint_id'),
+  }
+}
+
+function parseBattlefieldCheckpoint(
+  value: unknown,
+): PublicBattlefieldCheckpoint {
+  if (!isRecord(value)) {
+    return invalidPublicState('battlefield checkpoint entries must be objects')
+  }
+
+  return {
+    id: readUuid(value, 'id'),
+    key: readString(value, 'key'),
+    name: readString(value, 'name'),
+    x: readNumberInRange(value, 'x', 0, 1),
+    y: readNumberInRange(value, 'y', 0, 1),
+    sortOrder: readInteger(value, 'sort_order', 0),
   }
 }
 
@@ -314,6 +380,21 @@ function parseOptionalKillTeams(record: Record<string, unknown>): PublicKillTeam
   return readArray(record, 'kill_teams').map(parseKillTeam)
 }
 
+function parseOptionalBattlefieldCheckpoints(
+  record: Record<string, unknown>,
+): PublicBattlefieldCheckpoint[] {
+  if (
+    !Object.hasOwn(record, 'battlefield_checkpoints') ||
+    record.battlefield_checkpoints === null
+  ) {
+    return []
+  }
+
+  return readArray(record, 'battlefield_checkpoints').map(
+    parseBattlefieldCheckpoint,
+  )
+}
+
 export function parsePublicCampaignState(value: unknown): PublicCampaignState {
   if (!isRecord(value)) {
     return invalidPublicState('campaign must be an object')
@@ -342,6 +423,7 @@ export function parsePublicCampaignState(value: unknown): PublicCampaignState {
     enemies: readArray(value, 'enemies').map(parseEnemy),
     missionBoss: parseOptionalMissionBoss(value),
     crusadeScoringTargets: parseOptionalCrusadeScoringTargets(value),
+    battlefieldCheckpoints: parseOptionalBattlefieldCheckpoints(value),
     killTeams: parseOptionalKillTeams(value),
   }
 }

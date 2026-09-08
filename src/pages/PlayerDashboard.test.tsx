@@ -69,6 +69,16 @@ const campaign: PublicCampaignState = {
       sortOrder: 1,
     },
   ],
+  battlefieldCheckpoints: [
+    {
+      id: '00000000-0000-4000-8000-000000000712',
+      key: 'sandbox-relay',
+      name: 'Sandbox Relay Node',
+      x: 0.48,
+      y: 0.46,
+      sortOrder: 1,
+    },
+  ],
   killTeams: [
     {
       id: '00000000-0000-4000-8000-000000000501',
@@ -77,6 +87,7 @@ const campaign: PublicCampaignState = {
         { displayName: 'Sandbox Alpha One' },
         { displayName: 'Sandbox Alpha Two' },
       ],
+      currentCheckpointId: '00000000-0000-4000-8000-000000000712',
     },
     {
       id: '00000000-0000-4000-8000-000000000502',
@@ -85,6 +96,7 @@ const campaign: PublicCampaignState = {
         { displayName: 'Sandbox Beta One' },
         { displayName: 'Sandbox Beta Two' },
       ],
+      currentCheckpointId: '00000000-0000-4000-8000-000000000712',
     },
   ],
 }

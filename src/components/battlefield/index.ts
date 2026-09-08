@@ -1,6 +1,11 @@
 import './battlefield.css'
 
 export {
+  KillTeamCheckpointMarkers,
+  getKillTeamCheckpointMarkerOffset,
+  type KillTeamCheckpointMarkersProps,
+} from './KillTeamCheckpointMarkers'
+export {
   TacticalBattlefield,
   type TacticalBattlefieldProps,
 } from './TacticalBattlefield'

@@ -55,6 +55,16 @@ const validCampaign = {
       sort_order: 1,
     },
   ],
+  battlefield_checkpoints: [
+    {
+      id: '00000000-0000-4000-8000-000000000712',
+      key: 'sandbox-relay',
+      name: 'Sandbox Relay Node',
+      x: 0.48,
+      y: 0.46,
+      sort_order: 1,
+    },
+  ],
   kill_teams: [
     {
       id: '00000000-0000-4000-8000-000000000501',
@@ -63,11 +73,13 @@ const validCampaign = {
         { display_name: 'Sandbox Alpha One' },
         { display_name: 'Sandbox Alpha Two' },
       ],
+      current_checkpoint_id: '00000000-0000-4000-8000-000000000712',
     },
     {
       id: '00000000-0000-4000-8000-000000000502',
       name: 'Sandbox Kill Team Beta',
       members: [{ display_name: 'Sandbox Beta One' }],
+      current_checkpoint_id: null,
     },
   ],
 }
@@ -101,6 +113,9 @@ describe('public campaign response validation', () => {
         { name: 'Sandbox Terminus Target Alpha' },
         { name: 'Sandbox Terminus Target Beta' },
       ],
+      battlefieldCheckpoints: [
+        { key: 'sandbox-relay', x: 0.48, y: 0.46 },
+      ],
       killTeams: [
         {
           name: 'Sandbox Kill Team Alpha',
@@ -108,10 +123,12 @@ describe('public campaign response validation', () => {
             { displayName: 'Sandbox Alpha One' },
             { displayName: 'Sandbox Alpha Two' },
           ],
+          currentCheckpointId: '00000000-0000-4000-8000-000000000712',
         },
         {
           name: 'Sandbox Kill Team Beta',
           members: [{ displayName: 'Sandbox Beta One' }],
+          currentCheckpointId: null,
         },
       ],
     })
@@ -124,6 +141,7 @@ describe('public campaign response validation', () => {
     }
     delete campaignWithoutTerminus.mission_boss
     delete campaignWithoutTerminus.crusade_scoring_targets
+    delete campaignWithoutTerminus.battlefield_checkpoints
     delete campaignWithoutTerminus.kill_teams
 
     const result = parsePublicCampaignSnapshot({
@@ -135,6 +153,7 @@ describe('public campaign response validation', () => {
     expect(result.campaign).toMatchObject({
       missionBoss: null,
       crusadeScoringTargets: [],
+      battlefieldCheckpoints: [],
       killTeams: [],
     })
   })
@@ -146,6 +165,7 @@ describe('public campaign response validation', () => {
         ...validCampaign,
         mission_boss: null,
         crusade_scoring_targets: null,
+        battlefield_checkpoints: null,
         kill_teams: null,
       },
       signal: validSignal,
@@ -154,6 +174,7 @@ describe('public campaign response validation', () => {
     expect(result.campaign).toMatchObject({
       missionBoss: null,
       crusadeScoringTargets: [],
+      battlefieldCheckpoints: [],
       killTeams: [],
     })
   })

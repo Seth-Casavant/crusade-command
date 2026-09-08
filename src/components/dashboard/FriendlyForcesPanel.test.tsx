@@ -11,6 +11,7 @@ const killTeams: PublicKillTeam[] = [
       { displayName: 'Sandbox Alpha One' },
       { displayName: 'Sandbox Alpha Two' },
     ],
+    currentCheckpointId: '00000000-0000-4000-8000-000000000712',
   },
   {
     id: '00000000-0000-4000-8000-000000000502',
@@ -19,6 +20,7 @@ const killTeams: PublicKillTeam[] = [
       { displayName: 'Sandbox Beta One' },
       { displayName: 'Sandbox Beta Two' },
     ],
+    currentCheckpointId: '00000000-0000-4000-8000-000000000712',
   },
 ]
 
