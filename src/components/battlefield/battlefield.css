@@ -222,6 +222,10 @@
   background: var(--accent-primary-hover);
   box-shadow: 0 0 0 2px rgb(20 24 22 / 85%), 0 0 1rem rgb(168 138 71 / 65%);
   cursor: pointer;
+  font-family: var(--font-technical);
+  font-size: var(--text-sm);
+  font-weight: 900;
+  letter-spacing: 0.04em;
   transform: translate(var(--kill-team-marker-offset-x, 0px), var(--kill-team-marker-offset-y, 0px));
 }
 
@@ -232,39 +236,45 @@
   outline-offset: 2px;
 }
 
-.kill-team-checkpoint-marker__glyph { font-size: 1.2rem; line-height: 1; }
+.kill-team-battlefield-presentation {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-6);
+}
 
-.kill-team-checkpoint-detail {
-  position: absolute;
-  right: var(--space-3);
-  bottom: var(--space-3);
-  z-index: 4;
-  width: min(20rem, calc(100% - (var(--space-3) * 2)));
-  max-height: calc(100% - (var(--space-3) * 2));
-  overflow: auto;
-  padding: var(--space-4);
+.kill-team-battlefield-presentation > * {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.kill-team-intel {
+  min-width: 0;
+  padding: var(--space-5);
   border: var(--border-thin) solid var(--accent-primary-hover);
+  border-top: var(--border-heavy) solid var(--accent-primary-hover);
   color: var(--text-secondary);
-  background: rgb(20 24 22 / 96%);
-  box-shadow: var(--shadow-panel);
-  pointer-events: auto;
+  background: var(--surface-panel);
+  box-shadow: var(--shadow-panel), var(--shadow-inset);
 }
 
-.kill-team-checkpoint-detail h3,
-.kill-team-checkpoint-detail p,
-.kill-team-checkpoint-detail ul { margin: 0; }
-
-.kill-team-checkpoint-detail h3 {
-  padding-right: var(--space-6);
-  color: var(--text-primary);
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  text-transform: uppercase;
+.kill-team-intel h2,
+.kill-team-intel h3,
+.kill-team-intel p,
+.kill-team-intel dl,
+.kill-team-intel dd,
+.kill-team-intel ul {
+  margin: 0;
 }
 
-.kill-team-checkpoint-detail__eyebrow,
-.kill-team-checkpoint-detail p span {
-  display: block;
+.kill-team-intel__header {
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-thin) solid var(--border-structural);
+}
+
+.kill-team-intel__header p,
+.kill-team-intel__content section > p,
+.kill-team-intel__facts dt {
   color: var(--accent-primary-hover);
   font-family: var(--font-technical);
   font-size: var(--text-xs);
@@ -273,21 +283,62 @@
   text-transform: uppercase;
 }
 
-.kill-team-checkpoint-detail p { margin-top: var(--space-3); }
-.kill-team-checkpoint-detail p span { margin-bottom: var(--space-1); color: var(--text-muted); }
-.kill-team-checkpoint-detail ul { display: grid; gap: var(--space-1); margin-top: var(--space-3); padding-left: var(--space-5); }
+.kill-team-intel h2,
+.kill-team-intel h3 {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
 
-.kill-team-checkpoint-detail__dismiss {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 0;
-  color: var(--text-secondary);
-  background: transparent;
-  font-size: 1.5rem;
-  cursor: pointer;
+.kill-team-intel h2 {
+  margin-top: var(--space-1);
+  font-size: var(--text-xl);
+}
+
+.kill-team-intel h3 {
+  margin-top: var(--space-1);
+  font-size: var(--text-lg);
+  overflow-wrap: anywhere;
+}
+
+.kill-team-intel__empty {
+  padding-block: var(--space-6);
+  color: var(--text-muted);
+  line-height: var(--line-copy);
+}
+
+.kill-team-intel__content {
+  display: grid;
+  gap: var(--space-5);
+  padding-top: var(--space-5);
+}
+
+.kill-team-intel__facts {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.kill-team-intel__facts > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.kill-team-intel__facts dd {
+  overflow-wrap: anywhere;
+}
+
+.kill-team-intel__content ul {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-left: var(--space-5);
+}
+
+@media (min-width: 90rem) {
+  .kill-team-battlefield-presentation {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.38fr);
+    align-items: start;
+  }
 }
 
 .tactical-battlefield__state {

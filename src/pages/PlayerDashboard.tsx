@@ -1,6 +1,5 @@
 import {
-  KillTeamCheckpointMarkers,
-  TacticalBattlefield,
+  KillTeamBattlefieldPresentation,
 } from '../components/battlefield'
 import {
   CampaignProgress,
@@ -147,15 +146,13 @@ export function PlayerDashboard({
             />
 
             <div className="player-dashboard__primary">
-              <TacticalBattlefield
+              <KillTeamBattlefieldPresentation
                 battlefieldId={campaign.battlefieldId}
                 battlefieldName={campaign.battlefieldName}
-              >
-                <KillTeamCheckpointMarkers
-                  checkpoints={campaign.battlefieldCheckpoints}
-                  killTeams={campaign.killTeams}
-                />
-              </TacticalBattlefield>
+                checkpoints={campaign.battlefieldCheckpoints}
+                key={campaign.missionId}
+                killTeams={campaign.killTeams}
+              />
               <div className="player-dashboard__primary-rail">
                 <MissionSummary campaign={campaign} />
                 <CampaignProgress value={campaign.campaignProgress} />

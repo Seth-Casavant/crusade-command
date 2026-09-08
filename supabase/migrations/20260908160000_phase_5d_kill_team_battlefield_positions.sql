@@ -167,7 +167,7 @@ begin
   if v_mission.status not in ('DRAFT', 'READY') then
     raise exception using errcode = 'P0001', message = 'MISSION_CHECKPOINT_CONFIGURATION_LOCKED';
   end if;
-  select * into v_state from public.live_campaign_states where campaign_id = v_mission.campaign_id for update;
+  select lcs.* into v_state from public.live_campaign_states as lcs where lcs.campaign_id = v_mission.campaign_id for update;
   if not found then raise exception using errcode = 'P0001', message = 'LIVE_STATE_NOT_FOUND'; end if;
   if v_state.revision <> p_expected_revision then raise exception using errcode = 'P0001', message = 'REVISION_CONFLICT'; end if;
   return query select v_mission.campaign_id, v_state.revision;
@@ -191,7 +191,7 @@ begin
   if v_mission.status not in ('DRAFT', 'READY', 'ACTIVE') then
     raise exception using errcode = 'P0001', message = 'KILL_TEAM_POSITION_LOCKED';
   end if;
-  select * into v_state from public.live_campaign_states where campaign_id = v_mission.campaign_id for update;
+  select lcs.* into v_state from public.live_campaign_states as lcs where lcs.campaign_id = v_mission.campaign_id for update;
   if not found then raise exception using errcode = 'P0001', message = 'LIVE_STATE_NOT_FOUND'; end if;
   if v_state.revision <> p_expected_revision then raise exception using errcode = 'P0001', message = 'REVISION_CONFLICT'; end if;
   return query select v_mission.campaign_id, v_state.revision;
@@ -242,15 +242,15 @@ begin
   if length(btrim(coalesce(p_checkpoint_key, ''))) = 0 or length(btrim(coalesce(p_name, ''))) = 0 then
     raise exception using errcode = 'P0001', message = 'MISSION_CHECKPOINT_NAME_AND_KEY_REQUIRED';
   end if;
-  select campaign_id, previous_revision into v_campaign_id, v_previous_revision
-  from private.lock_mission_checkpoint_configuration(p_mission_id, p_expected_revision);
+  select lock.campaign_id, lock.previous_revision into v_campaign_id, v_previous_revision
+  from private.lock_mission_checkpoint_configuration(p_mission_id, p_expected_revision) as lock;
   insert into public.mission_battlefield_checkpoints (mission_id, checkpoint_key, name, normalized_x, normalized_y, sort_order)
   values (p_mission_id, p_checkpoint_key, p_name, p_normalized_x, p_normalized_y, p_sort_order)
   returning id into v_checkpoint_id;
-  select update_id, new_revision into v_update_id, v_new_revision from private.record_kill_team_position_update(
+  select record.update_id, record.new_revision into v_update_id, v_new_revision from private.record_kill_team_position_update(
     v_campaign_id, p_mission_id, v_previous_revision, p_actor_id, '{}'::jsonb,
     jsonb_build_object('action', 'CHECKPOINT_CREATED', 'checkpoint_id', v_checkpoint_id, 'checkpoint_key', p_checkpoint_key, 'name', p_name, 'x', p_normalized_x, 'y', p_normalized_y, 'sort_order', p_sort_order)
-  );
+  ) as record;
   return query select v_checkpoint_id, v_update_id, v_new_revision;
 end;
 $$;
@@ -268,16 +268,16 @@ begin
   if length(btrim(coalesce(p_name, ''))) = 0 then raise exception using errcode = 'P0001', message = 'MISSION_CHECKPOINT_NAME_REQUIRED'; end if;
   select * into v_checkpoint from public.mission_battlefield_checkpoints where id = p_checkpoint_id for update;
   if not found then raise exception using errcode = 'P0001', message = 'MISSION_CHECKPOINT_NOT_FOUND'; end if;
-  select campaign_id, previous_revision into v_campaign_id, v_previous_revision
-  from private.lock_mission_checkpoint_configuration(v_checkpoint.mission_id, p_expected_revision);
+  select lock.campaign_id, lock.previous_revision into v_campaign_id, v_previous_revision
+  from private.lock_mission_checkpoint_configuration(v_checkpoint.mission_id, p_expected_revision) as lock;
   update public.mission_battlefield_checkpoints
   set name = p_name, normalized_x = p_normalized_x, normalized_y = p_normalized_y, sort_order = p_sort_order
   where id = v_checkpoint.id;
-  select update_id, new_revision into v_update_id, v_new_revision from private.record_kill_team_position_update(
+  select record.update_id, record.new_revision into v_update_id, v_new_revision from private.record_kill_team_position_update(
     v_campaign_id, v_checkpoint.mission_id, v_previous_revision, p_actor_id,
     jsonb_build_object('action', 'CHECKPOINT_UPDATED', 'checkpoint_id', v_checkpoint.id, 'checkpoint_key', v_checkpoint.checkpoint_key, 'name', v_checkpoint.name, 'x', v_checkpoint.normalized_x, 'y', v_checkpoint.normalized_y, 'sort_order', v_checkpoint.sort_order),
     jsonb_build_object('action', 'CHECKPOINT_UPDATED', 'checkpoint_id', v_checkpoint.id, 'checkpoint_key', v_checkpoint.checkpoint_key, 'name', p_name, 'x', p_normalized_x, 'y', p_normalized_y, 'sort_order', p_sort_order)
-  );
+  ) as record;
   return query select v_update_id, v_new_revision;
 end;
 $$;
@@ -293,14 +293,14 @@ declare v_checkpoint public.mission_battlefield_checkpoints%rowtype; v_campaign_
 begin
   select * into v_checkpoint from public.mission_battlefield_checkpoints where id = p_checkpoint_id for update;
   if not found then raise exception using errcode = 'P0001', message = 'MISSION_CHECKPOINT_NOT_FOUND'; end if;
-  select campaign_id, previous_revision into v_campaign_id, v_previous_revision
-  from private.lock_mission_checkpoint_configuration(v_checkpoint.mission_id, p_expected_revision);
+  select lock.campaign_id, lock.previous_revision into v_campaign_id, v_previous_revision
+  from private.lock_mission_checkpoint_configuration(v_checkpoint.mission_id, p_expected_revision) as lock;
   delete from public.mission_battlefield_checkpoints where id = v_checkpoint.id;
-  select update_id, new_revision into v_update_id, v_new_revision from private.record_kill_team_position_update(
+  select record.update_id, record.new_revision into v_update_id, v_new_revision from private.record_kill_team_position_update(
     v_campaign_id, v_checkpoint.mission_id, v_previous_revision, p_actor_id,
     jsonb_build_object('action', 'CHECKPOINT_DELETED', 'checkpoint_id', v_checkpoint.id, 'checkpoint_key', v_checkpoint.checkpoint_key, 'name', v_checkpoint.name, 'x', v_checkpoint.normalized_x, 'y', v_checkpoint.normalized_y, 'sort_order', v_checkpoint.sort_order),
     '{}'::jsonb
-  );
+  ) as record;
   return query select v_update_id, v_new_revision;
 end;
 $$;
@@ -312,14 +312,14 @@ returns table (update_id uuid, new_revision bigint)
 language plpgsql security definer
 set search_path = pg_catalog, public, extensions, private
 as $$
-declare v_team public.kill_teams%rowtype; v_checkpoint public.mission_battlefield_checkpoints%rowtype; v_campaign_id uuid; v_previous_revision bigint; v_update_id uuid; v_new_revision bigint;
+declare v_team public.kill_teams%rowtype; v_campaign_id uuid; v_previous_revision bigint; v_update_id uuid; v_new_revision bigint;
 begin
   select * into v_team from public.kill_teams where id = p_kill_team_id for update;
   if not found then raise exception using errcode = 'P0001', message = 'KILL_TEAM_NOT_FOUND'; end if;
-  select campaign_id, previous_revision into v_campaign_id, v_previous_revision
-  from private.lock_kill_team_position(v_team.mission_id, p_expected_revision);
+  select lock.campaign_id, lock.previous_revision into v_campaign_id, v_previous_revision
+  from private.lock_kill_team_position(v_team.mission_id, p_expected_revision) as lock;
   if p_checkpoint_id is not null then
-    select * into v_checkpoint from public.mission_battlefield_checkpoints
+    perform 1 from public.mission_battlefield_checkpoints
     where id = p_checkpoint_id and mission_id = v_team.mission_id for update;
     if not found then raise exception using errcode = 'P0001', message = 'KILL_TEAM_CHECKPOINT_NOT_FOUND_FOR_MISSION'; end if;
   end if;
@@ -328,11 +328,11 @@ begin
   end if;
   perform set_config('crusade.kill_team_position_write', 'on', true);
   update public.kill_teams set current_checkpoint_id = p_checkpoint_id where id = v_team.id;
-  select update_id, new_revision into v_update_id, v_new_revision from private.record_kill_team_position_update(
+  select record.update_id, record.new_revision into v_update_id, v_new_revision from private.record_kill_team_position_update(
     v_campaign_id, v_team.mission_id, v_previous_revision, p_actor_id,
     jsonb_build_object('action', 'POSITION_UPDATED', 'kill_team_id', v_team.id, 'current_checkpoint_id', v_team.current_checkpoint_id),
     jsonb_build_object('action', 'POSITION_UPDATED', 'kill_team_id', v_team.id, 'current_checkpoint_id', p_checkpoint_id)
-  );
+  ) as record;
   return query select v_update_id, v_new_revision;
 end;
 $$;

@@ -43,7 +43,7 @@
 .player-dashboard__shell {
   position: relative;
   z-index: 1;
-  width: min(100%, 78rem);
+  width: min(100%, 96rem);
   min-width: 0;
   margin-inline: auto;
 }

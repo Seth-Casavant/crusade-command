@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
 
 import type {
   PublicBattlefieldCheckpoint,
@@ -8,6 +9,7 @@ import {
   KillTeamCheckpointMarkers,
   TacticalBattlefield,
   TacticalOverlay,
+  getKillTeamAbbreviation,
   getKillTeamCheckpointMarkerOffset,
 } from './index'
 
@@ -36,14 +38,30 @@ const killTeams: PublicKillTeam[] = [
 ]
 
 function renderMarkers(teams = killTeams) {
+  const onSelectTeam = vi.fn()
+
   return render(
     <TacticalOverlay>
-      <KillTeamCheckpointMarkers checkpoints={[checkpoint]} killTeams={teams} />
+      <KillTeamCheckpointMarkers
+        checkpoints={[checkpoint]}
+        killTeams={teams}
+        onSelectTeam={onSelectTeam}
+        selectedTeamId={null}
+      />
     </TacticalOverlay>,
   )
 }
 
 describe('KillTeamCheckpointMarkers', () => {
+  it.each([
+    ['Friendly Fire', 'FF'],
+    ['Alpha Team', 'AT'],
+    ['Killteam Terra', 'KT'],
+    ['Vanguard', 'VA'],
+  ])('derives %s as the two-character abbreviation %s', (name, expected) => {
+    expect(getKillTeamAbbreviation(name)).toBe(expected)
+  })
+
   it('renders checkpoint-assigned teams at the authoritative normalized location', () => {
     renderMarkers()
 
@@ -55,6 +73,8 @@ describe('KillTeamCheckpointMarkers', () => {
     expect(anchor).toHaveAttribute('data-tactical-x', '0.48')
     expect(anchor).toHaveAttribute('data-tactical-y', '0.46')
     expect(marker).not.toHaveAttribute('draggable')
+    expect(marker).toHaveTextContent('SK')
+    expect(marker).not.toHaveTextContent('Sandbox Kill Team Alpha')
   })
 
   it('omits unassigned teams and ignores unknown checkpoint references', () => {
@@ -64,18 +84,6 @@ describe('KillTeamCheckpointMarkers', () => {
     ])
 
     expect(screen.queryByRole('button', { name: /Sandbox Kill Team/ })).not.toBeInTheDocument()
-  })
-
-  it('opens a compact public member and checkpoint detail on marker activation', () => {
-    renderMarkers()
-    fireEvent.click(screen.getByRole('button', { name: /Alpha at Sandbox Relay/ }))
-
-    const detail = screen.getByRole('complementary', {
-      name: 'Sandbox Kill Team Alpha checkpoint detail',
-    })
-    expect(within(detail).getByText('Sandbox Relay Node')).toBeInTheDocument()
-    expect(within(detail).getByText('Sandbox Alpha One')).toBeInTheDocument()
-    expect(within(detail).queryByText('900000000000000001')).not.toBeInTheDocument()
   })
 
   it('uses deterministic, presentation-only offsets for teams sharing a checkpoint', () => {
@@ -96,7 +104,12 @@ describe('KillTeamCheckpointMarkers', () => {
         battlefieldId="00000000-0000-4000-8000-000000000101"
         battlefieldName="Termination"
       >
-        <KillTeamCheckpointMarkers checkpoints={[checkpoint]} killTeams={killTeams} />
+        <KillTeamCheckpointMarkers
+          checkpoints={[checkpoint]}
+          killTeams={killTeams}
+          onSelectTeam={vi.fn()}
+          selectedTeamId={null}
+        />
       </TacticalBattlefield>,
     )
     const asset = container.querySelector<HTMLImageElement>(

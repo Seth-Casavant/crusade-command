@@ -1,10 +1,24 @@
 import './battlefield.css'
 
 export {
+  KillTeamBattlefieldPresentation,
+  type KillTeamBattlefieldPresentationProps,
+} from './KillTeamBattlefieldPresentation'
+export {
   KillTeamCheckpointMarkers,
-  getKillTeamCheckpointMarkerOffset,
   type KillTeamCheckpointMarkersProps,
 } from './KillTeamCheckpointMarkers'
+export {
+  getKillTeamAbbreviation,
+  getKillTeamCheckpointMarkerOffset,
+  type BattlefieldCheckpointPresentation,
+  type KillTeamMarkerOffset,
+  type KillTeamPresentation,
+} from './killTeamPresentation'
+export {
+  KillTeamIntelPanel,
+  type KillTeamIntelPanelProps,
+} from './KillTeamIntelPanel'
 export {
   TacticalBattlefield,
   type TacticalBattlefieldProps,
