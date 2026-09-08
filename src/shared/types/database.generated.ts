@@ -186,6 +186,41 @@ export type Database = {
           },
         ]
       }
+      mission_crusade_scoring_targets: {
+        Row: {
+          created_at: string
+          display_name: string
+          mission_id: string
+          sort_order: number
+          target_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          mission_id: string
+          sort_order?: number
+          target_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          mission_id?: string
+          sort_order?: number
+          target_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_crusade_scoring_targets_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mission_enemy_entries: {
         Row: {
           created_at: string
@@ -235,6 +270,8 @@ export type Database = {
           description: string | null
           enemy_faction: string | null
           id: string
+          mission_boss_display_name: string | null
+          mission_boss_key: string | null
           name: string
           status: Database["public"]["Enums"]["mission_status"]
           updated_at: string
@@ -246,6 +283,8 @@ export type Database = {
           description?: string | null
           enemy_faction?: string | null
           id?: string
+          mission_boss_display_name?: string | null
+          mission_boss_key?: string | null
           name: string
           status?: Database["public"]["Enums"]["mission_status"]
           updated_at?: string
@@ -257,6 +296,8 @@ export type Database = {
           description?: string | null
           enemy_faction?: string | null
           id?: string
+          mission_boss_display_name?: string | null
+          mission_boss_key?: string | null
           name?: string
           status?: Database["public"]["Enums"]["mission_status"]
           updated_at?: string
@@ -386,8 +427,10 @@ export type Database = {
           campaign_id: string
           campaign_name: string
           campaign_progress: number
+          crusade_scoring_targets: Json
           enemies: Json
           enemy_faction: string
+          mission_boss: Json
           mission_description: string
           mission_id: string
           mission_name: string

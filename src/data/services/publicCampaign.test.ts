@@ -37,6 +37,7 @@ const validCampaign = {
     },
   ],
   mission_boss: {
+    id: 'sandbox-mission-boss',
     name: 'Sandbox Mission Boss',
     description: 'Fixture-only Terminus designation.',
   },
@@ -78,6 +79,7 @@ describe('public campaign response validation', () => {
       campaignProgress: 12,
       revision: 4,
       missionBoss: {
+        id: 'sandbox-mission-boss',
         name: 'Sandbox Mission Boss',
       },
       crusadeScoringTargets: [

@@ -167,7 +167,7 @@ select ok(
 
 select ok(
   (
-    select enemies @> '[{"name":"Sandbox Vanguard"}]'::jsonb
+    select enemies @> '[{"name":"Sandbox Hostile Contact"}]'::jsonb
     from public.get_public_active_campaign()
   ),
   'published enemy information is available through the public read model'

@@ -198,14 +198,18 @@ insert into public.missions (
   battlefield_id,
   name,
   description,
-  enemy_faction
+  enemy_faction,
+  mission_boss_key,
+  mission_boss_display_name
 ) values (
   '00000000-0000-4000-8000-000000000201',
   '00000000-0000-4000-8000-000000000001',
   '00000000-0000-4000-8000-000000000101',
   'Sandbox Mission One',
   'Prepared mission data used only for local database verification.',
-  'Sandbox Hostile Force'
+  'Sandbox Hostile Force',
+  'sandbox-mission-boss',
+  'Sandbox Mission Boss'
 )
 on conflict (id) do nothing;
 
@@ -234,12 +238,32 @@ insert into public.mission_enemy_entries (
 ) values (
   '00000000-0000-4000-8000-000000000401',
   '00000000-0000-4000-8000-000000000201',
-  'Sandbox Vanguard',
-  'Major threat',
+  'Sandbox Hostile Contact',
+  'Fixture contact',
   'Placeholder hostile information for local testing.',
   0
 )
 on conflict (id) do nothing;
+
+insert into public.mission_crusade_scoring_targets (
+  mission_id,
+  target_key,
+  display_name,
+  sort_order
+) values
+  (
+    '00000000-0000-4000-8000-000000000201',
+    'sandbox-terminus-target-alpha',
+    'Sandbox Terminus Target Alpha',
+    0
+  ),
+  (
+    '00000000-0000-4000-8000-000000000201',
+    'sandbox-terminus-target-beta',
+    'Sandbox Terminus Target Beta',
+    1
+  )
+on conflict (mission_id, target_key) do nothing;
 
 do $$
 declare

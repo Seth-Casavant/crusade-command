@@ -7,6 +7,7 @@ import type {
 import { ThreatPanel } from './ThreatPanel'
 
 const missionBoss: PublicMissionBoss = {
+  id: 'sandbox-mission-boss',
   name: 'Sandbox Mission Boss',
   description: 'Fixture-only Terminus designation.',
 }

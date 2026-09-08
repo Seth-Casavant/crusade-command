@@ -38,6 +38,7 @@ export type PublicEnemy = {
 }
 
 export type PublicMissionBoss = {
+  id: string
   name: string
   description: string | null
 }
@@ -226,6 +227,7 @@ function parseMissionBoss(value: unknown): PublicMissionBoss {
   }
 
   return {
+    id: readString(value, 'id'),
     name: readString(value, 'name'),
     description: readNullableString(value, 'description'),
   }
