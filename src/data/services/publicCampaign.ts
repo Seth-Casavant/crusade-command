@@ -37,6 +37,18 @@ export type PublicEnemy = {
   sortOrder: number
 }
 
+export type PublicMissionBoss = {
+  name: string
+  description: string | null
+}
+
+export type PublicCrusadeScoringTarget = {
+  id: string
+  name: string
+  description: string | null
+  sortOrder: number
+}
+
 export type PublicCampaignState = {
   campaignId: string
   campaignName: string
@@ -54,6 +66,8 @@ export type PublicCampaignState = {
   authoritativeUpdatedAt: string
   objectives: PublicObjective[]
   enemies: PublicEnemy[]
+  missionBoss: PublicMissionBoss | null
+  crusadeScoringTargets: PublicCrusadeScoringTarget[]
 }
 
 export type PublicSyncSignal = {
@@ -206,6 +220,57 @@ function parseEnemy(value: unknown): PublicEnemy {
   }
 }
 
+function parseMissionBoss(value: unknown): PublicMissionBoss {
+  if (!isRecord(value)) {
+    return invalidPublicState('mission_boss must be an object')
+  }
+
+  return {
+    name: readString(value, 'name'),
+    description: readNullableString(value, 'description'),
+  }
+}
+
+function parseCrusadeScoringTarget(
+  value: unknown,
+): PublicCrusadeScoringTarget {
+  if (!isRecord(value)) {
+    return invalidPublicState('crusade scoring target entries must be objects')
+  }
+
+  return {
+    id: readString(value, 'id'),
+    name: readString(value, 'name'),
+    description: readNullableString(value, 'description'),
+    sortOrder: readInteger(value, 'sort_order', 0),
+  }
+}
+
+function parseOptionalMissionBoss(
+  record: Record<string, unknown>,
+): PublicMissionBoss | null {
+  if (!Object.hasOwn(record, 'mission_boss') || record.mission_boss === null) {
+    return null
+  }
+
+  return parseMissionBoss(record.mission_boss)
+}
+
+function parseOptionalCrusadeScoringTargets(
+  record: Record<string, unknown>,
+): PublicCrusadeScoringTarget[] {
+  if (
+    !Object.hasOwn(record, 'crusade_scoring_targets') ||
+    record.crusade_scoring_targets === null
+  ) {
+    return []
+  }
+
+  return readArray(record, 'crusade_scoring_targets').map(
+    parseCrusadeScoringTarget,
+  )
+}
+
 export function parsePublicCampaignState(value: unknown): PublicCampaignState {
   if (!isRecord(value)) {
     return invalidPublicState('campaign must be an object')
@@ -232,6 +297,8 @@ export function parsePublicCampaignState(value: unknown): PublicCampaignState {
     authoritativeUpdatedAt: readTimestamp(value, 'updated_at'),
     objectives: readArray(value, 'objectives').map(parseObjective),
     enemies: readArray(value, 'enemies').map(parseEnemy),
+    missionBoss: parseOptionalMissionBoss(value),
+    crusadeScoringTargets: parseOptionalCrusadeScoringTargets(value),
   }
 }
 

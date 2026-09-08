@@ -42,6 +42,8 @@ function createSnapshot(revision: number): PublicCampaignSnapshot {
     authoritativeUpdatedAt: '2026-09-04T12:00:00.000Z',
     objectives: [],
     enemies: [],
+    missionBoss: null,
+    crusadeScoringTargets: [],
   }
 
   return { campaign, signal: createSignal(revision) }

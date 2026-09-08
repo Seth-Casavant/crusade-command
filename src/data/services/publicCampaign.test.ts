@@ -30,10 +30,28 @@ const validCampaign = {
   enemies: [
     {
       id: '00000000-0000-4000-8000-000000000401',
-      name: 'Sandbox Vanguard',
-      enemy_type: 'Major threat',
+      name: 'Sandbox Hostile Contact',
+      enemy_type: 'Fixture contact',
       description: null,
       sort_order: 0,
+    },
+  ],
+  mission_boss: {
+    name: 'Sandbox Mission Boss',
+    description: 'Fixture-only Terminus designation.',
+  },
+  crusade_scoring_targets: [
+    {
+      id: 'sandbox-terminus-target-alpha',
+      name: 'Sandbox Terminus Target Alpha',
+      description: null,
+      sort_order: 0,
+    },
+    {
+      id: 'sandbox-terminus-target-beta',
+      name: 'Sandbox Terminus Target Beta',
+      description: 'Fixture-only Crusade scoring designation.',
+      sort_order: 1,
     },
   ],
 }
@@ -59,8 +77,51 @@ describe('public campaign response validation', () => {
       missionStatus: 'ACTIVE',
       campaignProgress: 12,
       revision: 4,
+      missionBoss: {
+        name: 'Sandbox Mission Boss',
+      },
+      crusadeScoringTargets: [
+        { name: 'Sandbox Terminus Target Alpha' },
+        { name: 'Sandbox Terminus Target Beta' },
+      ],
     })
     expect(result.signal?.updateId).toBe(validSignal.update_id)
+  })
+
+  it('defaults unconfigured Terminus fields without rejecting the public snapshot', () => {
+    const campaignWithoutTerminus: Record<string, unknown> = {
+      ...validCampaign,
+    }
+    delete campaignWithoutTerminus.mission_boss
+    delete campaignWithoutTerminus.crusade_scoring_targets
+
+    const result = parsePublicCampaignSnapshot({
+      active_campaign_count: 1,
+      campaign: campaignWithoutTerminus,
+      signal: validSignal,
+    })
+
+    expect(result.campaign).toMatchObject({
+      missionBoss: null,
+      crusadeScoringTargets: [],
+    })
+  })
+
+  it('accepts an explicitly unavailable mission boss and no scoring targets', () => {
+    const result = parsePublicCampaignSnapshot({
+      active_campaign_count: 1,
+      campaign: {
+        ...validCampaign,
+        mission_boss: null,
+        crusade_scoring_targets: null,
+      },
+      signal: validSignal,
+    })
+
+    expect(result.campaign).toMatchObject({
+      missionBoss: null,
+      crusadeScoringTargets: [],
+    })
   })
 
   it('accepts a valid snapshot with no published ACTIVE campaign', () => {

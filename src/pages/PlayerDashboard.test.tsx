@@ -44,16 +44,27 @@ const campaign: PublicCampaignState = {
   enemies: [
     {
       id: '00000000-0000-4000-8000-000000000401',
-      name: 'Neurothrope',
-      enemyType: 'Terminus threat',
-      description: 'High-priority synaptic organism.',
+      name: 'Sandbox Hostile Contact',
+      enemyType: 'Fixture contact',
+      description: 'Legacy general enemy data is not a Terminus designation.',
+      sortOrder: 0,
+    },
+  ],
+  missionBoss: {
+    name: 'Sandbox Mission Boss',
+    description: 'Fixture-only Terminus designation.',
+  },
+  crusadeScoringTargets: [
+    {
+      id: 'sandbox-terminus-target-alpha',
+      name: 'Sandbox Terminus Target Alpha',
+      description: null,
       sortOrder: 0,
     },
     {
-      id: '00000000-0000-4000-8000-000000000402',
-      name: 'Carnifex',
-      enemyType: 'Heavy bioform',
-      description: null,
+      id: 'sandbox-terminus-target-beta',
+      name: 'Sandbox Terminus Target Beta',
+      description: 'Fixture-only Crusade scoring designation.',
       sortOrder: 1,
     },
   ],
@@ -165,29 +176,58 @@ describe('PlayerDashboard', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders the public threat faction and multiple enemy entries', () => {
-    render(<PlayerDashboard synchronization={createSynchronization()} />)
+  it('renders the Terminus threat model without displaying legacy friendly units', () => {
+    render(
+      <PlayerDashboard
+        synchronization={createSynchronization({
+          campaign: {
+            ...campaign,
+            enemies: [
+              {
+                id: '00000000-0000-4000-8000-000000000499',
+                name: 'Sandbox Vanguard',
+                enemyType: 'Friendly fixture',
+                description: null,
+                sortOrder: 0,
+              },
+            ],
+          },
+        })}
+      />,
+    )
     const threatRegion = screen.getByRole('region', {
       name: 'Threat Assessment',
     })
 
-    expect(within(threatRegion).getByText('Tyranid Swarm')).toBeInTheDocument()
+    expect(within(threatRegion).getByText('Terminus threat')).toBeInTheDocument()
+    expect(within(threatRegion).getByText('Sandbox Mission Boss')).toBeInTheDocument()
     expect(within(threatRegion).getAllByRole('listitem')).toHaveLength(2)
-    expect(within(threatRegion).getByText('Neurothrope')).toBeInTheDocument()
-    expect(within(threatRegion).getByText('Carnifex')).toBeInTheDocument()
+    expect(
+      within(threatRegion).getByText('Sandbox Terminus Target Alpha'),
+    ).toBeInTheDocument()
+    expect(
+      within(threatRegion).queryByText('Sandbox Vanguard'),
+    ).not.toBeInTheDocument()
   })
 
-  it('renders an empty threat state without inventing contacts', () => {
+  it('renders a safe empty Terminus threat state without inventing configuration', () => {
     render(
       <PlayerDashboard
         synchronization={createSynchronization({
-          campaign: { ...campaign, enemyFaction: '', enemies: [] },
+          campaign: {
+            ...campaign,
+            missionBoss: null,
+            crusadeScoringTargets: [],
+          },
         })}
       />,
     )
 
     expect(
-      screen.getByText('No hostile contacts are currently published.'),
+      screen.getByText('Mission boss data unavailable.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('No Crusade scoring targets are currently configured.'),
     ).toBeInTheDocument()
   })
 
@@ -284,7 +324,7 @@ describe('PlayerDashboard', () => {
     expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
     expect(screen.getByText('67%')).toBeInTheDocument()
     expect(screen.getByText('Secure the relay nexus')).toBeInTheDocument()
-    expect(screen.getByText('Neurothrope')).toBeInTheDocument()
+    expect(screen.getByText('Sandbox Mission Boss')).toBeInTheDocument()
     expect(screen.getAllByText('Live').length).toBeGreaterThan(0)
 
     fireEvent.click(screen.getByRole('button', { name: 'Resync' }))

@@ -156,8 +156,8 @@ export function PlayerDashboard({
             <div className="player-dashboard__grid">
               <ObjectivePanel objectives={campaign.objectives} />
               <ThreatPanel
-                enemies={campaign.enemies}
-                enemyFaction={campaign.enemyFaction}
+                crusadeScoringTargets={campaign.crusadeScoringTargets}
+                missionBoss={campaign.missionBoss}
               />
               <SynchronizationStatus
                 authoritativeUpdatedAt={campaign.authoritativeUpdatedAt}

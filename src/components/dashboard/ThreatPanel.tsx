@@ -1,17 +1,17 @@
 import type {
-  PublicCampaignState,
-  PublicEnemy,
+  PublicCrusadeScoringTarget,
+  PublicMissionBoss,
 } from '../../data/services/publicCampaign'
 import { Panel } from '../ui'
 
 export type ThreatPanelProps = {
-  enemies: readonly PublicEnemy[]
-  enemyFaction: PublicCampaignState['enemyFaction']
+  missionBoss: PublicMissionBoss | null
+  crusadeScoringTargets: readonly PublicCrusadeScoringTarget[]
 }
 
 export function ThreatPanel({
-  enemies,
-  enemyFaction,
+  missionBoss,
+  crusadeScoringTargets,
 }: ThreatPanelProps) {
   return (
     <Panel
@@ -19,40 +19,50 @@ export function ThreatPanel({
       eyebrow="Operational information"
       title="Threat Assessment"
     >
-      {enemyFaction ? (
-        <div className="threat-panel__faction">
-          <span className="dashboard-field-label">Hostile force</span>
-          <strong>{enemyFaction}</strong>
-        </div>
-      ) : null}
+      <p className="threat-panel__designation">Terminus threat</p>
 
-      {enemies.length === 0 ? (
-        <p className="dashboard-empty-state">
-          No hostile contacts are currently published.
-        </p>
-      ) : (
-        <ul className="dashboard-entry-list">
-          {enemies.map((enemy) => (
-            <li className="dashboard-entry threat-entry" key={enemy.id}>
-              <span
-                aria-hidden="true"
-                className="threat-entry__marker"
-              />
-              <div className="dashboard-entry__content">
-                <div className="dashboard-entry__heading">
-                  <h3>{enemy.name}</h3>
-                  {enemy.enemyType ? (
+      <div className="threat-panel__section">
+        <span className="dashboard-field-label">Mission boss</span>
+        {missionBoss ? (
+          <div className="threat-panel__boss">
+            <strong>{missionBoss.name}</strong>
+            {missionBoss.description ? <p>{missionBoss.description}</p> : null}
+          </div>
+        ) : (
+          <p className="dashboard-empty-state">
+            Mission boss data unavailable.
+          </p>
+        )}
+      </div>
+
+      <div className="threat-panel__section">
+        <span className="dashboard-field-label">Crusade scoring targets</span>
+        {crusadeScoringTargets.length === 0 ? (
+          <p className="dashboard-empty-state">
+            No Crusade scoring targets are currently configured.
+          </p>
+        ) : (
+          <ul className="dashboard-entry-list">
+            {crusadeScoringTargets.map((target) => (
+              <li className="dashboard-entry threat-entry" key={target.id}>
+                <span
+                  aria-hidden="true"
+                  className="threat-entry__marker"
+                />
+                <div className="dashboard-entry__content">
+                  <div className="dashboard-entry__heading">
+                    <h3>{target.name}</h3>
                     <span className="threat-entry__type">
-                      {enemy.enemyType}
+                      Crusade scoring target
                     </span>
-                  ) : null}
+                  </div>
+                  {target.description ? <p>{target.description}</p> : null}
                 </div>
-                {enemy.description ? <p>{enemy.description}</p> : null}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </Panel>
   )
 }

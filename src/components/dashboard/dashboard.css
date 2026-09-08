@@ -224,14 +224,27 @@
   font-size: var(--text-sm);
 }
 
-.threat-panel__faction {
-  display: grid;
-  gap: var(--space-2);
-  padding-bottom: var(--space-5);
-  border-bottom: var(--border-thin) solid var(--color-crimson-dark);
+.threat-panel__designation {
+  margin: 0;
+  color: var(--accent-danger-hover);
+  font-family: var(--font-technical);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: var(--tracking-interface);
+  text-transform: uppercase;
 }
 
-.threat-panel__faction strong {
+.threat-panel__section {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.threat-panel__section + .threat-panel__section {
+  padding-top: var(--space-5);
+  border-top: var(--border-thin) solid var(--color-crimson-dark);
+}
+
+.threat-panel__boss strong {
   color: var(--text-primary);
   font-family: var(--font-display);
   font-size: var(--text-xl);
@@ -239,6 +252,13 @@
   letter-spacing: 0.02em;
   overflow-wrap: anywhere;
   text-transform: uppercase;
+}
+
+.threat-panel__boss p {
+  margin: var(--space-3) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--line-copy);
 }
 
 .threat-entry {

@@ -1,46 +1,73 @@
 import { render, screen } from '@testing-library/react'
 
-import type { PublicEnemy } from '../../data/services/publicCampaign'
+import type {
+  PublicCrusadeScoringTarget,
+  PublicMissionBoss,
+} from '../../data/services/publicCampaign'
 import { ThreatPanel } from './ThreatPanel'
 
-const enemies: PublicEnemy[] = [
+const missionBoss: PublicMissionBoss = {
+  name: 'Sandbox Mission Boss',
+  description: 'Fixture-only Terminus designation.',
+}
+
+const scoringTargets: PublicCrusadeScoringTarget[] = [
   {
-    id: '00000000-0000-4000-8000-000000000401',
-    name: 'Neurothrope',
-    enemyType: 'Terminus threat',
-    description: 'A synaptic command organism.',
+    id: 'sandbox-terminus-target-alpha',
+    name: 'Sandbox Terminus Target Alpha',
+    description: 'Fixture-only Crusade scoring designation.',
     sortOrder: 0,
   },
   {
-    id: '00000000-0000-4000-8000-000000000402',
-    name: 'Carnifex',
-    enemyType: 'Heavy bioform',
+    id: 'sandbox-terminus-target-beta',
+    name: 'Sandbox Terminus Target Beta',
     description: null,
     sortOrder: 1,
   },
 ]
 
 describe('ThreatPanel', () => {
-  it('renders the faction and multiple published enemy entries', () => {
+  it('renders Terminus terminology, a mission boss, and multiple scoring targets', () => {
     render(
-      <ThreatPanel enemies={enemies} enemyFaction="Tyranid Swarm" />,
+      <ThreatPanel
+        crusadeScoringTargets={scoringTargets}
+        missionBoss={missionBoss}
+      />,
     )
 
-    expect(screen.getByText('Tyranid Swarm')).toBeInTheDocument()
+    expect(screen.getByText('Terminus threat')).toBeInTheDocument()
+    expect(screen.getByText('Mission boss')).toBeInTheDocument()
+    expect(screen.getByText('Sandbox Mission Boss')).toBeInTheDocument()
+    expect(screen.getByText('Crusade scoring targets')).toBeInTheDocument()
     expect(screen.getAllByRole('listitem')).toHaveLength(2)
     expect(
-      screen.getByRole('heading', { name: 'Neurothrope' }),
+      screen.getByRole('heading', { name: 'Sandbox Terminus Target Alpha' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('Terminus threat')).toBeInTheDocument()
-    expect(screen.getByText('Carnifex')).toBeInTheDocument()
-    expect(screen.getByText('Heavy bioform')).toBeInTheDocument()
+    expect(screen.getAllByText('Crusade scoring target')).toHaveLength(2)
+    expect(screen.queryByText('Hostile force')).not.toBeInTheDocument()
+    expect(screen.queryByText('Sandbox Vanguard')).not.toBeInTheDocument()
   })
 
-  it('renders a safe empty state when no threats are published', () => {
-    render(<ThreatPanel enemies={[]} enemyFaction="Tyranid Swarm" />)
+  it('renders one scoring target without malformed list content', () => {
+    render(
+      <ThreatPanel
+        crusadeScoringTargets={scoringTargets.slice(0, 1)}
+        missionBoss={missionBoss}
+      />,
+    )
+
+    expect(screen.getAllByRole('listitem')).toHaveLength(1)
+    expect(screen.getByText('Sandbox Terminus Target Alpha')).toBeInTheDocument()
+  })
+
+  it('renders safe mission-boss and scoring-target empty states', () => {
+    render(<ThreatPanel crusadeScoringTargets={[]} missionBoss={null} />)
 
     expect(
-      screen.getByText('No hostile contacts are currently published.'),
+      screen.getByText('Mission boss data unavailable.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('No Crusade scoring targets are currently configured.'),
     ).toBeInTheDocument()
     expect(screen.queryByRole('list')).not.toBeInTheDocument()
   })
