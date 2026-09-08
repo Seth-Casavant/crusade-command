@@ -425,7 +425,7 @@ export function TacticalBattlefieldViewport({
           onClick={fitMap}
           type="button"
         >
-          Fit Map
+          Show Full Map
         </button>
         <output aria-label="Map zoom level" aria-live="polite">
           Zoom {Math.round(transform.zoom * 100)}%

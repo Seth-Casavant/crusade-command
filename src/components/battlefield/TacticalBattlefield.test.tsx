@@ -78,7 +78,7 @@ describe('TacticalBattlefield', () => {
     expect(asset).toHaveAttribute('aria-hidden', 'true')
     expect(screen.getByRole('button', { name: 'Zoom In' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Zoom Out' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Fit Map' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Show Full Map' })).toBeDisabled()
     expect(boundaryMocks.channel).not.toHaveBeenCalled()
   })
 

@@ -70,7 +70,7 @@ describe('TacticalBattlefieldViewport', () => {
     const viewport = getViewport()
     const zoomIn = screen.getByRole('button', { name: 'Zoom In' })
     const zoomOut = screen.getByRole('button', { name: 'Zoom Out' })
-    const fitMap = screen.getByRole('button', { name: 'Fit Map' })
+    const fitMap = screen.getByRole('button', { name: 'Show Full Map' })
 
     expect(viewport).toHaveAttribute('tabindex', '0')
     expect(viewport).toHaveAttribute('data-fit', 'true')
@@ -95,7 +95,7 @@ describe('TacticalBattlefieldViewport', () => {
     expect(viewport).toHaveAttribute('data-fit', 'true')
   })
 
-  it('supports bounded pointer and keyboard pan, then restores Fit Map state', () => {
+  it('supports bounded pointer and keyboard pan, then restores Show Full Map state', () => {
     vi.stubGlobal('ResizeObserver', undefined)
     installElementMeasurement()
     render(
@@ -143,7 +143,7 @@ describe('TacticalBattlefieldViewport', () => {
     expect(viewport).toHaveAttribute('data-fit', 'true')
   })
 
-  it('provides bounded touch-friendly pan controls and Fit Map reset', () => {
+  it('provides bounded touch-friendly pan controls and Show Full Map reset', () => {
     vi.stubGlobal('ResizeObserver', undefined)
     installElementMeasurement()
     render(
@@ -174,7 +174,7 @@ describe('TacticalBattlefieldViewport', () => {
     expect(panDown).toBeDisabled()
     expect(panUp).toBeEnabled()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Fit Map' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Show Full Map' }))
     expect(viewport).toHaveAttribute('data-zoom', '1')
     expect(viewport).toHaveAttribute('data-pan-y', '0')
     expect(viewport).toHaveAttribute('data-fit', 'true')
@@ -322,7 +322,7 @@ describe('TacticalBattlefieldViewport', () => {
       top: '80%',
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Fit Map' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Show Full Map' }))
     expect(viewport).toHaveAttribute('data-zoom', '1')
     expect(viewport).toHaveAttribute('data-pan-x', '0')
     expect(viewport).toHaveAttribute('data-pan-y', '0')
@@ -345,7 +345,7 @@ describe('TacticalBattlefieldViewport', () => {
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Zoom In' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Zoom Out' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Fit Map' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Show Full Map' })).toBeEnabled()
     expect(screen.getByRole('group', { name: 'Pan map' })).toBeInTheDocument()
   })
 
@@ -486,6 +486,6 @@ describe('TacticalBattlefieldViewport', () => {
     )
     expect(screen.getByRole('button', { name: 'Zoom In' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Zoom Out' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Fit Map' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Show Full Map' })).toBeDisabled()
   })
 })
