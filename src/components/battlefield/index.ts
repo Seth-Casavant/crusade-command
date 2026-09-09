@@ -43,6 +43,7 @@ export {
 } from './TacticalOverlay'
 export {
   isNormalizedTacticalPoint,
+  normalizedPointToNativeStyle,
   normalizedPointToStyle,
   type NormalizedPositionStyle,
   type NormalizedTacticalPoint,

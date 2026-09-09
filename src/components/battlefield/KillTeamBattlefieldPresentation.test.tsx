@@ -23,6 +23,9 @@ const teams: PublicKillTeam[] = [
     currentCheckpointId: checkpoint.id,
     members: [{ displayName: 'Alpha One' }],
     operationalStatus: 'ADVANCING',
+    crusadePoints: 27,
+    terminusKills: 2,
+    objectivesCompleted: 2,
   },
   {
     id: '00000000-0000-4000-8000-000000000502',
@@ -30,6 +33,9 @@ const teams: PublicKillTeam[] = [
     currentCheckpointId: checkpoint.id,
     members: [{ displayName: 'Beta One' }],
     operationalStatus: 'DEPLOYED',
+    crusadePoints: 0,
+    terminusKills: 0,
+    objectivesCompleted: 0,
   },
 ]
 
@@ -88,6 +94,15 @@ describe('KillTeamBattlefieldPresentation', () => {
     expect(within(panel).getByText('Sandbox Relay Node')).toBeInTheDocument()
     expect(within(panel).getByText('Alpha One')).toBeInTheDocument()
     expect(within(panel).getByText('ADVANCING')).toBeInTheDocument()
+    expect(
+      within(panel).getByText('Crusade points').parentElement,
+    ).toHaveTextContent('27')
+    expect(
+      within(panel).getByText('Terminus kills').parentElement,
+    ).toHaveTextContent('2')
+    expect(
+      within(panel).getByText('Objectives').parentElement,
+    ).toHaveTextContent('2')
 
     fireEvent.click(vanguard)
     expect(friendlyFire).toHaveAttribute('aria-pressed', 'false')
@@ -97,6 +112,15 @@ describe('KillTeamBattlefieldPresentation', () => {
     expect(within(panel).getByText('Beta One')).toBeInTheDocument()
     expect(within(panel).getByText('DEPLOYED')).toBeInTheDocument()
     expect(within(panel).queryByText('ADVANCING')).not.toBeInTheDocument()
+    expect(
+      within(panel).getByText('Crusade points').parentElement,
+    ).toHaveTextContent('0')
+    expect(
+      within(panel).getByText('Terminus kills').parentElement,
+    ).toHaveTextContent('0')
+    expect(
+      within(panel).getByText('Objectives').parentElement,
+    ).toHaveTextContent('0')
 
     fireEvent.click(vanguard)
     expect(vanguard).toHaveAttribute('aria-pressed', 'false')

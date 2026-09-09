@@ -16,6 +16,7 @@ const validCampaign = {
   battlefield_description: 'Sandbox battlefield',
   enemy_faction: 'Sandbox Hostiles',
   campaign_progress: 12,
+  crusade_points: 24,
   revision: 4,
   updated_at: '2026-09-04T12:00:00.000Z',
   objectives: [
@@ -75,6 +76,9 @@ const validCampaign = {
       ],
       current_checkpoint_id: '00000000-0000-4000-8000-000000000712',
       operational_status: 'ADVANCING',
+      crusade_points: 27,
+      terminus_kills: 2,
+      objectives_completed: 2,
     },
     {
       id: '00000000-0000-4000-8000-000000000502',
@@ -82,6 +86,9 @@ const validCampaign = {
       members: [{ display_name: 'Sandbox Beta One' }],
       current_checkpoint_id: null,
       operational_status: 'DEPLOYED',
+      crusade_points: 4,
+      terminus_kills: 0,
+      objectives_completed: 0,
     },
   ],
 }
@@ -106,6 +113,7 @@ describe('public campaign response validation', () => {
       campaignName: 'Sandbox Crusade',
       missionStatus: 'ACTIVE',
       campaignProgress: 12,
+      crusadePoints: 24,
       revision: 4,
       missionBoss: {
         id: 'sandbox-mission-boss',
@@ -127,12 +135,18 @@ describe('public campaign response validation', () => {
           ],
           currentCheckpointId: '00000000-0000-4000-8000-000000000712',
           operationalStatus: 'ADVANCING',
+          crusadePoints: 27,
+          terminusKills: 2,
+          objectivesCompleted: 2,
         },
         {
           name: 'Sandbox Kill Team Beta',
           members: [{ displayName: 'Sandbox Beta One' }],
           currentCheckpointId: null,
           operationalStatus: 'DEPLOYED',
+          crusadePoints: 4,
+          terminusKills: 0,
+          objectivesCompleted: 0,
         },
       ],
     })
@@ -223,6 +237,9 @@ describe('public campaign response validation', () => {
             id: '00000000-0000-4000-8000-000000000501',
             name: 'Sandbox Kill Team Alpha',
             operational_status: 'ADVANCING',
+            crusade_points: 27,
+            terminus_kills: 2,
+            objectives_completed: 2,
             members: [
               {
                 display_name: 'Sandbox Alpha One',

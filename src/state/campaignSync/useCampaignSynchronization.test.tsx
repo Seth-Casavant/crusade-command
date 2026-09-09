@@ -38,6 +38,7 @@ function createSnapshot(revision: number): PublicCampaignSnapshot {
     battlefieldDescription: 'Sandbox battlefield',
     enemyFaction: 'Sandbox Hostiles',
     campaignProgress: revision,
+    crusadePoints: 0,
     revision,
     authoritativeUpdatedAt: '2026-09-04T12:00:00.000Z',
     objectives: [],

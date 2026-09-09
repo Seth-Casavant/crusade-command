@@ -1,22 +1,38 @@
-import type { ReactNode } from 'react'
+import { createContext, useContext, type ReactNode } from 'react'
 
+import type { TacticalDimensions } from '../../data/battlefields'
 import {
-  normalizedPointToStyle,
+  normalizedPointToNativeStyle,
   type NormalizedTacticalPoint,
 } from './normalizedCoordinates'
+
+const TacticalOverlayDimensionsContext =
+  createContext<TacticalDimensions | null>(null)
 
 export type TacticalOverlayProps = {
   children?: ReactNode
   className?: string
+  dimensions: TacticalDimensions
 }
 
 export function TacticalOverlay({
   children,
   className = '',
+  dimensions,
 }: TacticalOverlayProps) {
   const classes = ['tactical-overlay', className].filter(Boolean).join(' ')
 
-  return <div className={classes}>{children}</div>
+  return (
+    <TacticalOverlayDimensionsContext.Provider value={dimensions}>
+      <div
+        className={classes}
+        data-tactical-coordinate-space="native-image"
+        style={{ height: dimensions.height, width: dimensions.width }}
+      >
+        {children}
+      </div>
+    </TacticalOverlayDimensionsContext.Provider>
+  )
 }
 
 export type TacticalOverlayItemProps = {
@@ -30,7 +46,10 @@ export function TacticalOverlayItem({
   className = '',
   position,
 }: TacticalOverlayItemProps) {
-  const style = normalizedPointToStyle(position)
+  const dimensions = useContext(TacticalOverlayDimensionsContext)
+  const style = dimensions
+    ? normalizedPointToNativeStyle(position, dimensions)
+    : null
 
   if (!style) {
     return null

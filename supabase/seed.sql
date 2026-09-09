@@ -424,3 +424,55 @@ begin
   end if;
 end;
 $$;
+
+-- Synthetic progress values exercise aggregate presentation only. They are not
+-- approved Crusade scoring rules and deliberately avoid round example awards.
+insert into public.kill_team_progress_ledger (
+  id,
+  campaign_id,
+  mission_id,
+  kill_team_id,
+  event_type,
+  point_delta,
+  description,
+  scoring_target_key,
+  campaign_revision,
+  actor_id
+) values
+  (
+    '00000000-0000-4000-8000-000000000751',
+    '00000000-0000-4000-8000-000000000001',
+    '00000000-0000-4000-8000-000000000201',
+    '00000000-0000-4000-8000-000000000501',
+    'TERMINUS_KILL',
+    7,
+    'Synthetic Alpha Terminus validation event',
+    null,
+    3,
+    'a0000000-0000-4000-8000-000000000001'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000752',
+    '00000000-0000-4000-8000-000000000001',
+    '00000000-0000-4000-8000-000000000201',
+    '00000000-0000-4000-8000-000000000501',
+    'OBJECTIVE',
+    13,
+    'Synthetic Alpha objective validation event',
+    null,
+    3,
+    'a0000000-0000-4000-8000-000000000001'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000753',
+    '00000000-0000-4000-8000-000000000001',
+    '00000000-0000-4000-8000-000000000201',
+    '00000000-0000-4000-8000-000000000502',
+    'MISSION_COMPLETION',
+    4,
+    'Synthetic Beta completion validation event',
+    null,
+    3,
+    'a0000000-0000-4000-8000-000000000001'
+  )
+on conflict (id) do nothing;

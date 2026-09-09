@@ -1,16 +1,16 @@
 import type { PublicCampaignState } from '../../data/services/publicCampaign'
-import { Panel, ProgressMeter } from '../ui'
+import { Panel } from '../ui'
 
 export type CampaignProgressProps = {
-  value: PublicCampaignState['campaignProgress']
+  value: PublicCampaignState['crusadePoints']
 }
 
-function normalizeProgress(value: number): number {
-  if (!Number.isFinite(value)) {
+function normalizeCrusadePoints(value: number): number {
+  if (!Number.isSafeInteger(value)) {
     return 0
   }
 
-  return Math.min(100, Math.max(0, value))
+  return value
 }
 
 export function CampaignProgress({ value }: CampaignProgressProps) {
@@ -20,10 +20,15 @@ export function CampaignProgress({ value }: CampaignProgressProps) {
       eyebrow="Campaign telemetry"
       title="Crusade Progress"
     >
-      <ProgressMeter
-        label="Campaign progress"
-        value={normalizeProgress(value)}
-      />
+      <div
+        aria-label="Current Crusade points"
+        className="campaign-progress__points"
+        role="group"
+      >
+        <span>Current Crusade points</span>
+        <strong>{normalizeCrusadePoints(value)}</strong>
+      </div>
+      <p className="campaign-progress__source">Authoritative ledger total</p>
     </Panel>
   )
 }

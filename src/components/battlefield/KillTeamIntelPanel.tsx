@@ -45,6 +45,26 @@ export function KillTeamIntelPanel({
               <dd>{checkpoint.name}</dd>
             </div>
           </dl>
+          <section
+            aria-labelledby="kill-team-intel-progress"
+            className="kill-team-intel__progress"
+          >
+            <h3 id="kill-team-intel-progress">Crusade progress</h3>
+            <dl>
+              <div>
+                <dt>Crusade points</dt>
+                <dd>{team.crusadePoints}</dd>
+              </div>
+              <div>
+                <dt>Terminus kills</dt>
+                <dd>{team.terminusKills}</dd>
+              </div>
+              <div>
+                <dt>Objectives</dt>
+                <dd>{team.objectivesCompleted}</dd>
+              </div>
+            </dl>
+          </section>
           <section aria-labelledby="kill-team-intel-members">
             <h3 id="kill-team-intel-members">Battle-brothers</h3>
             <ul aria-label={`${team.name} members`}>

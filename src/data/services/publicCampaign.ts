@@ -69,6 +69,9 @@ export type PublicKillTeam = {
   members: PublicKillTeamMember[]
   currentCheckpointId: string | null
   operationalStatus: PublicKillTeamOperationalStatus
+  crusadePoints: number
+  terminusKills: number
+  objectivesCompleted: number
 }
 
 export type PublicBattlefieldCheckpoint = {
@@ -93,6 +96,7 @@ export type PublicCampaignState = {
   battlefieldDescription: string
   enemyFaction: string
   campaignProgress: number
+  crusadePoints: number
   revision: number
   authoritativeUpdatedAt: string
   objectives: PublicObjective[]
@@ -354,6 +358,13 @@ function parseKillTeam(value: unknown): PublicKillTeam {
     members: readArray(value, 'members').map(parseKillTeamMember),
     currentCheckpointId: readNullableUuid(value, 'current_checkpoint_id'),
     operationalStatus: operationalStatus as PublicKillTeamOperationalStatus,
+    crusadePoints: readInteger(
+      value,
+      'crusade_points',
+      Number.MIN_SAFE_INTEGER,
+    ),
+    terminusKills: readInteger(value, 'terminus_kills', 0),
+    objectivesCompleted: readInteger(value, 'objectives_completed', 0),
   }
 }
 
@@ -444,6 +455,11 @@ export function parsePublicCampaignState(value: unknown): PublicCampaignState {
     battlefieldDescription: readString(value, 'battlefield_description'),
     enemyFaction: readString(value, 'enemy_faction'),
     campaignProgress: readInteger(value, 'campaign_progress', 0, 100),
+    crusadePoints: readInteger(
+      value,
+      'crusade_points',
+      Number.MIN_SAFE_INTEGER,
+    ),
     revision: readInteger(value, 'revision', 1),
     authoritativeUpdatedAt: readTimestamp(value, 'updated_at'),
     objectives: readArray(value, 'objectives').map(parseObjective),

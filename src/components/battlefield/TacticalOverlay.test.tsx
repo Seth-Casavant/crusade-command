@@ -4,8 +4,11 @@ import {
   TacticalOverlay,
   TacticalOverlayItem,
   isNormalizedTacticalPoint,
+  normalizedPointToNativeStyle,
   normalizedPointToStyle,
 } from './index'
+
+const nativeDimensions = { width: 1179, height: 2556 }
 
 describe('normalized tactical overlay', () => {
   it('converts normalized coordinates into resolution-independent percentages', () => {
@@ -35,9 +38,18 @@ describe('normalized tactical overlay', () => {
     expect(normalizedPointToStyle(point)).toBeNull()
   })
 
-  it('renders items inside one generic overlay surface', () => {
+  it('resolves normalized corners against native image bounds', () => {
+    expect(
+      normalizedPointToNativeStyle({ x: 0, y: 0 }, nativeDimensions),
+    ).toEqual({ left: '0px', top: '0px' })
+    expect(
+      normalizedPointToNativeStyle({ x: 1, y: 1 }, nativeDimensions),
+    ).toEqual({ left: '1179px', top: '2556px' })
+  })
+
+  it('renders items inside a native-image-sized overlay surface', () => {
     const { container } = render(
-      <TacticalOverlay>
+      <TacticalOverlay dimensions={nativeDimensions}>
         <TacticalOverlayItem position={{ x: 0.125, y: 0.875 }}>
           <span data-testid="coordinate-proof">Development reference</span>
         </TacticalOverlayItem>
@@ -48,14 +60,19 @@ describe('normalized tactical overlay', () => {
     const item = screen.getByTestId('coordinate-proof').parentElement
 
     expect(overlay).toContainElement(item)
-    expect(item).toHaveStyle({ left: '12.5%', top: '87.5%' })
+    expect(overlay).toHaveAttribute(
+      'data-tactical-coordinate-space',
+      'native-image',
+    )
+    expect(overlay).toHaveStyle({ height: '2556px', width: '1179px' })
+    expect(item).toHaveStyle({ left: '147.375px', top: '2236.5px' })
     expect(item).toHaveAttribute('data-tactical-x', '0.125')
     expect(item).toHaveAttribute('data-tactical-y', '0.875')
   })
 
   it('omits an invalid overlay item instead of placing it outside the map', () => {
     render(
-      <TacticalOverlay>
+      <TacticalOverlay dimensions={nativeDimensions}>
         <TacticalOverlayItem position={{ x: -1, y: 2 }}>
           Invalid marker
         </TacticalOverlayItem>

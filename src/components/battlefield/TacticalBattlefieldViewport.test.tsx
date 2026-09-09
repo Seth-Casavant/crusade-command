@@ -239,7 +239,7 @@ describe('TacticalBattlefieldViewport', () => {
         battlefieldName="Termination"
         dimensions={terminationDimensions}
       >
-        <TacticalOverlay>
+        <TacticalOverlay dimensions={terminationDimensions}>
           <TacticalOverlayItem position={{ x: 0.4, y: 0.6 }}>
             <span data-testid="orientation-marker">Marker</span>
           </TacticalOverlayItem>
@@ -265,8 +265,8 @@ describe('TacticalBattlefieldViewport', () => {
     expect(scene.style.transform).not.toContain('NaN')
     expect(scene.style.transform).not.toContain('Infinity')
     expect(screen.getByTestId('orientation-marker').parentElement).toHaveStyle({
-      left: '40%',
-      top: '60%',
+      left: '471.6px',
+      top: '927.6px',
     })
   })
 
@@ -289,7 +289,7 @@ describe('TacticalBattlefieldViewport', () => {
         battlefieldName="Purgation"
         dimensions={purgationDimensions}
       >
-        <TacticalOverlay>
+        <TacticalOverlay dimensions={purgationDimensions}>
           <TacticalOverlayItem position={{ x: 0.2, y: 0.8 }}>
             <span data-testid="purgation-marker">Marker</span>
           </TacticalOverlayItem>
@@ -318,8 +318,8 @@ describe('TacticalBattlefieldViewport', () => {
     expect(scene.style.transform).not.toContain('NaN')
     expect(scene.style.transform).not.toContain('Infinity')
     expect(screen.getByTestId('purgation-marker').parentElement).toHaveStyle({
-      left: '20%',
-      top: '80%',
+      left: '798px',
+      top: '4000px',
     })
 
     fireEvent.click(screen.getByRole('button', { name: 'Show Full Map' }))
@@ -358,7 +358,7 @@ describe('TacticalBattlefieldViewport', () => {
         dimensions={landscapeDimensions}
       >
         <img alt="Map fixture" />
-        <TacticalOverlay>
+        <TacticalOverlay dimensions={landscapeDimensions}>
           <TacticalOverlayItem position={{ x: 0.25, y: 0.75 }}>
             <span data-testid="normalized-marker">Marker</span>
           </TacticalOverlayItem>
@@ -377,16 +377,71 @@ describe('TacticalBattlefieldViewport', () => {
     expect(overlay?.parentElement).toBe(scene)
     expect(scene).toHaveStyle({ height: '900px', width: '1600px' })
     expect(scene.style.transform).toContain('scale(0.5)')
-    expect(item).toHaveStyle({ left: '25%', top: '75%' })
+    expect(item).toHaveStyle({ left: '400px', top: '675px' })
 
     fireEvent.click(screen.getByRole('button', { name: 'Zoom In' }))
     fireEvent.keyDown(viewport, { key: 'ArrowRight' })
 
     expect(scene.style.transform).not.toBe(initialSceneTransform)
-    expect(item).toHaveStyle({ left: '25%', top: '75%' })
+    expect(item).toHaveStyle({ left: '400px', top: '675px' })
     expect(image).not.toHaveStyle({ transform: expect.any(String) })
     expect(overlay).not.toHaveStyle({ transform: expect.any(String) })
   })
+
+  it.each([
+    [
+      'wide',
+      { width: 800, height: 600 },
+      landscapeDimensions,
+      'translate3d(0px, 75px, 0) scale(0.5)',
+      { left: '1600px', top: '900px' },
+    ],
+    [
+      'tall',
+      { width: 800, height: 600 },
+      { width: 1179, height: 2556 },
+      'translate3d(261.619718px, 0px, 0) scale(0.234742)',
+      { left: '1179px', top: '2556px' },
+    ],
+  ] as const)(
+    'anchors normalized corners to the %s image rather than viewport margins',
+    (_shape, viewportSize, dimensions, expectedTransform, bottomRightStyle) => {
+      vi.stubGlobal('ResizeObserver', undefined)
+      installElementMeasurement(viewportSize.width, viewportSize.height)
+      const { container } = render(
+        <TacticalBattlefieldViewport
+          battlefieldName="Termination"
+          dimensions={dimensions}
+        >
+          <img alt="Map bounds fixture" />
+          <TacticalOverlay dimensions={dimensions}>
+            <TacticalOverlayItem position={{ x: 0, y: 0 }}>
+              <span data-testid="top-left-marker">Top left</span>
+            </TacticalOverlayItem>
+            <TacticalOverlayItem position={{ x: 1, y: 1 }}>
+              <span data-testid="bottom-right-marker">Bottom right</span>
+            </TacticalOverlayItem>
+          </TacticalOverlay>
+        </TacticalBattlefieldViewport>,
+      )
+
+      const scene = getScene(container)
+      const image = screen.getByRole('img', { name: 'Map bounds fixture' })
+      const overlay = container.querySelector('.tactical-overlay')
+      const topLeft = screen.getByTestId('top-left-marker').parentElement
+      const bottomRight = screen.getByTestId('bottom-right-marker').parentElement
+
+      expect(scene.style.transform).toBe(expectedTransform)
+      expect(image.parentElement).toBe(scene)
+      expect(overlay?.parentElement).toBe(scene)
+      expect(overlay).toHaveStyle({
+        height: `${dimensions.height}px`,
+        width: `${dimensions.width}px`,
+      })
+      expect(topLeft).toHaveStyle({ left: '0px', top: '0px' })
+      expect(bottomRight).toHaveStyle(bottomRightStyle)
+    },
+  )
 
   it('recalculates fit after resize without moving normalized coordinates', () => {
     let resizeCallback: ResizeObserverCallbackForTest | null = null
@@ -409,7 +464,7 @@ describe('TacticalBattlefieldViewport', () => {
         battlefieldName="Termination"
         dimensions={landscapeDimensions}
       >
-        <TacticalOverlay>
+        <TacticalOverlay dimensions={landscapeDimensions}>
           <TacticalOverlayItem position={{ x: 0.4, y: 0.6 }}>
             <span data-testid="resize-marker">Marker</span>
           </TacticalOverlayItem>
@@ -430,7 +485,7 @@ describe('TacticalBattlefieldViewport', () => {
     expect(scene.style.transform).not.toBe(initialTransform)
     expect(scene.style.transform).toContain('scale(0.25)')
     expect(viewport).toHaveAttribute('data-fit', 'true')
-    expect(item).toHaveStyle({ left: '40%', top: '60%' })
+    expect(item).toHaveStyle({ left: '640px', top: '540px' })
 
     unmount()
     expect(disconnect).toHaveBeenCalledTimes(1)

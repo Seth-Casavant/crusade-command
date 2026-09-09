@@ -22,6 +22,8 @@ const checkpoint: PublicBattlefieldCheckpoint = {
   sortOrder: 1,
 }
 
+const nativeDimensions = { width: 1179, height: 1546 }
+
 const killTeams: PublicKillTeam[] = [
   {
     id: '00000000-0000-4000-8000-000000000501',
@@ -29,6 +31,9 @@ const killTeams: PublicKillTeam[] = [
     currentCheckpointId: checkpoint.id,
     members: [{ displayName: 'Sandbox Alpha One' }],
     operationalStatus: 'ADVANCING',
+    crusadePoints: 27,
+    terminusKills: 2,
+    objectivesCompleted: 2,
   },
   {
     id: '00000000-0000-4000-8000-000000000502',
@@ -36,6 +41,9 @@ const killTeams: PublicKillTeam[] = [
     currentCheckpointId: checkpoint.id,
     members: [{ displayName: 'Sandbox Beta One' }],
     operationalStatus: 'DEPLOYED',
+    crusadePoints: 4,
+    terminusKills: 0,
+    objectivesCompleted: 0,
   },
 ]
 
@@ -43,7 +51,7 @@ function renderMarkers(teams = killTeams) {
   const onSelectTeam = vi.fn()
 
   const result = render(
-    <TacticalOverlay>
+    <TacticalOverlay dimensions={nativeDimensions}>
       <KillTeamCheckpointMarkers
         checkpoints={[checkpoint]}
         killTeams={teams}
@@ -79,6 +87,8 @@ describe('KillTeamCheckpointMarkers', () => {
     expect(marker).not.toHaveAttribute('draggable')
     expect(marker).toHaveTextContent('SK')
     expect(marker).not.toHaveTextContent('Sandbox Kill Team Alpha')
+    expect(marker).not.toHaveTextContent('27')
+    expect(marker).not.toHaveTextContent('Terminus')
   })
 
   it('omits unassigned teams and ignores unknown checkpoint references', () => {
@@ -105,7 +115,10 @@ describe('KillTeamCheckpointMarkers', () => {
     expect(getKillTeamCheckpointMarkerOffset(1, 2)).toEqual({ x: 30, y: 0 })
 
     for (const marker of [alpha, beta]) {
-      expect(marker.parentElement).toHaveStyle({ left: '48%', top: '46%' })
+      expect(marker.parentElement).toHaveStyle({
+        left: '565.92px',
+        top: '711.16px',
+      })
     }
     expect(checkpoint).toMatchObject({ x: 0.48, y: 0.46 })
   })
@@ -144,7 +157,7 @@ describe('KillTeamCheckpointMarkers', () => {
     expect(new Set(firstOffsets.map(({ x, y }) => `${x}:${y}`)).size).toBe(3)
 
     rerender(
-      <TacticalOverlay>
+      <TacticalOverlay dimensions={nativeDimensions}>
         <KillTeamCheckpointMarkers
           checkpoints={[checkpoint]}
           killTeams={[...sharedTeams].reverse()}
@@ -182,12 +195,12 @@ describe('KillTeamCheckpointMarkers', () => {
     const anchor = marker.parentElement
     const scene = marker.closest('.tactical-battlefield__scene')
     expect(scene).toContainElement(anchor)
-    expect(anchor).toHaveStyle({ left: '48%', top: '46%' })
+    expect(anchor).toHaveStyle({ left: '565.92px', top: '711.16px' })
 
     fireEvent.click(screen.getByRole('button', { name: 'Zoom In' }))
     fireEvent.click(screen.getByRole('button', { name: 'Show Full Map' }))
 
     expect(scene).toContainElement(anchor)
-    expect(anchor).toHaveStyle({ left: '48%', top: '46%' })
+    expect(anchor).toHaveStyle({ left: '565.92px', top: '711.16px' })
   })
 })

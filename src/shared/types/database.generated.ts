@@ -176,6 +176,70 @@ export type Database = {
           },
         ]
       }
+      kill_team_progress_ledger: {
+        Row: {
+          actor_id: string
+          campaign_id: string
+          campaign_revision: number
+          created_at: string
+          description: string | null
+          event_type: Database["public"]["Enums"]["kill_team_progress_event_type"]
+          id: string
+          kill_team_id: string
+          mission_id: string
+          point_delta: number
+          scoring_target_key: string | null
+        }
+        Insert: {
+          actor_id: string
+          campaign_id: string
+          campaign_revision: number
+          created_at?: string
+          description?: string | null
+          event_type: Database["public"]["Enums"]["kill_team_progress_event_type"]
+          id?: string
+          kill_team_id: string
+          mission_id: string
+          point_delta: number
+          scoring_target_key?: string | null
+        }
+        Update: {
+          actor_id?: string
+          campaign_id?: string
+          campaign_revision?: number
+          created_at?: string
+          description?: string | null
+          event_type?: Database["public"]["Enums"]["kill_team_progress_event_type"]
+          id?: string
+          kill_team_id?: string
+          mission_id?: string
+          point_delta?: number
+          scoring_target_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kill_team_progress_campaign_mission_fk"
+            columns: ["campaign_id", "mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["campaign_id", "id"]
+          },
+          {
+            foreignKeyName: "kill_team_progress_scoring_target_fk"
+            columns: ["mission_id", "scoring_target_key"]
+            isOneToOne: false
+            referencedRelation: "mission_crusade_scoring_targets"
+            referencedColumns: ["mission_id", "target_key"]
+          },
+          {
+            foreignKeyName: "kill_team_progress_team_mission_fk"
+            columns: ["kill_team_id", "mission_id"]
+            isOneToOne: false
+            referencedRelation: "kill_teams"
+            referencedColumns: ["id", "mission_id"]
+          },
+        ]
+      }
       kill_teams: {
         Row: {
           created_at: string
@@ -617,6 +681,7 @@ export type Database = {
           campaign_id: string
           campaign_name: string
           campaign_progress: number
+          crusade_points: number
           crusade_scoring_targets: Json
           enemies: Json
           enemy_faction: string
@@ -642,6 +707,22 @@ export type Database = {
         }[]
       }
       get_public_sync_snapshot: { Args: never; Returns: Json }
+      record_kill_team_progress: {
+        Args: {
+          p_actor_id?: string
+          p_description?: string
+          p_event_type: Database["public"]["Enums"]["kill_team_progress_event_type"]
+          p_expected_revision: number
+          p_kill_team_id: string
+          p_point_delta: number
+          p_scoring_target_key?: string
+        }
+        Returns: {
+          ledger_entry_id: string
+          new_revision: number
+          update_id: string
+        }[]
+      }
       transition_mission_state: {
         Args: {
           p_actor_id?: string
@@ -719,6 +800,7 @@ export type Database = {
         | "KILL_TEAM_REGISTRATION"
         | "KILL_TEAM_POSITION"
         | "KILL_TEAM_OPERATIONAL_STATUS"
+        | "KILL_TEAM_PROGRESS"
       kill_team_operational_status:
         | "STAGING"
         | "DEPLOYED"
@@ -727,6 +809,11 @@ export type Database = {
         | "DELAYED"
         | "COMPLETE"
         | "WITHDRAWN"
+      kill_team_progress_event_type:
+        | "TERMINUS_KILL"
+        | "OBJECTIVE"
+        | "MISSION_COMPLETION"
+        | "CORRECTION"
       mission_status: "DRAFT" | "READY" | "ACTIVE" | "COMPLETE" | "ABORTED"
       objective_status: "PENDING" | "ACTIVE" | "COMPLETE"
     }
@@ -864,6 +951,7 @@ export const Constants = {
         "KILL_TEAM_REGISTRATION",
         "KILL_TEAM_POSITION",
         "KILL_TEAM_OPERATIONAL_STATUS",
+        "KILL_TEAM_PROGRESS",
       ],
       kill_team_operational_status: [
         "STAGING",
@@ -873,6 +961,12 @@ export const Constants = {
         "DELAYED",
         "COMPLETE",
         "WITHDRAWN",
+      ],
+      kill_team_progress_event_type: [
+        "TERMINUS_KILL",
+        "OBJECTIVE",
+        "MISSION_COMPLETION",
+        "CORRECTION",
       ],
       mission_status: ["DRAFT", "READY", "ACTIVE", "COMPLETE", "ABORTED"],
       objective_status: ["PENDING", "ACTIVE", "COMPLETE"],

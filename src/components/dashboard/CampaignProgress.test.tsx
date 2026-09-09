@@ -3,31 +3,29 @@ import { render, screen } from '@testing-library/react'
 import { CampaignProgress } from './CampaignProgress'
 
 describe('CampaignProgress', () => {
-  it.each([0, 1, 50, 99, 100])(
-    'renders %s percent numerically and visually',
+  it.each([0, 24, -3])(
+    'renders %s authoritative Crusade points without inventing a target',
     (value) => {
       render(<CampaignProgress value={value} />)
 
-      expect(screen.getByText(`${value}%`)).toBeInTheDocument()
       expect(
-        screen.getByRole('progressbar', { name: 'Campaign progress' }),
-      ).toHaveAttribute('aria-valuenow', String(value))
+        screen.getByRole('group', { name: 'Current Crusade points' }),
+      ).toHaveTextContent(String(value))
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+      expect(screen.queryByText(`${value}%`)).not.toBeInTheDocument()
     },
   )
 
   it.each([
     [Number.NaN, 0],
     [Number.POSITIVE_INFINITY, 0],
-    [-1, 0],
-    [101, 100],
+    [1.5, 0],
   ])('normalizes unsupported value %s to %s', (value, expected) => {
     render(<CampaignProgress value={value} />)
 
-    expect(screen.getByText(`${expected}%`)).toBeInTheDocument()
+    expect(
+      screen.getByRole('group', { name: 'Current Crusade points' }),
+    ).toHaveTextContent(String(expected))
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument()
-    expect(screen.getByRole('progressbar')).toHaveAttribute(
-      'aria-valuenow',
-      String(expected),
-    )
   })
 })

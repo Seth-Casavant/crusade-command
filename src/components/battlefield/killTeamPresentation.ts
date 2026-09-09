@@ -6,10 +6,12 @@ export type BattlefieldCheckpointPresentation = Readonly<{
 }>
 
 export type KillTeamPresentation = Readonly<{
+  crusadePoints: number
   currentCheckpointId: string | null
   id: string
   members: readonly Readonly<{ displayName: string }>[]
   name: string
+  objectivesCompleted: number
   operationalStatus:
     | 'STAGING'
     | 'DEPLOYED'
@@ -18,6 +20,7 @@ export type KillTeamPresentation = Readonly<{
     | 'DELAYED'
     | 'COMPLETE'
     | 'WITHDRAWN'
+  terminusKills: number
 }>
 
 export type KillTeamMarkerOffset = Readonly<{ x: number; y: number }>

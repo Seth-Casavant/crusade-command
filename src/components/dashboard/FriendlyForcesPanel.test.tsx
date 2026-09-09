@@ -13,6 +13,9 @@ const killTeams: PublicKillTeam[] = [
     ],
     currentCheckpointId: '00000000-0000-4000-8000-000000000712',
     operationalStatus: 'ADVANCING',
+    crusadePoints: 27,
+    terminusKills: 2,
+    objectivesCompleted: 2,
   },
   {
     id: '00000000-0000-4000-8000-000000000502',
@@ -23,6 +26,9 @@ const killTeams: PublicKillTeam[] = [
     ],
     currentCheckpointId: '00000000-0000-4000-8000-000000000712',
     operationalStatus: 'DEPLOYED',
+    crusadePoints: 4,
+    terminusKills: 0,
+    objectivesCompleted: 0,
   },
 ]
 

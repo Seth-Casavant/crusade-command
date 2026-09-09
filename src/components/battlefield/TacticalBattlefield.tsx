@@ -101,7 +101,9 @@ function ResolvedTacticalBattlefield({
       />
 
       {assetState.status === 'ready' ? (
-        <TacticalOverlay>{children}</TacticalOverlay>
+        <TacticalOverlay dimensions={asset.dimensions}>
+          {children}
+        </TacticalOverlay>
       ) : null}
     </TacticalBattlefieldFrame>
   )

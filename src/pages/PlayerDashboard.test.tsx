@@ -23,6 +23,7 @@ const campaign: PublicCampaignState = {
   battlefieldDescription: 'A fortress under xenos assault.',
   enemyFaction: 'Tyranid Swarm',
   campaignProgress: 67,
+  crusadePoints: 24,
   revision: 8,
   authoritativeUpdatedAt: '2026-09-05T16:14:00.000Z',
   objectives: [
@@ -89,6 +90,9 @@ const campaign: PublicCampaignState = {
       ],
       currentCheckpointId: '00000000-0000-4000-8000-000000000712',
       operationalStatus: 'ADVANCING',
+      crusadePoints: 27,
+      terminusKills: 2,
+      objectivesCompleted: 2,
     },
     {
       id: '00000000-0000-4000-8000-000000000502',
@@ -99,6 +103,9 @@ const campaign: PublicCampaignState = {
       ],
       currentCheckpointId: '00000000-0000-4000-8000-000000000712',
       operationalStatus: 'DEPLOYED',
+      crusadePoints: 4,
+      terminusKills: 0,
+      objectivesCompleted: 0,
     },
   ],
 }
@@ -142,11 +149,10 @@ describe('PlayerDashboard', () => {
       }),
     ).toBeInTheDocument()
     expect(screen.getByText('Loading Tactical Cartography...')).toBeInTheDocument()
-    expect(screen.getByText('67%')).toBeInTheDocument()
-    expect(screen.getByRole('progressbar')).toHaveAttribute(
-      'aria-valuenow',
-      '67',
-    )
+    expect(
+      screen.getByRole('group', { name: 'Current Crusade points' }),
+    ).toHaveTextContent('24')
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
     expect(screen.getAllByText('Live').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Active').length).toBeGreaterThan(0)
     expect(
@@ -163,20 +169,18 @@ describe('PlayerDashboard', () => {
     expect(screen.queryByRole('button', { name: /battlefield/i })).not.toBeInTheDocument()
   })
 
-  it.each([0, 100])('renders authoritative progress at %i percent', (value) => {
+  it.each([0, 24])('renders %i authoritative Crusade points', (value) => {
     render(
       <PlayerDashboard
         synchronization={createSynchronization({
-          campaign: { ...campaign, campaignProgress: value },
+          campaign: { ...campaign, crusadePoints: value },
         })}
       />,
     )
 
-    expect(screen.getByText(`${value}%`)).toBeInTheDocument()
-    expect(screen.getByRole('progressbar')).toHaveAttribute(
-      'aria-valuenow',
-      String(value),
-    )
+    expect(
+      screen.getByRole('group', { name: 'Current Crusade points' }),
+    ).toHaveTextContent(String(value))
   })
 
   it('renders one or multiple public objectives in authoritative order', () => {
@@ -350,7 +354,9 @@ describe('PlayerDashboard', () => {
 
     expect(screen.getByText('Loading Tactical Cartography...')).toBeInTheDocument()
     expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
-    expect(screen.getByText('67%')).toBeInTheDocument()
+    expect(
+      screen.getByRole('group', { name: 'Current Crusade points' }),
+    ).toHaveTextContent('24')
     expect(
       screen.getByRole('region', { name: 'Current Objectives' }),
     ).toBeInTheDocument()
@@ -394,7 +400,9 @@ describe('PlayerDashboard', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('The Kharon Purgation')).toBeInTheDocument()
     expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
-    expect(screen.getByText('67%')).toBeInTheDocument()
+    expect(
+      screen.getByRole('group', { name: 'Current Crusade points' }),
+    ).toHaveTextContent('24')
     expect(screen.getByText('Secure the relay nexus')).toBeInTheDocument()
     expect(screen.getByText('Sandbox Mission Boss')).toBeInTheDocument()
     expect(screen.getByText('Sandbox Kill Team Alpha')).toBeInTheDocument()
@@ -490,7 +498,9 @@ describe('PlayerDashboard', () => {
     )
 
     expect(screen.getByText('The Kharon Purgation')).toBeInTheDocument()
-    expect(screen.getByText('67%')).toBeInTheDocument()
+    expect(
+      screen.getByRole('group', { name: 'Current Crusade points' }),
+    ).toHaveTextContent('24')
     expect(screen.getAllByText('Offline').length).toBeGreaterThan(0)
     expect(
       screen.getByText('Showing last known campaign state.'),

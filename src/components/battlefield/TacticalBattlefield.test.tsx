@@ -107,7 +107,8 @@ describe('TacticalBattlefield', () => {
     const overlay = container.querySelector('.tactical-overlay')
     const item = screen.getByTestId('development-coordinate').parentElement
     expect(overlay).toContainElement(item)
-    expect(item).toHaveStyle({ left: '25%', top: '75%' })
+    expect(overlay).toHaveStyle({ height: '1546px', width: '1179px' })
+    expect(item).toHaveStyle({ left: '294.75px', top: '1159.5px' })
   })
 
   it('fails safely for an unknown authoritative battlefield', () => {

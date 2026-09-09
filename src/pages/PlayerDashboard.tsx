@@ -155,7 +155,7 @@ export function PlayerDashboard({
               />
               <div className="player-dashboard__primary-rail">
                 <MissionSummary campaign={campaign} />
-                <CampaignProgress value={campaign.campaignProgress} />
+                <CampaignProgress value={campaign.crusadePoints} />
               </div>
             </div>
 
