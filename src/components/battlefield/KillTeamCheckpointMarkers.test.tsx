@@ -28,19 +28,21 @@ const killTeams: PublicKillTeam[] = [
     name: 'Sandbox Kill Team Alpha',
     currentCheckpointId: checkpoint.id,
     members: [{ displayName: 'Sandbox Alpha One' }],
+    operationalStatus: 'ADVANCING',
   },
   {
     id: '00000000-0000-4000-8000-000000000502',
     name: 'Sandbox Kill Team Beta',
     currentCheckpointId: checkpoint.id,
     members: [{ displayName: 'Sandbox Beta One' }],
+    operationalStatus: 'DEPLOYED',
   },
 ]
 
 function renderMarkers(teams = killTeams) {
   const onSelectTeam = vi.fn()
 
-  return render(
+  const result = render(
     <TacticalOverlay>
       <KillTeamCheckpointMarkers
         checkpoints={[checkpoint]}
@@ -50,6 +52,8 @@ function renderMarkers(teams = killTeams) {
       />
     </TacticalOverlay>,
   )
+
+  return { ...result, onSelectTeam }
 }
 
 describe('KillTeamCheckpointMarkers', () => {
@@ -93,9 +97,65 @@ describe('KillTeamCheckpointMarkers', () => {
     const beta = screen.getByRole('button', { name: /Beta at Sandbox Relay/ })
     expect(alpha).toHaveAttribute('data-collision-index', '0')
     expect(beta).toHaveAttribute('data-collision-index', '1')
-    expect(alpha).toHaveAttribute('data-offset-x', '0')
-    expect(beta).toHaveAttribute('data-offset-x', '-18')
-    expect(getKillTeamCheckpointMarkerOffset(1)).toEqual({ x: -18, y: -18 })
+    expect(alpha).toHaveAttribute('data-collision-count', '2')
+    expect(alpha).toHaveAttribute('data-offset-x', '-30')
+    expect(alpha).toHaveAttribute('data-offset-y', '0')
+    expect(beta).toHaveAttribute('data-offset-x', '30')
+    expect(beta).toHaveAttribute('data-offset-y', '0')
+    expect(getKillTeamCheckpointMarkerOffset(1, 2)).toEqual({ x: 30, y: 0 })
+
+    for (const marker of [alpha, beta]) {
+      expect(marker.parentElement).toHaveStyle({ left: '48%', top: '46%' })
+    }
+    expect(checkpoint).toMatchObject({ x: 0.48, y: 0.46 })
+  })
+
+  it('keeps shared-checkpoint markers independently clickable', () => {
+    const { onSelectTeam } = renderMarkers()
+    const alpha = screen.getByRole('button', { name: /Alpha at Sandbox Relay/ })
+    const beta = screen.getByRole('button', { name: /Beta at Sandbox Relay/ })
+
+    fireEvent.click(alpha)
+    fireEvent.click(beta)
+
+    expect(onSelectTeam).toHaveBeenNthCalledWith(1, killTeams[0].id)
+    expect(onSelectTeam).toHaveBeenNthCalledWith(2, killTeams[1].id)
+  })
+
+  it('distributes three or more teams into stable, distinct radial offsets', () => {
+    const thirdTeam: PublicKillTeam = {
+      ...killTeams[1],
+      id: '00000000-0000-4000-8000-000000000503',
+      name: 'Crimson Watch',
+    }
+    const sharedTeams = [thirdTeam, ...killTeams]
+    const { rerender } = renderMarkers(sharedTeams)
+
+    const readOffsets = () =>
+      [...screen.getAllByRole('button')]
+        .map((marker) => ({
+          id: marker.getAttribute('aria-label'),
+          x: marker.getAttribute('data-offset-x'),
+          y: marker.getAttribute('data-offset-y'),
+        }))
+        .sort((left, right) => (left.id ?? '').localeCompare(right.id ?? ''))
+
+    const firstOffsets = readOffsets()
+    expect(new Set(firstOffsets.map(({ x, y }) => `${x}:${y}`)).size).toBe(3)
+
+    rerender(
+      <TacticalOverlay>
+        <KillTeamCheckpointMarkers
+          checkpoints={[checkpoint]}
+          killTeams={[...sharedTeams].reverse()}
+          onSelectTeam={vi.fn()}
+          selectedTeamId={null}
+        />
+      </TacticalOverlay>,
+    )
+
+    expect(readOffsets()).toEqual(firstOffsets)
+    expect(getKillTeamCheckpointMarkerOffset(0, 3)).toEqual({ x: 0, y: -32 })
   })
 
   it('keeps markers in the shared scene through zoom and SHOW FULL MAP', () => {

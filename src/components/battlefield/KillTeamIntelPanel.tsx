@@ -34,6 +34,12 @@ export function KillTeamIntelPanel({
             <h3 id="kill-team-intel-team">{team.name}</h3>
           </section>
           <dl className="kill-team-intel__facts">
+            <div className="kill-team-intel__status">
+              <dt>Operational status</dt>
+              <dd data-operational-status={team.operationalStatus}>
+                {team.operationalStatus}
+              </dd>
+            </div>
             <div>
               <dt>Current checkpoint</dt>
               <dd>{checkpoint.name}</dd>

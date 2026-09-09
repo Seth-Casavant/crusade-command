@@ -88,6 +88,7 @@ const campaign: PublicCampaignState = {
         { displayName: 'Sandbox Alpha Two' },
       ],
       currentCheckpointId: '00000000-0000-4000-8000-000000000712',
+      operationalStatus: 'ADVANCING',
     },
     {
       id: '00000000-0000-4000-8000-000000000502',
@@ -97,6 +98,7 @@ const campaign: PublicCampaignState = {
         { displayName: 'Sandbox Beta Two' },
       ],
       currentCheckpointId: '00000000-0000-4000-8000-000000000712',
+      operationalStatus: 'DEPLOYED',
     },
   ],
 }

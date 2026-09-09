@@ -10,26 +10,43 @@ export type KillTeamPresentation = Readonly<{
   id: string
   members: readonly Readonly<{ displayName: string }>[]
   name: string
+  operationalStatus:
+    | 'STAGING'
+    | 'DEPLOYED'
+    | 'ADVANCING'
+    | 'OBJECTIVE'
+    | 'DELAYED'
+    | 'COMPLETE'
+    | 'WITHDRAWN'
 }>
 
 export type KillTeamMarkerOffset = Readonly<{ x: number; y: number }>
 
-const collisionOffsets: readonly KillTeamMarkerOffset[] = [
-  { x: 0, y: 0 },
-  { x: -18, y: -18 },
-  { x: 18, y: 18 },
-  { x: 18, y: -18 },
-  { x: -18, y: 18 },
-  { x: 0, y: -26 },
-  { x: 26, y: 0 },
-  { x: 0, y: 26 },
-  { x: -26, y: 0 },
-]
-
 export function getKillTeamCheckpointMarkerOffset(
   index: number,
+  teamCount: number,
 ): KillTeamMarkerOffset {
-  return collisionOffsets[index % collisionOffsets.length] ?? collisionOffsets[0]
+  if (teamCount <= 1) {
+    return { x: 0, y: 0 }
+  }
+
+  const stableIndex = ((index % teamCount) + teamCount) % teamCount
+
+  if (teamCount === 2) {
+    return stableIndex === 0 ? { x: -30, y: 0 } : { x: 30, y: 0 }
+  }
+
+  const minimumCenterSpacing = 48
+  const radius = Math.max(
+    32,
+    minimumCenterSpacing / (2 * Math.sin(Math.PI / teamCount)),
+  )
+  const angle = -Math.PI / 2 + (stableIndex * 2 * Math.PI) / teamCount
+
+  return {
+    x: Math.round(Math.cos(angle) * radius),
+    y: Math.round(Math.sin(angle) * radius),
+  }
 }
 
 export function getKillTeamAbbreviation(name: string): string {

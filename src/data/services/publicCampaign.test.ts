@@ -74,12 +74,14 @@ const validCampaign = {
         { display_name: 'Sandbox Alpha Two' },
       ],
       current_checkpoint_id: '00000000-0000-4000-8000-000000000712',
+      operational_status: 'ADVANCING',
     },
     {
       id: '00000000-0000-4000-8000-000000000502',
       name: 'Sandbox Kill Team Beta',
       members: [{ display_name: 'Sandbox Beta One' }],
       current_checkpoint_id: null,
+      operational_status: 'DEPLOYED',
     },
   ],
 }
@@ -124,11 +126,13 @@ describe('public campaign response validation', () => {
             { displayName: 'Sandbox Alpha Two' },
           ],
           currentCheckpointId: '00000000-0000-4000-8000-000000000712',
+          operationalStatus: 'ADVANCING',
         },
         {
           name: 'Sandbox Kill Team Beta',
           members: [{ displayName: 'Sandbox Beta One' }],
           currentCheckpointId: null,
+          operationalStatus: 'DEPLOYED',
         },
       ],
     })
@@ -200,6 +204,7 @@ describe('public campaign response validation', () => {
               id: '00000000-0000-4000-8000-000000000501',
               name: 'Malformed Team',
               members: [{ display_name: 42 }],
+              operational_status: 'STAGING',
             },
           ],
         },
@@ -217,6 +222,7 @@ describe('public campaign response validation', () => {
           {
             id: '00000000-0000-4000-8000-000000000501',
             name: 'Sandbox Kill Team Alpha',
+            operational_status: 'ADVANCING',
             members: [
               {
                 display_name: 'Sandbox Alpha One',
@@ -232,6 +238,24 @@ describe('public campaign response validation', () => {
     expect(result.campaign?.killTeams[0]?.members[0]).toEqual({
       displayName: 'Sandbox Alpha One',
     })
+  })
+
+  it('rejects unsupported Kill Team operational status values', () => {
+    expect(() =>
+      parsePublicCampaignSnapshot({
+        active_campaign_count: 1,
+        campaign: {
+          ...validCampaign,
+          kill_teams: [
+            {
+              ...validCampaign.kill_teams[0],
+              operational_status: 'UNKNOWN',
+            },
+          ],
+        },
+        signal: validSignal,
+      }),
+    ).toThrow(SynchronizationError)
   })
 
   it('accepts a valid snapshot with no published ACTIVE campaign', () => {

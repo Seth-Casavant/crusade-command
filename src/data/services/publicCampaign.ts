@@ -54,11 +54,21 @@ export type PublicKillTeamMember = {
   displayName: string
 }
 
+export type PublicKillTeamOperationalStatus =
+  | 'STAGING'
+  | 'DEPLOYED'
+  | 'ADVANCING'
+  | 'OBJECTIVE'
+  | 'DELAYED'
+  | 'COMPLETE'
+  | 'WITHDRAWN'
+
 export type PublicKillTeam = {
   id: string
   name: string
   members: PublicKillTeamMember[]
   currentCheckpointId: string | null
+  operationalStatus: PublicKillTeamOperationalStatus
 }
 
 export type PublicBattlefieldCheckpoint = {
@@ -322,11 +332,28 @@ function parseKillTeam(value: unknown): PublicKillTeam {
     return invalidPublicState('Kill Team entries must be objects')
   }
 
+  const operationalStatus = readString(value, 'operational_status')
+
+  if (
+    ![
+      'STAGING',
+      'DEPLOYED',
+      'ADVANCING',
+      'OBJECTIVE',
+      'DELAYED',
+      'COMPLETE',
+      'WITHDRAWN',
+    ].includes(operationalStatus)
+  ) {
+    return invalidPublicState('Kill Team operational status is not supported')
+  }
+
   return {
     id: readUuid(value, 'id'),
     name: readString(value, 'name'),
     members: readArray(value, 'members').map(parseKillTeamMember),
     currentCheckpointId: readNullableUuid(value, 'current_checkpoint_id'),
+    operationalStatus: operationalStatus as PublicKillTeamOperationalStatus,
   }
 }
 

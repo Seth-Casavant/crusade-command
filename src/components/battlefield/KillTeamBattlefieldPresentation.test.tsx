@@ -22,12 +22,14 @@ const teams: PublicKillTeam[] = [
     name: 'Friendly Fire',
     currentCheckpointId: checkpoint.id,
     members: [{ displayName: 'Alpha One' }],
+    operationalStatus: 'ADVANCING',
   },
   {
     id: '00000000-0000-4000-8000-000000000502',
     name: 'Vanguard',
     currentCheckpointId: checkpoint.id,
     members: [{ displayName: 'Beta One' }],
+    operationalStatus: 'DEPLOYED',
   },
 ]
 
@@ -77,12 +79,15 @@ describe('KillTeamBattlefieldPresentation', () => {
     expect(vanguard).toHaveTextContent('VA')
     expect(friendlyFire).not.toHaveTextContent('Friendly Fire')
     expect(vanguard).not.toHaveTextContent('Sandbox Relay Node')
+    expect(friendlyFire).not.toHaveTextContent('ADVANCING')
+    expect(vanguard).not.toHaveTextContent('DEPLOYED')
 
     fireEvent.click(friendlyFire)
     expect(friendlyFire).toHaveAttribute('aria-pressed', 'true')
     expect(within(panel).getByText('Friendly Fire')).toBeInTheDocument()
     expect(within(panel).getByText('Sandbox Relay Node')).toBeInTheDocument()
     expect(within(panel).getByText('Alpha One')).toBeInTheDocument()
+    expect(within(panel).getByText('ADVANCING')).toBeInTheDocument()
 
     fireEvent.click(vanguard)
     expect(friendlyFire).toHaveAttribute('aria-pressed', 'false')
@@ -90,6 +95,8 @@ describe('KillTeamBattlefieldPresentation', () => {
     expect(within(panel).queryByText('Friendly Fire')).not.toBeInTheDocument()
     expect(within(panel).getByText('Vanguard')).toBeInTheDocument()
     expect(within(panel).getByText('Beta One')).toBeInTheDocument()
+    expect(within(panel).getByText('DEPLOYED')).toBeInTheDocument()
+    expect(within(panel).queryByText('ADVANCING')).not.toBeInTheDocument()
 
     fireEvent.click(vanguard)
     expect(vanguard).toHaveAttribute('aria-pressed', 'false')

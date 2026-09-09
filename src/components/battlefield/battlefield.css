@@ -327,6 +327,21 @@
   overflow-wrap: anywhere;
 }
 
+.kill-team-intel__status {
+  padding: var(--space-3);
+  border-left: var(--border-heavy) solid var(--accent-primary-hover);
+  background: var(--surface-panel-inset);
+}
+
+.kill-team-intel__status dd {
+  margin-top: var(--space-1);
+  color: var(--text-primary);
+  font-family: var(--font-technical);
+  font-size: var(--text-lg);
+  font-weight: 900;
+  letter-spacing: var(--tracking-interface);
+}
+
 .kill-team-intel__content ul {
   display: grid;
   gap: var(--space-2);

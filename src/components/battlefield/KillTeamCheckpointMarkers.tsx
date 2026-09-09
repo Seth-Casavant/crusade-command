@@ -10,6 +10,7 @@ import { TacticalOverlayItem } from './TacticalOverlay'
 
 type PositionedKillTeam = Readonly<{
   checkpoint: BattlefieldCheckpointPresentation
+  collisionCount: number
   collisionIndex: number
   team: KillTeamPresentation
 }>
@@ -40,7 +41,12 @@ function positionKillTeams(
     if (!checkpoint) return []
     return [...teams]
       .sort((left, right) => left.id.localeCompare(right.id))
-      .map((team, collisionIndex) => ({ checkpoint, collisionIndex, team }))
+      .map((team, collisionIndex) => ({
+        checkpoint,
+        collisionCount: teams.length,
+        collisionIndex,
+        team,
+      }))
   })
 }
 
@@ -54,13 +60,22 @@ export function KillTeamCheckpointMarkers({
 
   return (
     <>
-      {positionedTeams.map(({ checkpoint, collisionIndex, team }) => {
-        const offset = getKillTeamCheckpointMarkerOffset(collisionIndex)
+      {positionedTeams.map(({
+        checkpoint,
+        collisionCount,
+        collisionIndex,
+        team,
+      }) => {
+        const offset = getKillTeamCheckpointMarkerOffset(
+          collisionIndex,
+          collisionCount,
+        )
         return (
           <TacticalOverlayItem className="kill-team-checkpoint-marker-anchor" key={team.id} position={{ x: checkpoint.x, y: checkpoint.y }}>
             <button
               aria-label={`${team.name} at ${checkpoint.name}`}
               className="kill-team-checkpoint-marker"
+              data-collision-count={collisionCount}
               data-collision-index={collisionIndex}
               data-offset-x={offset.x}
               data-offset-y={offset.y}

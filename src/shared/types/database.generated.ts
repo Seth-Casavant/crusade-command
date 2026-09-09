@@ -183,6 +183,7 @@ export type Database = {
           id: string
           mission_id: string
           name: string
+          operational_status: Database["public"]["Enums"]["kill_team_operational_status"]
           updated_at: string
         }
         Insert: {
@@ -191,6 +192,7 @@ export type Database = {
           id?: string
           mission_id: string
           name: string
+          operational_status?: Database["public"]["Enums"]["kill_team_operational_status"]
           updated_at?: string
         }
         Update: {
@@ -199,6 +201,7 @@ export type Database = {
           id?: string
           mission_id?: string
           name?: string
+          operational_status?: Database["public"]["Enums"]["kill_team_operational_status"]
           updated_at?: string
         }
         Relationships: [
@@ -679,6 +682,18 @@ export type Database = {
           update_id: string
         }[]
       }
+      update_kill_team_operational_status: {
+        Args: {
+          p_actor_id?: string
+          p_expected_revision: number
+          p_kill_team_id: string
+          p_operational_status: Database["public"]["Enums"]["kill_team_operational_status"]
+        }
+        Returns: {
+          new_revision: number
+          update_id: string
+        }[]
+      }
       update_mission_battlefield_checkpoint: {
         Args: {
           p_actor_id?: string
@@ -703,6 +718,15 @@ export type Database = {
         | "LIVE_STATE_UPDATE"
         | "KILL_TEAM_REGISTRATION"
         | "KILL_TEAM_POSITION"
+        | "KILL_TEAM_OPERATIONAL_STATUS"
+      kill_team_operational_status:
+        | "STAGING"
+        | "DEPLOYED"
+        | "ADVANCING"
+        | "OBJECTIVE"
+        | "DELAYED"
+        | "COMPLETE"
+        | "WITHDRAWN"
       mission_status: "DRAFT" | "READY" | "ACTIVE" | "COMPLETE" | "ABORTED"
       objective_status: "PENDING" | "ACTIVE" | "COMPLETE"
     }
@@ -839,6 +863,16 @@ export const Constants = {
         "LIVE_STATE_UPDATE",
         "KILL_TEAM_REGISTRATION",
         "KILL_TEAM_POSITION",
+        "KILL_TEAM_OPERATIONAL_STATUS",
+      ],
+      kill_team_operational_status: [
+        "STAGING",
+        "DEPLOYED",
+        "ADVANCING",
+        "OBJECTIVE",
+        "DELAYED",
+        "COMPLETE",
+        "WITHDRAWN",
       ],
       mission_status: ["DRAFT", "READY", "ACTIVE", "COMPLETE", "ABORTED"],
       objective_status: ["PENDING", "ACTIVE", "COMPLETE"],

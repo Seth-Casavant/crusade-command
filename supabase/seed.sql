@@ -392,6 +392,29 @@ begin
   where m.id = '00000000-0000-4000-8000-000000000201';
 
   if v_status = 'READY' then
+    perform set_config(
+      'crusade.kill_team_operational_status_write',
+      'on',
+      true
+    );
+
+    update public.kill_teams
+    set operational_status = case id
+      when '00000000-0000-4000-8000-000000000501' then 'ADVANCING'
+      when '00000000-0000-4000-8000-000000000502' then 'DEPLOYED'
+      else operational_status
+    end
+    where id in (
+      '00000000-0000-4000-8000-000000000501',
+      '00000000-0000-4000-8000-000000000502'
+    );
+
+    perform set_config(
+      'crusade.kill_team_operational_status_write',
+      'off',
+      true
+    );
+
     perform *
     from public.transition_mission_state(
       '00000000-0000-4000-8000-000000000201',
