@@ -208,6 +208,23 @@ async function verifyRoleThroughOtp(email, expectedRole) {
   }
 }
 
+async function assertUnprovisionedAccountRejected(email) {
+  const client = createBrowserClient()
+  const { error } = await client.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: false },
+  })
+
+  assert(
+    error,
+    'An unprovisioned local email unexpectedly received an OTP request.',
+  )
+  assert(
+    error.code === 'otp_disabled' || error.code === 'user_not_found',
+    'The unprovisioned-email request failed for an unexpected reason.',
+  )
+}
+
 const publicClient = createBrowserClient()
 const { data: publicSnapshot, error: publicReadError } = await publicClient.rpc(
   'get_public_sync_snapshot',
@@ -232,7 +249,11 @@ await verifyRoleThroughOtp(
   'ADMINISTRATOR',
 )
 await verifyRoleThroughOtp('moderator@crusade-command.invalid', 'MODERATOR')
+await verifyRoleThroughOtp('player@crusade-command.invalid', 'PLAYER')
+await assertUnprovisionedAccountRejected(
+  'unprovisioned@crusade-command.invalid',
+)
 
 console.log(
-  'PASS: public read/no-write and email OTP role resolution passed for Administrator and Moderator.',
+  'PASS: public read/no-write, provisioned email OTP role resolution, and unprovisioned-account rejection passed.',
 )

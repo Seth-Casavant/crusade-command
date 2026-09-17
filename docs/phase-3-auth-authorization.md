@@ -77,6 +77,18 @@ exercise the anonymous read/no-write boundary and complete email-OTP role
 resolution for the seeded Administrator and Moderator. The test discovers the
 local browser-safe configuration and never prints OTP or session values.
 
+A clean local database reset deterministically recreates the sandbox email
+provider identities and their database role mappings:
+
+- `administrator@crusade-command.invalid` — `ADMINISTRATOR`
+- `moderator@crusade-command.invalid` — `MODERATOR`
+- `player@crusade-command.invalid` — `PLAYER` / read-only
+
+Because browser OTP requests retain `shouldCreateUser: false`, any other local
+email is rejected as unprovisioned instead of creating an account. Hosted
+environments do not use these `.invalid` sandbox identities; production staff
+accounts still require an explicit trusted provisioning operation.
+
 For a hosted environment, create the primary Administrator through a trusted
 deployment/bootstrap operation after its Supabase Auth identity exists. Do not
 expose an open "first user becomes Administrator" flow. Moderator assignment

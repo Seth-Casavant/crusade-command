@@ -191,6 +191,17 @@
   margin: var(--space-3) 0 0;
 }
 
+.submission-review-control p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--line-copy);
+}
+
+.submission-review-control .command-button {
+  justify-self: start;
+}
+
 .dashboard-entry-list {
   display: grid;
   gap: var(--space-3);

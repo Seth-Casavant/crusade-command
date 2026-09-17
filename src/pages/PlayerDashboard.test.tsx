@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
+import type { Session } from '@supabase/supabase-js'
 import { vi } from 'vitest'
 
 import type {
@@ -521,12 +522,69 @@ describe('PlayerDashboard', () => {
   })
 
   it('keeps the public dashboard available without an authentication prompt', () => {
-    render(<PlayerDashboard synchronization={createSynchronization()} />)
+    const onNavigateToStaffLogin = vi.fn()
+    render(
+      <PlayerDashboard
+        onNavigateToStaffLogin={onNavigateToStaffLogin}
+        synchronization={createSynchronization()}
+      />,
+    )
 
     expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'STAFF ACCESS' }))
+    expect(onNavigateToStaffLogin).toHaveBeenCalledTimes(1)
     expect(screen.queryByText('Command Staff Access')).not.toBeInTheDocument()
     expect(
       screen.queryByRole('button', { name: 'Send verification code' }),
     ).not.toBeInTheDocument()
+  })
+
+  it.each([
+    ['ADMINISTRATOR', 'Administrator session'],
+    ['MODERATOR', 'Moderator session'],
+  ] as const)('shows staff controls for an authorized %s', (role, identity) => {
+    const { container } = render(
+      <PlayerDashboard
+        authentication={{
+          status: 'authenticated',
+          session: {} as Session,
+          role,
+        }}
+        synchronization={createSynchronization()}
+      />,
+    )
+
+    expect(screen.getByText(identity)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'SIGN OUT' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'VIEW SUBMISSIONS' }),
+    ).toBeInTheDocument()
+    expect(
+      container.querySelector(
+        '.kill-team-battlefield-presentation__intel-column',
+      ),
+    ).toContainElement(container.querySelector('.submission-review-control'))
+    expect(
+      container.querySelector('.player-dashboard__primary-rail'),
+    ).not.toContainElement(
+      container.querySelector('.submission-review-control'),
+    )
+    expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
+  })
+
+  it('keeps VIEW SUBMISSIONS absent for an authenticated Player', () => {
+    render(
+      <PlayerDashboard
+        authentication={{
+          status: 'authenticated',
+          session: {} as Session,
+          role: 'PLAYER',
+        }}
+        synchronization={createSynchronization()}
+      />,
+    )
+
+    expect(screen.queryByText(/VIEW SUBMISSIONS/)).not.toBeInTheDocument()
+    expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
   })
 })

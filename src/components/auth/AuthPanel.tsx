@@ -4,6 +4,7 @@ import {
   requestCommandStaffOtp,
   signOutCommandStaff,
   verifyCommandStaffOtp,
+  type AuthenticationState,
 } from '../../data/services/auth'
 import { useAuthentication } from '../../state/auth/useAuthentication'
 import { Button, Panel, StatusBadge } from '../ui'
@@ -14,8 +15,25 @@ const roleLabels = {
   PLAYER: 'Player / read-only',
 } as const
 
-export function AuthPanel() {
-  const { state, error: sessionError } = useAuthentication()
+export type AuthPanelAuthentication = {
+  state: AuthenticationState
+  error: string | null
+}
+
+export type AuthPanelViewProps = {
+  authentication: AuthPanelAuthentication
+  requestOtp?: typeof requestCommandStaffOtp
+  signOut?: typeof signOutCommandStaff
+  verifyOtp?: typeof verifyCommandStaffOtp
+}
+
+export function AuthPanelView({
+  authentication,
+  requestOtp = requestCommandStaffOtp,
+  signOut = signOutCommandStaff,
+  verifyOtp = verifyCommandStaffOtp,
+}: AuthPanelViewProps) {
+  const { state, error: sessionError } = authentication
   const [email, setEmail] = useState('')
   const [requestedEmail, setRequestedEmail] = useState<string | null>(null)
   const [verificationCode, setVerificationCode] = useState('')
@@ -38,7 +56,7 @@ export function AuthPanel() {
     setIsSubmitting(true)
 
     try {
-      const normalizedEmail = await requestCommandStaffOtp(email)
+      const normalizedEmail = await requestOtp(email)
       setEmail(normalizedEmail)
       setRequestedEmail(normalizedEmail)
       setActionMessage(
@@ -62,7 +80,7 @@ export function AuthPanel() {
     setIsSubmitting(true)
 
     try {
-      await verifyCommandStaffOtp(requestedEmail ?? email, verificationCode)
+      await verifyOtp(requestedEmail ?? email, verificationCode)
       setVerificationCode('')
     } catch (error) {
       setActionError(
@@ -86,7 +104,7 @@ export function AuthPanel() {
     setIsSubmitting(true)
 
     try {
-      await signOutCommandStaff()
+      await signOut()
     } catch (error) {
       setActionError(
         error instanceof Error ? error.message : 'Sign-out failed.',
@@ -209,4 +227,10 @@ export function AuthPanel() {
       )}
     </Panel>
   )
+}
+
+export function AuthPanel() {
+  const authentication = useAuthentication()
+
+  return <AuthPanelView authentication={authentication} />
 }

@@ -9,11 +9,20 @@ import {
   MissionSummary,
   NoActiveCrusade,
   ObjectivePanel,
+  StaffAccessControl,
+  SubmissionReviewControl,
   SynchronizationStatus,
   ThreatPanel,
 } from '../components/dashboard'
 import { Button } from '../components/ui'
+import type { AuthenticationState } from '../data/services/auth'
 import type { SyncErrorCode } from '../data/services/publicCampaign'
+import {
+  navigateTo,
+  STAFF_SUBMISSIONS_PATH,
+  staffLoginPath,
+} from '../navigation'
+import { useAuthentication } from '../state/auth/useAuthentication'
 import {
   useCampaignSynchronization,
   type CampaignSynchronizationState,
@@ -26,6 +35,15 @@ export type PlayerDashboardSynchronization = CampaignSynchronizationState & {
 
 export type PlayerDashboardProps = {
   synchronization: PlayerDashboardSynchronization
+  authentication?: AuthenticationState
+  onNavigateToStaffLogin?: () => void
+  onNavigateToSubmissions?: () => void
+}
+
+const publicAuthentication: AuthenticationState = {
+  status: 'public',
+  session: null,
+  role: null,
 }
 
 const retainedStateMessages: Record<SyncErrorCode, string> = {
@@ -106,6 +124,9 @@ function InitialError({
 
 export function PlayerDashboard({
   synchronization,
+  authentication = publicAuthentication,
+  onNavigateToStaffLogin = () => navigateTo(staffLoginPath()),
+  onNavigateToSubmissions = () => navigateTo(STAFF_SUBMISSIONS_PATH),
 }: PlayerDashboardProps) {
   const {
     campaign,
@@ -125,10 +146,16 @@ export function PlayerDashboard({
     campaign === null &&
     lastSynchronizedAt === null &&
     (errorCode !== null || !isConfigured)
+  const staffRole =
+    authentication.status === 'authenticated' ? authentication.role : null
 
   return (
     <main className="player-dashboard">
       <div className="player-dashboard__shell">
+        <StaffAccessControl
+          authentication={authentication}
+          onNavigateToLogin={onNavigateToStaffLogin}
+        />
         {isAwaitingInitialState ? (
           <InitialLoading connectionStatus={connectionStatus} />
         ) : hasInitialFailure ? (
@@ -150,6 +177,14 @@ export function PlayerDashboard({
                 battlefieldId={campaign.battlefieldId}
                 battlefieldName={campaign.battlefieldName}
                 checkpoints={campaign.battlefieldCheckpoints}
+                intelPanelFooter={
+                  <SubmissionReviewControl
+                    campaignId={campaign.campaignId}
+                    missionId={campaign.missionId}
+                    onNavigate={onNavigateToSubmissions}
+                    role={staffRole}
+                  />
+                }
                 key={campaign.missionId}
                 killTeams={campaign.killTeams}
               />
@@ -206,6 +241,12 @@ export function PlayerDashboard({
 
 export function PlayerDashboardPage() {
   const synchronization = useCampaignSynchronization()
+  const { state: authentication } = useAuthentication()
 
-  return <PlayerDashboard synchronization={synchronization} />
+  return (
+    <PlayerDashboard
+      authentication={authentication}
+      synchronization={synchronization}
+    />
+  )
 }

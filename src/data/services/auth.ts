@@ -4,6 +4,32 @@ import type { Enums } from '../../shared/types'
 import { supabase } from './supabase'
 
 export type ApplicationRole = Enums<'app_role'>
+export type CommandStaffRole = Extract<
+  ApplicationRole,
+  'ADMINISTRATOR' | 'MODERATOR'
+>
+
+export function isCommandStaffRole(
+  role: ApplicationRole | null,
+): role is CommandStaffRole {
+  return role === 'ADMINISTRATOR' || role === 'MODERATOR'
+}
+
+export type StaffAuthenticationErrorCode =
+  | 'ACCOUNT_NOT_PROVISIONED'
+  | 'OTP_RATE_LIMITED'
+  | 'OTP_REQUEST_FAILED'
+  | 'OTP_VERIFICATION_FAILED'
+
+export class StaffAuthenticationError extends Error {
+  constructor(
+    public readonly code: StaffAuthenticationErrorCode,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'StaffAuthenticationError'
+  }
+}
 
 export type AuthenticationState =
   | {
@@ -137,6 +163,73 @@ function normalizedEmailAddress(email: string): string {
   return normalizedEmail
 }
 
+function authErrorCode(error: unknown): string | null {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    typeof error.code === 'string'
+  ) {
+    return error.code
+  }
+
+  return null
+}
+
+function authErrorStatus(error: unknown): number | null {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    typeof error.status === 'number'
+  ) {
+    return error.status
+  }
+
+  return null
+}
+
+function otpRequestError(error: unknown): StaffAuthenticationError {
+  const code = authErrorCode(error)
+  const status = authErrorStatus(error)
+
+  if (code === 'otp_disabled' || code === 'user_not_found') {
+    return new StaffAuthenticationError(
+      'ACCOUNT_NOT_PROVISIONED',
+      'This email is not provisioned for Crusade Command staff access.',
+    )
+  }
+
+  if (status === 429 || code?.includes('rate_limit')) {
+    return new StaffAuthenticationError(
+      'OTP_RATE_LIMITED',
+      'Too many verification codes were requested. Wait briefly and try again.',
+    )
+  }
+
+  return new StaffAuthenticationError(
+    'OTP_REQUEST_FAILED',
+    'The authentication service could not send a verification code. Try again shortly.',
+  )
+}
+
+function otpVerificationError(error: unknown): StaffAuthenticationError {
+  const code = authErrorCode(error)
+  const status = authErrorStatus(error)
+
+  if (status === 429 || code?.includes('rate_limit')) {
+    return new StaffAuthenticationError(
+      'OTP_RATE_LIMITED',
+      'Too many verification attempts were made. Wait briefly and request a new code.',
+    )
+  }
+
+  return new StaffAuthenticationError(
+    'OTP_VERIFICATION_FAILED',
+    'The verification code is invalid or expired. Request a new code and try again.',
+  )
+}
+
 export async function requestCommandStaffOtp(email: string): Promise<string> {
   if (!supabase) {
     throw new Error('Supabase is not configured for this browser build.')
@@ -149,9 +242,7 @@ export async function requestCommandStaffOtp(email: string): Promise<string> {
   })
 
   if (error) {
-    throw new Error(
-      'A verification code could not be requested. Try again shortly.',
-    )
+    throw otpRequestError(error)
   }
 
   return normalizedEmail
@@ -179,9 +270,7 @@ export async function verifyCommandStaffOtp(
   })
 
   if (error || !data.session) {
-    throw new Error(
-      'Verification failed. Request a new code and try again.',
-    )
+    throw otpVerificationError(error)
   }
 }
 

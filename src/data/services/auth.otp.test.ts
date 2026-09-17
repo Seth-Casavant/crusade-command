@@ -15,6 +15,7 @@ vi.mock('./supabase', () => ({
 import {
   requestCommandStaffOtp,
   signOutCommandStaff,
+  StaffAuthenticationError,
   verifyCommandStaffOtp,
 } from './auth'
 
@@ -52,7 +53,7 @@ describe('command staff email OTP service', () => {
     })
   })
 
-  it('returns controlled failures without exposing provider details', async () => {
+  it('returns controlled service failures without exposing provider details', async () => {
     otpMocks.signInWithOtp.mockResolvedValueOnce({
       error: new Error('provider detail'),
     })
@@ -63,10 +64,43 @@ describe('command staff email OTP service', () => {
 
     await expect(
       requestCommandStaffOtp('administrator@example.test'),
-    ).rejects.toThrow('verification code could not be requested')
+    ).rejects.toThrow('authentication service could not send')
     await expect(
       verifyCommandStaffOtp('administrator@example.test', '123456'),
-    ).rejects.toThrow('Verification failed')
+    ).rejects.toThrow('invalid or expired')
+  })
+
+  it('identifies an account that is not provisioned without exposing raw Auth details', async () => {
+    otpMocks.signInWithOtp.mockResolvedValueOnce({
+      error: {
+        code: 'otp_disabled',
+        status: 422,
+        message: 'Signups not allowed for otp',
+      },
+    })
+
+    await expect(
+      requestCommandStaffOtp('unknown@example.test'),
+    ).rejects.toMatchObject<Partial<StaffAuthenticationError>>({
+      code: 'ACCOUNT_NOT_PROVISIONED',
+      message: 'This email is not provisioned for Crusade Command staff access.',
+    })
+  })
+
+  it('distinguishes local Auth rate limiting from an unprovisioned account', async () => {
+    otpMocks.signInWithOtp.mockResolvedValueOnce({
+      error: {
+        code: 'over_email_send_rate_limit',
+        status: 429,
+        message: 'raw provider detail',
+      },
+    })
+
+    await expect(
+      requestCommandStaffOtp('administrator@example.test'),
+    ).rejects.toMatchObject<Partial<StaffAuthenticationError>>({
+      code: 'OTP_RATE_LIMITED',
+    })
   })
 
   it('delegates sign-out to Supabase Auth', async () => {

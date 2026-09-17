@@ -62,13 +62,17 @@ describe('KillTeamBattlefieldPresentation', () => {
     const panel = screen.getByRole('complementary', { name: 'Kill Team Intel' })
     const scene = container.querySelector('.tactical-battlefield__scene')
     const layout = container.querySelector('.kill-team-battlefield-presentation')
+    const intelColumn = container.querySelector(
+      '.kill-team-battlefield-presentation__intel-column',
+    )
 
     expect(panel).toHaveTextContent(
       'Select a Kill Team marker to view deployment data.',
     )
     expect(scene).not.toContainElement(panel)
     expect(layout?.children).toHaveLength(2)
-    expect(layout?.lastElementChild).toBe(panel)
+    expect(layout?.lastElementChild).toBe(intelColumn)
+    expect(intelColumn).toContainElement(panel)
   })
 
   it('selects one team, replaces the selection, and clears it on a second activation', () => {

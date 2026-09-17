@@ -36,4 +36,12 @@ export {
   SynchronizationStatus,
   type SynchronizationStatusProps,
 } from './SynchronizationStatus'
+export {
+  SubmissionReviewControl,
+  type SubmissionReviewControlProps,
+} from './SubmissionReviewControl'
+export {
+  StaffAccessControl,
+  type StaffAccessControlProps,
+} from './StaffAccessControl'
 export { ThreatPanel, type ThreatPanelProps } from './ThreatPanel'

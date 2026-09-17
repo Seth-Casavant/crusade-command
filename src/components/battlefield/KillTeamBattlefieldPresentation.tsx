@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
 import type {
   BattlefieldCheckpointPresentation,
@@ -12,6 +12,7 @@ export type KillTeamBattlefieldPresentationProps = {
   battlefieldId: string
   battlefieldName: string
   checkpoints: readonly BattlefieldCheckpointPresentation[]
+  intelPanelFooter?: ReactNode
   killTeams: readonly KillTeamPresentation[]
 }
 
@@ -19,6 +20,7 @@ export function KillTeamBattlefieldPresentation({
   battlefieldId,
   battlefieldName,
   checkpoints,
+  intelPanelFooter,
   killTeams,
 }: KillTeamBattlefieldPresentationProps) {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
@@ -47,10 +49,13 @@ export function KillTeamBattlefieldPresentation({
           selectedTeamId={selectedTeamId}
         />
       </TacticalBattlefield>
-      <KillTeamIntelPanel
-        checkpoint={selectedCheckpoint}
-        team={selectedTeam}
-      />
+      <div className="kill-team-battlefield-presentation__intel-column">
+        <KillTeamIntelPanel
+          checkpoint={selectedCheckpoint}
+          team={selectedTeam}
+        />
+        {intelPanelFooter}
+      </div>
     </div>
   )
 }

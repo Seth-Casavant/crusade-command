@@ -1,4 +1,7 @@
-import type { ApplicationRole } from '../../data/services/auth'
+import {
+  isCommandStaffRole,
+  type ApplicationRole,
+} from '../../data/services/auth'
 import type {
   PublicCampaignState,
   PublicSyncSignal,
@@ -92,8 +95,5 @@ export function canPerformAuthoritativeWrite(
   role: ApplicationRole | null,
   connectionStatus: ConnectionStatus,
 ): boolean {
-  return (
-    connectionStatus === 'LIVE' &&
-    (role === 'ADMINISTRATOR' || role === 'MODERATOR')
-  )
+  return connectionStatus === 'LIVE' && isCommandStaffRole(role)
 }

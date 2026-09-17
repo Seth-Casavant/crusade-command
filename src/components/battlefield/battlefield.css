@@ -242,10 +242,17 @@
   gap: var(--space-6);
 }
 
-.kill-team-battlefield-presentation > * {
+.kill-team-battlefield-presentation > *,
+.kill-team-battlefield-presentation__intel-column > * {
   width: 100%;
   min-width: 0;
   max-width: 100%;
+}
+
+.kill-team-battlefield-presentation__intel-column {
+  display: grid;
+  align-content: start;
+  gap: var(--space-6);
 }
 
 .kill-team-intel {
