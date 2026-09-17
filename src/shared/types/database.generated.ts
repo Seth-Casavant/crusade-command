@@ -314,6 +314,7 @@ export type Database = {
           mission_id: string
           point_delta: number
           scoring_target_key: string | null
+          source_submission_id: string | null
         }
         Insert: {
           actor_id: string
@@ -327,6 +328,7 @@ export type Database = {
           mission_id: string
           point_delta: number
           scoring_target_key?: string | null
+          source_submission_id?: string | null
         }
         Update: {
           actor_id?: string
@@ -340,6 +342,7 @@ export type Database = {
           mission_id?: string
           point_delta?: number
           scoring_target_key?: string | null
+          source_submission_id?: string | null
         }
         Relationships: [
           {
@@ -355,6 +358,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "mission_crusade_scoring_targets"
             referencedColumns: ["mission_id", "target_key"]
+          },
+          {
+            foreignKeyName: "kill_team_progress_source_submission_fk"
+            columns: ["source_submission_id"]
+            isOneToOne: true
+            referencedRelation: "crusade_submissions"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "kill_team_progress_team_mission_fk"
@@ -717,6 +727,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_crusade_submission: {
+        Args: {
+          p_awarded_point_delta: number
+          p_expected_revision: number
+          p_moderator_note?: string
+          p_submission_id: string
+        }
+        Returns: {
+          awarded_point_delta: number
+          campaign_crusade_points: number
+          kill_team_crusade_points: number
+          ledger_entry_id: string
+          new_revision: number
+          receipt_reference: string
+          reviewed_at: string
+          submission_id: string
+          submission_status: Database["public"]["Enums"]["crusade_submission_status"]
+        }[]
+      }
       assert_mission_activation_ready: {
         Args: {
           p_battlefield_id: string
@@ -820,6 +849,42 @@ export type Database = {
           update_id: string
         }[]
       }
+      get_crusade_submission_queue: {
+        Args: {
+          p_campaign_id?: string
+          p_mission_id?: string
+          p_status?: Database["public"]["Enums"]["crusade_submission_status"]
+        }
+        Returns: {
+          awarded_point_delta: number
+          campaign_id: string
+          event_type: Database["public"]["Enums"]["crusade_submission_event_type"]
+          evidence_content_type: string
+          evidence_file_size_bytes: number
+          evidence_original_filename: string
+          evidence_source_reference: string
+          evidence_storage_path: string
+          kill_team_id: string
+          kill_team_name: string
+          mission_id: string
+          moderator_note: string
+          player_note: string
+          receipt_reference: string
+          review_status: Database["public"]["Enums"]["crusade_submission_status"]
+          reviewed_at: string
+          reviewer_id: string
+          reviewer_role: Database["public"]["Enums"]["app_role"]
+          scoring_target_key: string
+          scoring_target_name: string
+          submission_id: string
+          submitted_at: string
+          submitting_member_display_name: string
+        }[]
+      }
+      get_pending_crusade_submission_count: {
+        Args: { p_campaign_id?: string; p_mission_id?: string }
+        Returns: number
+      }
       get_public_active_campaign: {
         Args: never
         Returns: {
@@ -871,6 +936,16 @@ export type Database = {
           ledger_entry_id: string
           new_revision: number
           update_id: string
+        }[]
+      }
+      reject_crusade_submission: {
+        Args: { p_moderator_note?: string; p_submission_id: string }
+        Returns: {
+          moderator_note: string
+          receipt_reference: string
+          reviewed_at: string
+          submission_id: string
+          submission_status: Database["public"]["Enums"]["crusade_submission_status"]
         }[]
       }
       transition_mission_state: {
