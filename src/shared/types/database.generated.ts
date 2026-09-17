@@ -141,6 +141,131 @@ export type Database = {
         }
         Relationships: []
       }
+      crusade_submission_reviews: {
+        Row: {
+          awarded_point_delta: number | null
+          decided_at: string
+          moderator_note: string | null
+          reviewed_by: string
+          status: Database["public"]["Enums"]["crusade_submission_status"]
+          submission_id: string
+        }
+        Insert: {
+          awarded_point_delta?: number | null
+          decided_at?: string
+          moderator_note?: string | null
+          reviewed_by: string
+          status: Database["public"]["Enums"]["crusade_submission_status"]
+          submission_id: string
+        }
+        Update: {
+          awarded_point_delta?: number | null
+          decided_at?: string
+          moderator_note?: string | null
+          reviewed_by?: string
+          status?: Database["public"]["Enums"]["crusade_submission_status"]
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crusade_submission_reviews_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: true
+            referencedRelation: "crusade_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crusade_submissions: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          event_type: Database["public"]["Enums"]["crusade_submission_event_type"]
+          evidence_content_type: string
+          evidence_file_size_bytes: number | null
+          evidence_original_filename: string
+          evidence_source_reference: string
+          evidence_storage_path: string | null
+          external_idempotency_key: string | null
+          id: string
+          kill_team_id: string
+          mission_id: string
+          player_note: string | null
+          receipt_reference: string
+          scoring_target_key: string | null
+          submitting_discord_user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          event_type: Database["public"]["Enums"]["crusade_submission_event_type"]
+          evidence_content_type: string
+          evidence_file_size_bytes?: number | null
+          evidence_original_filename: string
+          evidence_source_reference: string
+          evidence_storage_path?: string | null
+          external_idempotency_key?: string | null
+          id?: string
+          kill_team_id: string
+          mission_id: string
+          player_note?: string | null
+          receipt_reference: string
+          scoring_target_key?: string | null
+          submitting_discord_user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          event_type?: Database["public"]["Enums"]["crusade_submission_event_type"]
+          evidence_content_type?: string
+          evidence_file_size_bytes?: number | null
+          evidence_original_filename?: string
+          evidence_source_reference?: string
+          evidence_storage_path?: string | null
+          external_idempotency_key?: string | null
+          id?: string
+          kill_team_id?: string
+          mission_id?: string
+          player_note?: string | null
+          receipt_reference?: string
+          scoring_target_key?: string | null
+          submitting_discord_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crusade_submissions_campaign_mission_fk"
+            columns: ["campaign_id", "mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["campaign_id", "id"]
+          },
+          {
+            foreignKeyName: "crusade_submissions_member_fk"
+            columns: [
+              "kill_team_id",
+              "mission_id",
+              "submitting_discord_user_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "kill_team_members"
+            referencedColumns: ["kill_team_id", "mission_id", "discord_user_id"]
+          },
+          {
+            foreignKeyName: "crusade_submissions_scoring_target_fk"
+            columns: ["mission_id", "scoring_target_key"]
+            isOneToOne: false
+            referencedRelation: "mission_crusade_scoring_targets"
+            referencedColumns: ["mission_id", "target_key"]
+          },
+          {
+            foreignKeyName: "crusade_submissions_team_mission_fk"
+            columns: ["kill_team_id", "mission_id"]
+            isOneToOne: false
+            referencedRelation: "kill_teams"
+            referencedColumns: ["id", "mission_id"]
+          },
+        ]
+      }
       kill_team_members: {
         Row: {
           created_at: string
@@ -613,6 +738,31 @@ export type Database = {
         }[]
       }
       assign_moderator: { Args: { p_user_id: string }; Returns: undefined }
+      create_crusade_submission: {
+        Args: {
+          p_campaign_id: string
+          p_event_type: Database["public"]["Enums"]["crusade_submission_event_type"]
+          p_evidence_content_type: string
+          p_evidence_file_size_bytes?: number
+          p_evidence_original_filename: string
+          p_evidence_source_reference: string
+          p_evidence_storage_path?: string
+          p_external_idempotency_key?: string
+          p_kill_team_id: string
+          p_mission_id: string
+          p_player_note?: string
+          p_scoring_target_key?: string
+          p_submitting_discord_user_id: string
+        }
+        Returns: {
+          created_at: string
+          kill_team_id: string
+          receipt_reference: string
+          submission_event_type: Database["public"]["Enums"]["crusade_submission_event_type"]
+          submission_id: string
+          submission_status: Database["public"]["Enums"]["crusade_submission_status"]
+        }[]
+      }
       create_kill_team: {
         Args: {
           p_actor_id?: string
@@ -801,6 +951,11 @@ export type Database = {
         | "KILL_TEAM_POSITION"
         | "KILL_TEAM_OPERATIONAL_STATUS"
         | "KILL_TEAM_PROGRESS"
+      crusade_submission_event_type:
+        | "TERMINUS_KILL"
+        | "OBJECTIVE"
+        | "MISSION_COMPLETION"
+      crusade_submission_status: "PENDING" | "APPROVED" | "REJECTED"
       kill_team_operational_status:
         | "STAGING"
         | "DEPLOYED"
@@ -953,6 +1108,12 @@ export const Constants = {
         "KILL_TEAM_OPERATIONAL_STATUS",
         "KILL_TEAM_PROGRESS",
       ],
+      crusade_submission_event_type: [
+        "TERMINUS_KILL",
+        "OBJECTIVE",
+        "MISSION_COMPLETION",
+      ],
+      crusade_submission_status: ["PENDING", "APPROVED", "REJECTED"],
       kill_team_operational_status: [
         "STAGING",
         "DEPLOYED",
