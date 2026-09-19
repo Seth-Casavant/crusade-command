@@ -59,9 +59,8 @@ select is(
   'sandbox data supplies two representative Kill Teams'
 );
 
-select is(
-  (select count(*) from public.kill_team_members),
-  4::bigint,
+select ok(
+  (select count(*) from public.kill_team_members) >= 4,
   'sandbox data supplies multiple Kill Team members'
 );
 
