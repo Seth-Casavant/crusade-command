@@ -4,6 +4,8 @@ import {
   DEFAULT_MAX_ATTACHMENT_BYTES,
   DISCORD_EPHEMERAL_MESSAGE_FLAG,
   DiscordIntakeError,
+  DiscordTeamRegistrationError,
+type DiscordTeamRegistrationService, 
   type DiscordSubmissionInput,
   type DiscordSubmissionIntake,
   type DiscordSubmissionReceipt,
@@ -29,9 +31,10 @@ type DiscordInteractionHandlerConfig = {
   publicKey: string
   publicAppUrl: string
   guildId?: string
-  maxAttachmentBytes?: number
-  intake: DiscordSubmissionIntake
-  notifyStaff: StaffSubmissionNotifier
+maxAttachmentBytes?: number
+intake: DiscordSubmissionIntake
+teamRegistration?: DiscordTeamRegistrationService
+notifyStaff: StaffSubmissionNotifier
   waitUntil: (promise: Promise<void>) => void
   fetcher?: typeof fetch
   verifySignature?: typeof verifyDiscordRequestSignature
@@ -306,6 +309,112 @@ function parseSubmission(
     ...parseAttachment(options, interaction.data.resolved, maximumBytes),
   }
 }
+function parseTeamRegistration(
+  interaction: Record<string, unknown>,
+  allowedGuildId?: string,
+) {
+  const guildId = readSnowflake(interaction, 'guild_id')
+
+  if (allowedGuildId && guildId !== allowedGuildId) {
+    throw new InvalidInteractionError(
+      'This command is not available in this Discord server.',
+    )
+  }
+
+const member = interaction.member
+
+if (!isRecord(member)) {
+  throw new InvalidInteractionError(
+    'Use this command from the configured Crusade Discord server.',
+  )
+}
+
+const user = member.user
+
+if (!isRecord(user)) {
+  throw new InvalidInteractionError(
+    'Use this command from the configured Crusade Discord server.',
+  )
+}
+
+const discordUserId = readSnowflake(user, 'id')
+
+  if (!isRecord(interaction.data)) {
+    throw new InvalidInteractionError('The Discord command payload was invalid.')
+  }
+
+  const topLevelOptions = interaction.data.options
+
+  if (
+    !Array.isArray(topLevelOptions) ||
+    topLevelOptions.length !== 1 ||
+    !isRecord(topLevelOptions[0])
+  ) {
+    throw new InvalidInteractionError(
+      'Choose the register Kill Team command.',
+    )
+  }
+
+  const subcommand = topLevelOptions[0]
+
+  if (
+    subcommand.type !== 1 ||
+    subcommand.name !== 'register' ||
+    !Array.isArray(subcommand.options) ||
+    subcommand.options.length !== 1 ||
+    !isRecord(subcommand.options[0])
+  ) {
+    throw new InvalidInteractionError(
+      'Choose the register Kill Team command.',
+    )
+  }
+
+  const nameOption = subcommand.options[0]
+
+  if (
+    nameOption.name !== 'name' ||
+    nameOption.type !== 3 ||
+    typeof nameOption.value !== 'string'
+  ) {
+    throw new InvalidInteractionError('Enter a valid Kill Team name.')
+  }
+
+  const name = nameOption.value.trim()
+
+  if (name.length < 2 || name.length > 50) {
+    throw new InvalidInteractionError(
+      'Kill Team name must be between 2 and 50 characters.',
+    )
+  }
+
+  let leaderDisplayName: string | null = null
+
+  if (typeof member.nick === 'string' && member.nick.trim().length > 0) {
+    leaderDisplayName = member.nick.trim()
+  } else if (
+    typeof user.global_name === 'string' &&
+    user.global_name.trim().length > 0
+  ) {
+    leaderDisplayName = user.global_name.trim()
+  } else if (
+    typeof user.username === 'string' &&
+    user.username.trim().length > 0
+  ) {
+    leaderDisplayName = user.username.trim()
+  }
+
+  if (!leaderDisplayName) {
+    throw new InvalidInteractionError(
+      'Your Discord display name could not be determined.',
+    )
+  }
+
+  return {
+    discordUserId,
+    leaderDisplayName,
+    name,
+  }
+}
 
 function errorMessage(error: unknown) {
   if (error instanceof InvalidInteractionError) {
@@ -329,6 +438,45 @@ function errorMessage(error: unknown) {
 
     return messages[error.code]
   }
+
+  if (error instanceof DiscordIntakeError) {
+  const messages: Record<typeof error.code, string> = {
+    NO_ACTIVE_MISSION: 'No ACTIVE Crusade mission is accepting submissions.',
+    NOT_ASSIGNED:
+      'Your Discord account is not assigned to a Kill Team in the ACTIVE mission.',
+    INVALID_TARGET:
+      'The selected Terminus target is not configured for the ACTIVE mission.',
+    IDEMPOTENCY_CONFLICT:
+      'This Discord interaction conflicts with an existing submission.',
+    EVIDENCE_STORAGE_FAILED:
+      'Your screenshot could not be stored. Please try again.',
+    BACKEND_UNAVAILABLE:
+      'Crusade Command is temporarily unavailable. Try again shortly.',
+  }
+
+  return messages[error.code]
+}
+
+/* PASTE STEP 3 RIGHT HERE */
+
+if (error instanceof DiscordTeamRegistrationError) {
+  const messages: Record<typeof error.code, string> = {
+    NO_REGISTRATION_CAMPAIGN:
+      'No Crusade campaign is currently accepting Kill Team registration.',
+    NAME_TAKEN:
+      'That Kill Team name is already registered. Choose another name.',
+    ALREADY_REGISTERED:
+      'Your Discord account is already registered to a Kill Team in this campaign.',
+    REGISTRATION_LOCKED:
+      'Kill Team registration is locked because Crusade scoring has started.',
+    BACKEND_UNAVAILABLE:
+      'Crusade Command is temporarily unavailable. Try again shortly.',
+  }
+
+  return messages[error.code]
+}
+
+return 'Crusade Command is temporarily unavailable. Try again shortly.'
 
   return 'Crusade Command is temporarily unavailable. Try again shortly.'
 }
@@ -354,6 +502,23 @@ function logUnexpectedError(operation: string, error: unknown) {
         ? error.message
         : 'Unexpected interaction failure.',
   })
+}
+
+function teamRegistrationSuccessMessage(
+  teamName: string,
+  campaignName: string,
+  missionTeamCount: number,
+) {
+  return [
+    '**KILL TEAM REGISTERED**',
+    '',
+    `Kill Team: ${teamName}`,
+    `Campaign: ${campaignName}`,
+    'Kill Team Leader: You',
+    `Mission Rosters Prepared: ${missionTeamCount}`,
+    '',
+    'Your Kill Team registration is complete.',
+  ].join('\n')
 }
 
 function successMessage(
@@ -388,7 +553,8 @@ export function createDiscordInteractionHandler({
   guildId,
   maxAttachmentBytes = DEFAULT_MAX_ATTACHMENT_BYTES,
   intake,
-  notifyStaff,
+teamRegistration,
+notifyStaff,
   waitUntil,
   fetcher = fetch,
   verifySignature = verifyDiscordRequestSignature,
@@ -425,13 +591,21 @@ export function createDiscordInteractionHandler({
       return jsonResponse({ type: 1 })
     }
 
-    if (
-      interaction.type !== 2 ||
-      !isRecord(interaction.data) ||
-      interaction.data.name !== 'crusade-submit'
-    ) {
-      return ephemeralResponse('This Discord interaction is not supported.')
-    }
+if (
+  interaction.type !== 2 ||
+  !isRecord(interaction.data)
+) {
+  return ephemeralResponse('This Discord interaction is not supported.')
+}
+
+const commandName = interaction.data.name
+
+if (
+  commandName !== 'crusade-submit' &&
+  commandName !== 'crusade-team'
+) {
+  return ephemeralResponse('This Discord interaction is not supported.')
+}
 
     if (interaction.application_id !== applicationId) {
       return jsonResponse({ error: 'Invalid request signature.' }, 401)
@@ -443,6 +617,57 @@ export function createDiscordInteractionHandler({
     } catch (error) {
       return ephemeralResponse(errorMessage(error))
     }
+
+   if (commandName === 'crusade-team') {
+  waitUntil(
+    (async () => {
+      try {
+        if (!teamRegistration) {
+          throw new DiscordTeamRegistrationError(
+            'BACKEND_UNAVAILABLE',
+            'Kill Team registration service is unavailable.',
+          )
+        }
+
+        const input = parseTeamRegistration(interaction, guildId)
+        const campaign = await teamRegistration.findRegistrationCampaign()
+
+        const result = await teamRegistration.registerTeam({
+          campaignId: campaign.id,
+          name: input.name,
+          leaderDiscordUserId: input.discordUserId,
+          leaderDisplayName: input.leaderDisplayName,
+        })
+
+        await editOriginalResponse(
+          fetcher,
+          applicationId,
+          interactionToken,
+          teamRegistrationSuccessMessage(
+            input.name,
+            campaign.name,
+            result.missionTeamCount,
+          ),
+        )
+      } catch (error) {
+        logUnexpectedError('register_kill_team', error)
+
+        try {
+          await editOriginalResponse(
+            fetcher,
+            applicationId,
+            interactionToken,
+            errorMessage(error),
+          )
+        } catch (finalizationError) {
+          logUnexpectedError('finalize_response', finalizationError)
+        }
+      }
+    })(),
+  )
+
+  return deferredEphemeralResponse()
+}
 
     waitUntil(
       (async () => {

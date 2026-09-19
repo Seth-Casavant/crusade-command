@@ -67,3 +67,42 @@ export class DiscordIntakeError extends Error {
     this.name = 'DiscordIntakeError'
   }
 }
+export type DiscordTeamRegistrationCampaign = {
+  id: string
+  name: string
+}
+
+export type DiscordTeamRegistrationResult = {
+  campaignKillTeamId: string
+  missionTeamCount: number
+  newRevision: number
+}
+
+export type DiscordTeamRegistrationService = {
+  findRegistrationCampaign: () => Promise<DiscordTeamRegistrationCampaign>
+
+  registerTeam: (input: {
+    campaignId: string
+    name: string
+    leaderDiscordUserId: string
+    leaderDisplayName: string
+  }) => Promise<DiscordTeamRegistrationResult>
+}
+
+export type DiscordTeamRegistrationErrorCode =
+  | 'NO_REGISTRATION_CAMPAIGN'
+  | 'NAME_TAKEN'
+  | 'ALREADY_REGISTERED'
+  | 'REGISTRATION_LOCKED'
+  | 'BACKEND_UNAVAILABLE'
+
+export class DiscordTeamRegistrationError extends Error {
+  constructor(
+    public readonly code: DiscordTeamRegistrationErrorCode,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'DiscordTeamRegistrationError'
+  }
+}
+

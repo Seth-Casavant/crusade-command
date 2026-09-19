@@ -1,0 +1,24 @@
+{
+  "name": "crusade-team",
+  "description": "Manage your Crusade Kill Team registration",
+  "type": 1,
+  "integration_types": [0],
+  "contexts": [0],
+  "options": [
+    {
+      "name": "register",
+      "description": "Register a new Kill Team and become its Kill Team Leader",
+      "type": 1,
+      "options": [
+        {
+          "name": "name",
+          "description": "Kill Team name",
+          "type": 3,
+          "required": true,
+          "min_length": 2,
+          "max_length": 50
+        }
+      ]
+    }
+  ]
+}

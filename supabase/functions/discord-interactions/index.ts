@@ -6,6 +6,7 @@ import { DEFAULT_MAX_ATTACHMENT_BYTES } from '../_shared/discord/types.ts'
 import { createDiscordStaffNotifier } from '../_shared/discord/discord-notifier.ts'
 import { createSupabaseEvidenceStore } from './evidence-storage.ts'
 import { createSupabaseSubmissionDatabase } from './supabase-database.ts'
+import { createSupabaseTeamRegistrationDatabase } from './team-registration.ts'
 
 type EdgeRuntime = {
   env: { get: (name: string) => string | undefined }
@@ -90,6 +91,7 @@ const handler = createDiscordInteractionHandler({
   guildId: edgeRuntime.env.get('DISCORD_GUILD_ID')?.trim() || undefined,
   maxAttachmentBytes,
   intake,
+    teamRegistration: createSupabaseTeamRegistrationDatabase(client),
   waitUntil: (promise) => backgroundRuntime.waitUntil(promise),
   notifyStaff: createDiscordStaffNotifier({
     botToken: requiredEnvironmentValue('DISCORD_BOT_TOKEN'),
