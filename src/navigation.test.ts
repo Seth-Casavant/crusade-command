@@ -3,6 +3,7 @@ import {
   PUBLIC_DASHBOARD_PATH,
   staffLoginPath,
   staffReturnPath,
+  staffSubmissionReceipt,
   STAFF_SUBMISSIONS_PATH,
 } from './navigation'
 
@@ -32,5 +33,27 @@ describe('application navigation', () => {
       '/staff/login?returnTo=%2F',
     )
     expect(staffReturnPath('?returnTo=https://attacker.example.test')).toBe('/')
+  })
+
+  it('preserves a validated receipt deep link through staff authentication', () => {
+    const returnTo = '/admin/submissions?receipt=CR-00482'
+
+    expect(staffLoginPath(returnTo)).toBe(
+      '/staff/login?returnTo=%2Fadmin%2Fsubmissions%3Freceipt%3DCR-00482',
+    )
+    expect(
+      staffReturnPath(`?returnTo=${encodeURIComponent(returnTo)}`),
+    ).toBe(returnTo)
+    expect(
+      staffReturnPath(
+        '?returnTo=%2Fadmin%2Fsubmissions%3Freceipt%3D..%252Fprivate',
+      ),
+    ).toBe('/')
+  })
+
+  it('accepts only authoritative receipt references for staff deep links', () => {
+    expect(staffSubmissionReceipt('?receipt=CR-00482')).toBe('CR-00482')
+    expect(staffSubmissionReceipt('?receipt=../../private')).toBeNull()
+    expect(staffSubmissionReceipt('?receipt=CRS-00482')).toBeNull()
   })
 })

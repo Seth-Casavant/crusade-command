@@ -15,7 +15,7 @@ grant execute on function extensions.throws_ok(text, character, text, text)
 grant execute on function extensions.finish(boolean)
   to anon, authenticated, service_role;
 
-select plan(50);
+select plan(52);
 
 select has_table(
   'public',
@@ -227,6 +227,21 @@ select set_config(
 );
 
 set local role service_role;
+
+select is(
+  (
+    select count(*)
+    from public.kill_team_members
+    where discord_user_id = '900000000000000001'
+  ),
+  1::bigint,
+  'the Discord service can resolve the minimum authoritative membership columns'
+);
+
+select ok(
+  public.get_public_sync_snapshot() -> 'campaign' is not null,
+  'the Discord service can retrieve the safe ACTIVE-campaign snapshot'
+);
 
 select set_config(
   'crusade.valid_submission',

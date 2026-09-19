@@ -1,5 +1,12 @@
 # Future Discord and Kill Team workflow
 
+> Phase 5E.4 now implements the narrow `/crusade-submit` screenshot-intake
+> boundary described in `phase-5e4-discord-intake.md`. That implementation
+> creates a PENDING submission for human review and does not automatically
+> award progress or mutate campaign state. Where this older future-workflow
+> document describes automatic processing, the reviewed Phase 5E submission
+> and approval ledger architecture is authoritative.
+
 This permanent scope document defines the approved future Discord/Kill Team
 workflow. It is not implemented in Phase 4. Supabase remains authoritative;
 Discord is a validated interaction layer, never a second campaign database.

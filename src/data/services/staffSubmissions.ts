@@ -1,6 +1,9 @@
 import type { Enums } from '../../shared/types'
 import { supabase } from './supabase'
 
+const CRUSADE_EVIDENCE_BUCKET = 'crusade-evidence'
+const EVIDENCE_SIGNED_URL_TTL_SECONDS = 300
+
 export type SubmissionStatus = Enums<'crusade_submission_status'>
 export type SubmissionEventType = Enums<'crusade_submission_event_type'>
 
@@ -162,6 +165,7 @@ function classifyProviderError(error: unknown): StaffSubmissionError {
 
 function mapQueueRow(row: Record<string, unknown>): StaffSubmission {
   const sourceReference = String(row.evidence_source_reference)
+  const storagePath = nullableString(row.evidence_storage_path)
 
   return {
     id: String(row.submission_id),
@@ -181,9 +185,11 @@ function mapQueueRow(row: Record<string, unknown>): StaffSubmission {
     evidenceOriginalFilename: String(row.evidence_original_filename),
     evidenceContentType: String(row.evidence_content_type),
     evidenceSourceReference: sourceReference,
-    evidenceStoragePath: nullableString(row.evidence_storage_path),
+    evidenceStoragePath: storagePath,
     evidenceFileSizeBytes: nullableNumber(row.evidence_file_size_bytes),
-    evidencePreviewUrl: resolveEvidencePreviewUrl(sourceReference),
+    evidencePreviewUrl: storagePath
+      ? null
+      : resolveEvidencePreviewUrl(sourceReference),
     reviewStatus: row.review_status as SubmissionStatus,
     reviewerId: nullableString(row.reviewer_id),
     reviewerRole: nullableString(row.reviewer_role) as Enums<'app_role'> | null,
@@ -207,7 +213,39 @@ export async function fetchSubmissionQueue(
     throw classifyProviderError(error)
   }
 
-  return (data ?? []).map((row) => mapQueueRow(row))
+  const submissions = (data ?? []).map((row) => mapQueueRow(row))
+  const storagePaths = [
+    ...new Set(
+      submissions.flatMap(({ evidenceStoragePath }) =>
+        evidenceStoragePath ? [evidenceStoragePath] : [],
+      ),
+    ),
+  ]
+
+  if (storagePaths.length === 0) {
+    return submissions
+  }
+
+  const { data: signedUrls, error: signingError } = await client.storage
+    .from(CRUSADE_EVIDENCE_BUCKET)
+    .createSignedUrls(storagePaths, EVIDENCE_SIGNED_URL_TTL_SECONDS)
+
+  if (signingError) {
+    throw classifyProviderError(signingError)
+  }
+
+  const signedUrlByPath = new Map(
+    (signedUrls ?? []).flatMap(({ path, signedUrl }) =>
+      signedUrl ? [[path, signedUrl] as const] : [],
+    ),
+  )
+
+  return submissions.map((submission) => ({
+    ...submission,
+    evidencePreviewUrl: submission.evidenceStoragePath
+      ? (signedUrlByPath.get(submission.evidenceStoragePath) ?? null)
+      : submission.evidencePreviewUrl,
+  }))
 }
 
 export async function fetchPendingSubmissionCount(

@@ -25,6 +25,7 @@ import {
   PUBLIC_DASHBOARD_PATH,
   STAFF_SUBMISSIONS_PATH,
   staffLoginPath,
+  staffSubmissionReceipt,
 } from '../navigation'
 import { useAuthentication } from '../state/auth/useAuthentication'
 import { canPerformAuthoritativeWrite } from '../state/campaignSync/synchronization'
@@ -53,6 +54,7 @@ export type StaffSubmissionsRouteProps = {
   service?: StaffSubmissionService
   onReturnToDashboard?: () => void
   onRequireAuthentication?: () => void
+  receiptReference?: string | null
   signOut?: typeof signOutCommandStaff
 }
 
@@ -64,10 +66,15 @@ type StaffSubmissionReviewProps = {
   synchronization: StaffSynchronization
   service: StaffSubmissionService
   onReturnToDashboard: () => void
+  receiptReference: string | null
 }
 
 function redirectToSubmissionLogin() {
-  navigateTo(staffLoginPath(STAFF_SUBMISSIONS_PATH))
+  const receipt = staffSubmissionReceipt()
+  const returnTo = receipt
+    ? `${STAFF_SUBMISSIONS_PATH}?receipt=${receipt}`
+    : STAFF_SUBMISSIONS_PATH
+  navigateTo(staffLoginPath(returnTo))
 }
 
 function formatEnum(value: string) {
@@ -329,6 +336,7 @@ function StaffSubmissionReview({
   synchronization,
   service,
   onReturnToDashboard,
+  receiptReference,
 }: StaffSubmissionReviewProps) {
   const [activeFilter, setActiveFilter] =
     useState<SubmissionStatus>('PENDING')
@@ -503,6 +511,11 @@ function StaffSubmissionReview({
     role,
     synchronization.connectionStatus,
   )
+  const visibleSubmissions = receiptReference
+    ? submissions.filter(
+        (submission) => submission.receiptReference === receiptReference,
+      )
+    : submissions
 
   return (
     <main className="staff-submissions">
@@ -560,13 +573,14 @@ function StaffSubmissionReview({
           <p aria-live="polite" className="staff-submissions__empty">
             Loading authoritative submission queue...
           </p>
-        ) : submissions.length === 0 ? (
+        ) : visibleSubmissions.length === 0 ? (
           <p className="staff-submissions__empty">
-            No {activeFilter.toLowerCase()} submissions.
+            No {activeFilter.toLowerCase()} submissions
+            {receiptReference ? ` matching ${receiptReference}` : ''}.
           </p>
         ) : (
           <div className="submission-list">
-            {submissions.map((submission) => (
+            {visibleSubmissions.map((submission) => (
               <SubmissionCard
                 canReview={canReview}
                 draft={draft}
@@ -618,6 +632,7 @@ export function StaffSubmissionsRoute({
   service = staffSubmissionService,
   onReturnToDashboard = () => navigateTo(PUBLIC_DASHBOARD_PATH),
   onRequireAuthentication = redirectToSubmissionLogin,
+  receiptReference = null,
   signOut = signOutCommandStaff,
 }: StaffSubmissionsRouteProps) {
   const [signOutError, setSignOutError] = useState<string | null>(null)
@@ -721,6 +736,7 @@ export function StaffSubmissionsRoute({
       onReturnToDashboard={onReturnToDashboard}
       revision={synchronization.campaign.revision}
       role={authentication.role}
+      receiptReference={receiptReference}
       service={service}
       synchronization={synchronization}
     />
@@ -734,6 +750,7 @@ export function StaffSubmissionsPage() {
   return (
     <StaffSubmissionsRoute
       authentication={authentication}
+      receiptReference={staffSubmissionReceipt()}
       synchronization={synchronization}
     />
   )

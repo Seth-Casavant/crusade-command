@@ -2,6 +2,8 @@ import { vi } from 'vitest'
 
 const submissionMocks = vi.hoisted(() => ({
   rpc: vi.fn(),
+  createSignedUrls: vi.fn(),
+  storage: { from: vi.fn() },
 }))
 
 vi.mock('./supabase', () => ({
@@ -46,6 +48,11 @@ const queueRow = {
 describe('staff submission service', () => {
   beforeEach(() => {
     submissionMocks.rpc.mockReset()
+    submissionMocks.createSignedUrls.mockReset()
+    submissionMocks.storage.from.mockReset()
+    submissionMocks.storage.from.mockReturnValue({
+      createSignedUrls: submissionMocks.createSignedUrls,
+    })
   })
 
   it('maps the private queue response and requests the selected scope', async () => {
@@ -80,6 +87,40 @@ describe('staff submission service', () => {
     expect(
       resolveEvidencePreviewUrl('https://evidence.example.test/image.jpg'),
     ).toBe('https://evidence.example.test/image.jpg')
+  })
+
+  it('prefers a short-lived private Storage URL over the source reference', async () => {
+    const evidenceStoragePath =
+      'campaign/campaign-id/mission/mission-id/interaction/300000000000000003/screenshot'
+    submissionMocks.rpc.mockResolvedValue({
+      data: [{ ...queueRow, evidence_storage_path: evidenceStoragePath }],
+      error: null,
+    })
+    submissionMocks.createSignedUrls.mockResolvedValue({
+      data: [
+        {
+          path: evidenceStoragePath,
+          signedUrl: 'http://127.0.0.1/private-object?token=short-lived',
+        },
+      ],
+      error: null,
+    })
+
+    const [submission] = await fetchSubmissionQueue({ status: 'PENDING' })
+
+    expect(submissionMocks.storage.from).toHaveBeenCalledWith(
+      'crusade-evidence',
+    )
+    expect(submissionMocks.createSignedUrls).toHaveBeenCalledWith(
+      [evidenceStoragePath],
+      300,
+    )
+    expect(submission.evidencePreviewUrl).toBe(
+      'http://127.0.0.1/private-object?token=short-lived',
+    )
+    expect(submission.evidencePreviewUrl).not.toBe(
+      queueRow.evidence_source_reference,
+    )
   })
 
   it('retrieves the authoritative pending count', async () => {

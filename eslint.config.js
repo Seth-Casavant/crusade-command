@@ -15,6 +15,12 @@ export default tseslint.config(
     },
   },
   {
+    files: ['supabase/functions/discord-interactions/**/*.ts'],
+    languageOptions: {
+      globals: globals.deno,
+    },
+  },
+  {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {

@@ -158,6 +158,26 @@ function renderRoute(
 }
 
 describe('StaffSubmissionsRoute', () => {
+  it('uses a receipt deep link to show only the matching pending submission', async () => {
+    const otherSubmission = {
+      ...pendingSubmission,
+      id: '00000000-0000-4000-8000-000000000902',
+      receiptReference: 'CR-00483',
+    }
+    renderRoute({
+      receiptReference: 'CR-00482',
+      service: createService({
+        fetchQueue: vi.fn(async () => [
+          { ...pendingSubmission, receiptReference: 'CR-00482' },
+          otherSubmission,
+        ]),
+      }),
+    })
+
+    expect(await screen.findByText('CR-00482')).toBeInTheDocument()
+    expect(screen.queryByText('CR-00483')).not.toBeInTheDocument()
+  })
+
   it('redirects anonymous direct access to staff login without loading private data', async () => {
     const service = createService()
     const onRequireAuthentication = vi.fn()

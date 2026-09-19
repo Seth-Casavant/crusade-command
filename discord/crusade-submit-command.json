@@ -1,0 +1,55 @@
+{
+  "name": "crusade-submit",
+  "description": "Submit a Crusade result screenshot for staff review",
+  "type": 1,
+  "integration_types": [0],
+  "contexts": [0],
+  "options": [
+    {
+      "name": "objective",
+      "description": "Submit objective evidence",
+      "type": 1,
+      "options": [
+        {
+          "name": "screenshot",
+          "description": "One PNG, JPEG, or WebP result screenshot",
+          "type": 11,
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "terminus",
+      "description": "Submit Terminus kill evidence",
+      "type": 1,
+      "options": [
+        {
+          "name": "screenshot",
+          "description": "One PNG, JPEG, or WebP result screenshot",
+          "type": 11,
+          "required": true
+        },
+        {
+          "name": "target",
+          "description": "Configured Terminus target key",
+          "type": 3,
+          "required": true,
+          "max_length": 100
+        }
+      ]
+    },
+    {
+      "name": "mission-completion",
+      "description": "Submit mission-completion evidence",
+      "type": 1,
+      "options": [
+        {
+          "name": "screenshot",
+          "description": "One PNG, JPEG, or WebP result screenshot",
+          "type": 11,
+          "required": true
+        }
+      ]
+    }
+  ]
+}
