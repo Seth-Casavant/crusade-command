@@ -3,8 +3,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { createDiscordInteractionHandler } from './interaction.ts'
+
 import {
   DiscordIntakeError,
+  DiscordTeamRegistrationError,
+  type DiscordTeamRegistrationService,
   type DiscordSubmissionInput,
   type DiscordSubmissionIntake,
   type StaffSubmissionNotifier,
@@ -66,6 +69,39 @@ function interaction({
   }
 }
 
+function teamInteraction(name = 'Blood Reavers') {
+  return {
+    id: interactionId,
+    application_id: applicationId,
+    token: interactionToken,
+    guild_id: guildId,
+    type: 2,
+    member: {
+      nick: 'Omnial',
+      user: {
+        id: discordUserId,
+        username: 'omnial',
+      },
+    },
+    data: {
+      name: 'crusade-team',
+      options: [
+        {
+          name: 'register',
+          type: 1,
+          options: [
+            {
+              name: 'name',
+              type: 3,
+              value: name,
+            },
+          ],
+        },
+      ],
+    },
+  }
+}
+
 function createIntake(
   createSubmission = vi.fn(
     async (input: DiscordSubmissionInput) => ({
@@ -81,13 +117,30 @@ function createIntake(
   return { createSubmission }
 }
 
+function createTeamRegistration(): DiscordTeamRegistrationService {
+  return {
+    findRegistrationCampaign: vi.fn(async () => ({
+      id: '13000000-0000-4000-8000-000000000001',
+      name: 'Nexovar Crusade',
+    })),
+
+    registerTeam: vi.fn(async () => ({
+      campaignKillTeamId: '23000000-0000-4000-8000-000000000001',
+      missionTeamCount: 4,
+      newRevision: 12,
+    })),
+  }
+}
+
 function createHandler({
   intake = createIntake(),
+  teamRegistration = createTeamRegistration(),
   notifyStaff = vi.fn(async () => undefined),
   signatureValid = true,
   fetcher = vi.fn(async () => new Response(null, { status: 200 })),
 }: {
   intake?: DiscordSubmissionIntake
+  teamRegistration?: DiscordTeamRegistrationService
   notifyStaff?: StaffSubmissionNotifier
   signatureValid?: boolean
   fetcher?: ReturnType<typeof vi.fn>
@@ -98,8 +151,9 @@ function createHandler({
   })
 
   return {
-    intake,
-    notifyStaff,
+  intake,
+  teamRegistration,
+  notifyStaff,
     fetcher,
     waitUntil,
     finishBackground: () => Promise.all(backgroundTasks),
@@ -110,6 +164,7 @@ function createHandler({
       guildId,
       maxAttachmentBytes: 5_000_000,
       intake,
+      teamRegistration,
       notifyStaff,
       waitUntil,
       fetcher: fetcher as typeof fetch,
@@ -188,6 +243,189 @@ describe('Discord interaction handler', () => {
       evidenceFileSizeBytes: 2048,
     })
   })
+
+it('routes /crusade-team register using the Discord identity', async () => {
+  const teamRegistration = createTeamRegistration()
+
+  const {
+    handler,
+    fetcher,
+    finishBackground,
+  } = createHandler({
+    teamRegistration,
+  })
+
+  const response = await handler(
+    request(teamInteraction()),
+  )
+
+  const body = await responseData(response)
+
+  await finishBackground()
+
+  expect(body).toEqual({
+    type: 5,
+    data: { flags: 64 },
+  })
+
+  expect(
+    teamRegistration.findRegistrationCampaign,
+  ).toHaveBeenCalledOnce()
+
+  expect(
+    teamRegistration.registerTeam,
+  ).toHaveBeenCalledWith({
+    campaignId: '13000000-0000-4000-8000-000000000001',
+    name: 'Blood Reavers',
+    leaderDiscordUserId: discordUserId,
+    leaderDisplayName: 'Omnial',
+  })
+
+  expect(finalizedMessage(fetcher).content).toContain(
+    'KILL TEAM REGISTERED',
+  )
+
+  expect(finalizedMessage(fetcher).content).toContain(
+    'Kill Team: Blood Reavers',
+  )
+
+  expect(finalizedMessage(fetcher).content).toContain(
+    'Campaign: Nexovar Crusade',
+  )
+
+  expect(finalizedMessage(fetcher).content).toContain(
+    'Mission Rosters Prepared: 4',
+  )
+})
+
+it.each([
+  ['NAME_TAKEN', /already registered/i],
+  ['ALREADY_REGISTERED', /already registered to a Kill Team/i],
+  ['REGISTRATION_LOCKED', /registration is locked/i],
+] as const)(
+  'finalizes /crusade-team register with a safe %s error',
+  async (code, message) => {
+    const teamRegistration = createTeamRegistration()
+
+    teamRegistration.registerTeam = vi.fn(async () => {
+      throw new DiscordTeamRegistrationError(
+        code,
+        'private backend detail',
+      )
+    })
+
+    const {
+      handler,
+      intake,
+      notifyStaff,
+      fetcher,
+      finishBackground,
+    } = createHandler({
+      teamRegistration,
+    })
+
+    const response = await handler(
+      request(teamInteraction()),
+    )
+
+    const body = await responseData(response)
+
+    await finishBackground()
+
+    const finalContent = finalizedMessage(fetcher).content
+
+    expect(body).toEqual({
+      type: 5,
+      data: { flags: 64 },
+    })
+
+    expect(finalContent).toMatch(message)
+    expect(finalContent).not.toContain('private backend detail')
+
+    expect(intake.createSubmission).not.toHaveBeenCalled()
+    expect(notifyStaff).not.toHaveBeenCalled()
+  },
+)
+
+it('returns a safe message when no campaign is accepting registration', async () => {
+  const teamRegistration = createTeamRegistration()
+
+  teamRegistration.findRegistrationCampaign = vi.fn(async () => {
+    throw new DiscordTeamRegistrationError(
+      'NO_REGISTRATION_CAMPAIGN',
+      'private campaign lookup detail',
+    )
+  })
+
+  const {
+    handler,
+    intake,
+    notifyStaff,
+    fetcher,
+    finishBackground,
+  } = createHandler({
+    teamRegistration,
+  })
+
+  const response = await handler(
+    request(teamInteraction()),
+  )
+
+  await finishBackground()
+
+  expect((await responseData(response)).type).toBe(5)
+
+  const finalContent = finalizedMessage(fetcher).content
+
+  expect(finalContent).toMatch(
+    /No Crusade campaign is currently accepting Kill Team registration/i,
+  )
+
+  expect(finalContent).not.toContain(
+    'private campaign lookup detail',
+  )
+
+  expect(teamRegistration.registerTeam).not.toHaveBeenCalled()
+  expect(intake.createSubmission).not.toHaveBeenCalled()
+  expect(notifyStaff).not.toHaveBeenCalled()
+})
+
+it('rejects an invalid Kill Team name before calling the registration service', async () => {
+  const teamRegistration = createTeamRegistration()
+
+  const {
+    handler,
+    intake,
+    notifyStaff,
+    fetcher,
+    finishBackground,
+  } = createHandler({
+    teamRegistration,
+  })
+
+  const response = await handler(
+    request(teamInteraction('A')),
+  )
+
+  await finishBackground()
+
+  expect((await responseData(response)).type).toBe(5)
+
+  expect(finalizedMessage(fetcher).content).toMatch(
+    /between 2 and 50 characters/i,
+  )
+
+  expect(
+    teamRegistration.findRegistrationCampaign,
+  ).not.toHaveBeenCalled()
+
+  expect(
+    teamRegistration.registerTeam,
+  ).not.toHaveBeenCalled()
+
+  expect(intake.createSubmission).not.toHaveBeenCalled()
+  expect(notifyStaff).not.toHaveBeenCalled()
+})
 
   it.each([
     ['objective', 'OBJECTIVE', undefined],
