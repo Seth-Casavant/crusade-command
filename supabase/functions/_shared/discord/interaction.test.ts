@@ -102,6 +102,104 @@ function teamInteraction(name = 'Blood Reavers') {
   }
 }
 
+function teamAddInteraction() {
+  const addedDiscordUserId = '900000000000000002'
+
+  return {
+    id: interactionId,
+    application_id: applicationId,
+    token: interactionToken,
+    guild_id: guildId,
+    type: 2,
+    member: {
+      nick: 'Omnial',
+      user: {
+        id: discordUserId,
+        username: 'omnial',
+      },
+    },
+    data: {
+      name: 'crusade-team',
+      options: [
+        {
+          name: 'add',
+          type: 1,
+          options: [
+            {
+              name: 'member',
+              type: 6,
+              value: addedDiscordUserId,
+            },
+          ],
+        },
+      ],
+      resolved: {
+        users: {
+          [addedDiscordUserId]: {
+            id: addedDiscordUserId,
+            username: 'decimus',
+            global_name: 'Decimus',
+          },
+        },
+        members: {
+          [addedDiscordUserId]: {
+            nick: 'Decimus',
+          },
+        },
+      },
+    },
+  }
+}
+
+function teamRemoveInteraction() {
+  const removedDiscordUserId = '900000000000000002'
+
+  return {
+    id: interactionId,
+    application_id: applicationId,
+    token: interactionToken,
+    guild_id: guildId,
+    type: 2,
+    member: {
+      nick: 'Omnial',
+      user: {
+        id: discordUserId,
+        username: 'omnial',
+      },
+    },
+    data: {
+      name: 'crusade-team',
+      options: [
+        {
+          name: 'remove',
+          type: 1,
+          options: [
+            {
+              name: 'member',
+              type: 6,
+              value: removedDiscordUserId,
+            },
+          ],
+        },
+      ],
+      resolved: {
+        users: {
+          [removedDiscordUserId]: {
+            id: removedDiscordUserId,
+            username: 'decimus',
+            global_name: 'Decimus',
+          },
+        },
+        members: {
+          [removedDiscordUserId]: {
+            nick: 'Decimus',
+          },
+        },
+      },
+    },
+  }
+}
+
 function createIntake(
   createSubmission = vi.fn(
     async (input: DiscordSubmissionInput) => ({
@@ -129,8 +227,25 @@ function createTeamRegistration(): DiscordTeamRegistrationService {
       missionTeamCount: 4,
       newRevision: 12,
     })),
+
+    addMember: vi.fn(async () => ({
+      campaignKillTeamId: '23000000-0000-4000-8000-000000000001',
+      killTeamName: 'Blood Reavers',
+      memberCount: 2,
+      missionTeamCount: 4,
+      newRevision: 13,
+    })),
+
+    removeMember: vi.fn(async () => ({
+      campaignKillTeamId: '23000000-0000-4000-8000-000000000001',
+      killTeamName: 'Blood Reavers',
+      memberCount: 1,
+      missionTeamCount: 4,
+      newRevision: 14,
+})),
   }
 }
+
 
 function createHandler({
   intake = createIntake(),
@@ -295,6 +410,97 @@ it('routes /crusade-team register using the Discord identity', async () => {
 
   expect(finalizedMessage(fetcher).content).toContain(
     'Mission Rosters Prepared: 4',
+  )
+})
+
+it('routes /crusade-team add using the selected Discord member', async () => {
+  const teamRegistration = createTeamRegistration()
+
+  const {
+    handler,
+    fetcher,
+    finishBackground,
+  } = createHandler({
+    teamRegistration,
+  })
+
+  const response = await handler(
+    request(teamAddInteraction()),
+  )
+
+  const body = await responseData(response)
+
+  await finishBackground()
+
+  expect(body).toEqual({
+    type: 5,
+    data: { flags: 64 },
+  })
+
+  expect(
+    teamRegistration.addMember,
+  ).toHaveBeenCalledWith({
+    campaignId: '13000000-0000-4000-8000-000000000001',
+    leaderDiscordUserId: discordUserId,
+    memberDiscordUserId: '900000000000000002',
+    memberDisplayName: 'Decimus',
+  })
+
+  expect(finalizedMessage(fetcher).content).toContain(
+    'KILL TEAM MEMBER ADDED',
+  )
+
+  expect(finalizedMessage(fetcher).content).toContain(
+    'Member: Decimus',
+  )
+
+  expect(finalizedMessage(fetcher).content).toContain(
+    'Roster: 2/4',
+  )
+})
+
+it('routes /crusade-team remove using the selected Discord member', async () => {
+  const teamRegistration = createTeamRegistration()
+
+  const {
+    handler,
+    fetcher,
+    finishBackground,
+  } = createHandler({
+    teamRegistration,
+  })
+
+  const response = await handler(
+    request(teamRemoveInteraction()),
+  )
+
+  const body = await responseData(response)
+
+  await finishBackground()
+
+  expect(body).toEqual({
+    type: 5,
+    data: { flags: 64 },
+  })
+
+  expect(
+    teamRegistration.removeMember,
+  ).toHaveBeenCalledWith({
+    campaignId: '13000000-0000-4000-8000-000000000001',
+    leaderDiscordUserId: discordUserId,
+    memberDiscordUserId: '900000000000000002',
+  })
+
+  expect(finalizedMessage(fetcher).content).toContain(
+    'KILL TEAM MEMBER REMOVED',
+  )
+
+  expect(finalizedMessage(fetcher).content).toContain(
+    'Member: Decimus',
+  )
+
+  expect(finalizedMessage(fetcher).content).toContain(
+    'Roster: 1/4',
   )
 })
 

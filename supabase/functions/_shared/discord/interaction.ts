@@ -321,71 +321,16 @@ function parseTeamRegistration(
     )
   }
 
-const member = interaction.member
+  const member = interaction.member
 
-if (!isRecord(member)) {
-  throw new InvalidInteractionError(
-    'Use this command from the configured Crusade Discord server.',
-  )
-}
-
-const user = member.user
-
-if (!isRecord(user)) {
-  throw new InvalidInteractionError(
-    'Use this command from the configured Crusade Discord server.',
-  )
-}
-
-const discordUserId = readSnowflake(user, 'id')
-
-  if (!isRecord(interaction.data)) {
-    throw new InvalidInteractionError('The Discord command payload was invalid.')
-  }
-
-  const topLevelOptions = interaction.data.options
-
-  if (
-    !Array.isArray(topLevelOptions) ||
-    topLevelOptions.length !== 1 ||
-    !isRecord(topLevelOptions[0])
-  ) {
+  if (!isRecord(member) || !isRecord(member.user)) {
     throw new InvalidInteractionError(
-      'Choose the register Kill Team command.',
+      'Use this command from the configured Crusade Discord server.',
     )
   }
 
-  const subcommand = topLevelOptions[0]
-
-  if (
-    subcommand.type !== 1 ||
-    subcommand.name !== 'register' ||
-    !Array.isArray(subcommand.options) ||
-    subcommand.options.length !== 1 ||
-    !isRecord(subcommand.options[0])
-  ) {
-    throw new InvalidInteractionError(
-      'Choose the register Kill Team command.',
-    )
-  }
-
-  const nameOption = subcommand.options[0]
-
-  if (
-    nameOption.name !== 'name' ||
-    nameOption.type !== 3 ||
-    typeof nameOption.value !== 'string'
-  ) {
-    throw new InvalidInteractionError('Enter a valid Kill Team name.')
-  }
-
-  const name = nameOption.value.trim()
-
-  if (name.length < 2 || name.length > 50) {
-    throw new InvalidInteractionError(
-      'Kill Team name must be between 2 and 50 characters.',
-    )
-  }
+  const user = member.user
+  const discordUserId = readSnowflake(user, 'id')
 
   let leaderDisplayName: string | null = null
 
@@ -409,11 +354,161 @@ const discordUserId = readSnowflake(user, 'id')
     )
   }
 
-  return {
-    discordUserId,
-    leaderDisplayName,
-    name,
+  if (!isRecord(interaction.data)) {
+    throw new InvalidInteractionError(
+      'The Discord command payload was invalid.',
+    )
   }
+
+  const topLevelOptions = interaction.data.options
+
+  if (
+    !Array.isArray(topLevelOptions) ||
+    topLevelOptions.length !== 1 ||
+    !isRecord(topLevelOptions[0])
+  ) {
+    throw new InvalidInteractionError(
+      'Choose a Kill Team command.',
+    )
+  }
+
+  const subcommand = topLevelOptions[0]
+
+  if (subcommand.type !== 1 || typeof subcommand.name !== 'string') {
+    throw new InvalidInteractionError(
+      'Choose a Kill Team command.',
+    )
+  }
+
+  if (subcommand.name === 'register') {
+    if (
+      !Array.isArray(subcommand.options) ||
+      subcommand.options.length !== 1 ||
+      !isRecord(subcommand.options[0])
+    ) {
+      throw new InvalidInteractionError(
+        'Enter a valid Kill Team name.',
+      )
+    }
+
+    const nameOption = subcommand.options[0]
+
+    if (
+      nameOption.name !== 'name' ||
+      nameOption.type !== 3 ||
+      typeof nameOption.value !== 'string'
+    ) {
+      throw new InvalidInteractionError(
+        'Enter a valid Kill Team name.',
+      )
+    }
+
+    const name = nameOption.value.trim()
+
+    if (name.length < 2 || name.length > 50) {
+      throw new InvalidInteractionError(
+        'Kill Team name must be between 2 and 50 characters.',
+      )
+    }
+
+    return {
+      action: 'register' as const,
+      discordUserId,
+      leaderDisplayName,
+      name,
+    }
+  }
+
+  if (
+  subcommand.name === 'add' ||
+  subcommand.name === 'remove'
+) {
+    if (
+      !Array.isArray(subcommand.options) ||
+      subcommand.options.length !== 1 ||
+      !isRecord(subcommand.options[0])
+    ) {
+      throw new InvalidInteractionError(
+        'Choose a Discord member to add.',
+      )
+    }
+
+    const memberOption = subcommand.options[0]
+
+    if (
+      memberOption.name !== 'member' ||
+      memberOption.type !== 6 ||
+      typeof memberOption.value !== 'string' ||
+      !snowflakePattern.test(memberOption.value)
+    ) {
+      throw new InvalidInteractionError(
+        'Choose a Discord member to add.',
+      )
+    }
+
+    const selectedUserId = memberOption.value
+
+    if (!isRecord(interaction.data.resolved)) {
+      throw new InvalidInteractionError(
+        'The selected Discord member could not be resolved.',
+      )
+    }
+
+    const resolved = interaction.data.resolved
+
+    if (
+      !isRecord(resolved.users) ||
+      !isRecord(resolved.users[selectedUserId])
+    ) {
+      throw new InvalidInteractionError(
+        'The selected Discord member could not be resolved.',
+      )
+    }
+
+    const selectedUser = resolved.users[selectedUserId]
+    const selectedMember =
+      isRecord(resolved.members) &&
+      isRecord(resolved.members[selectedUserId])
+        ? resolved.members[selectedUserId]
+        : null
+
+    let selectedDisplayName: string | null = null
+
+    if (
+      selectedMember &&
+      typeof selectedMember.nick === 'string' &&
+      selectedMember.nick.trim().length > 0
+    ) {
+      selectedDisplayName = selectedMember.nick.trim()
+    } else if (
+      typeof selectedUser.global_name === 'string' &&
+      selectedUser.global_name.trim().length > 0
+    ) {
+      selectedDisplayName = selectedUser.global_name.trim()
+    } else if (
+      typeof selectedUser.username === 'string' &&
+      selectedUser.username.trim().length > 0
+    ) {
+      selectedDisplayName = selectedUser.username.trim()
+    }
+
+    if (!selectedDisplayName) {
+      throw new InvalidInteractionError(
+        'The selected Discord member name could not be determined.',
+      )
+    }
+
+    return {
+      action: subcommand.name as 'add' | 'remove',
+       discordUserId,
+       memberDiscordUserId: selectedUserId,
+       memberDisplayName: selectedDisplayName,
+}
+  }
+
+  throw new InvalidInteractionError(
+    'Choose register, add, or remove.',
+  )
 }
 
 function errorMessage(error: unknown) {
@@ -467,6 +562,14 @@ if (error instanceof DiscordTeamRegistrationError) {
       'That Kill Team name is already registered. Choose another name.',
     ALREADY_REGISTERED:
       'Your Discord account is already registered to a Kill Team in this campaign.',
+      LEADER_NOT_FOUND:
+  'You must be the registered Kill Team Leader to manage this roster.',
+    ROSTER_FULL:
+  'Your Kill Team already has the maximum of four members.',
+    MEMBER_NOT_FOUND:
+  'That Discord member is not on your Kill Team.',
+    LEADER_CANNOT_REMOVE_SELF:
+  'The Kill Team Leader cannot remove themselves from the roster.',
     REGISTRATION_LOCKED:
       'Kill Team registration is locked because Crusade scoring has started.',
     BACKEND_UNAVAILABLE:
@@ -618,7 +721,7 @@ if (
       return ephemeralResponse(errorMessage(error))
     }
 
-   if (commandName === 'crusade-team') {
+if (commandName === 'crusade-team') {
   waitUntil(
     (async () => {
       try {
@@ -630,27 +733,73 @@ if (
         }
 
         const input = parseTeamRegistration(interaction, guildId)
-        const campaign = await teamRegistration.findRegistrationCampaign()
+        const campaign =
+          await teamRegistration.findRegistrationCampaign()
 
-        const result = await teamRegistration.registerTeam({
-          campaignId: campaign.id,
-          name: input.name,
-          leaderDiscordUserId: input.discordUserId,
-          leaderDisplayName: input.leaderDisplayName,
-        })
+        if (input.action === 'register') {
+          const result = await teamRegistration.registerTeam({
+            campaignId: campaign.id,
+            name: input.name,
+            leaderDiscordUserId: input.discordUserId,
+            leaderDisplayName: input.leaderDisplayName,
+          })
 
-        await editOriginalResponse(
-          fetcher,
-          applicationId,
-          interactionToken,
-          teamRegistrationSuccessMessage(
-            input.name,
-            campaign.name,
-            result.missionTeamCount,
-          ),
-        )
+          await editOriginalResponse(
+            fetcher,
+            applicationId,
+            interactionToken,
+            teamRegistrationSuccessMessage(
+              input.name,
+              campaign.name,
+              result.missionTeamCount,
+            ),
+          )
+        } else if (input.action === 'add') {
+          const result = await teamRegistration.addMember({
+            campaignId: campaign.id,
+            leaderDiscordUserId: input.discordUserId,
+            memberDiscordUserId: input.memberDiscordUserId,
+            memberDisplayName: input.memberDisplayName,
+          })
+
+          await editOriginalResponse(
+            fetcher,
+            applicationId,
+            interactionToken,
+            [
+              '**KILL TEAM MEMBER ADDED**',
+              '',
+              `Kill Team: ${result.killTeamName}`,
+              `Member: ${input.memberDisplayName}`,
+              `Roster: ${result.memberCount}/4`,
+              '',
+              'The member has been added to all mission rosters.',
+            ].join('\n'),
+          )
+        } else if (input.action === 'remove') {
+          const result = await teamRegistration.removeMember({
+            campaignId: campaign.id,
+            leaderDiscordUserId: input.discordUserId,
+            memberDiscordUserId: input.memberDiscordUserId,
+          })
+
+          await editOriginalResponse(
+            fetcher,
+            applicationId,
+            interactionToken,
+            [
+              '**KILL TEAM MEMBER REMOVED**',
+              '',
+              `Kill Team: ${result.killTeamName}`,
+              `Member: ${input.memberDisplayName}`,
+              `Roster: ${result.memberCount}/4`,
+              '',
+              'The member has been removed from all mission rosters.',
+            ].join('\n'),
+          )
+        }
       } catch (error) {
-        logUnexpectedError('register_kill_team', error)
+        logUnexpectedError('manage_kill_team', error)
 
         try {
           await editOriginalResponse(
@@ -660,7 +809,10 @@ if (
             errorMessage(error),
           )
         } catch (finalizationError) {
-          logUnexpectedError('finalize_response', finalizationError)
+          logUnexpectedError(
+            'finalize_response',
+            finalizationError,
+          )
         }
       }
     })(),

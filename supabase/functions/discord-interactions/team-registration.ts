@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 import {
   DiscordTeamRegistrationError,
+  type DiscordTeamMemberAddResult,
+  type DiscordTeamMemberRemoveResult,
   type DiscordTeamRegistrationResult,
 } from '../_shared/discord/types.ts'
 
@@ -36,6 +38,34 @@ function classifyRegistrationError(error: unknown) {
     )
   }
 
+  if (text.includes('KILL_TEAM_LEADER_NOT_FOUND')) {
+    return new DiscordTeamRegistrationError(
+      'LEADER_NOT_FOUND',
+      'You are not the Kill Team Leader for a registered team.',
+    )
+  }
+
+  if (text.includes('KILL_TEAM_ROSTER_FULL')) {
+    return new DiscordTeamRegistrationError(
+      'ROSTER_FULL',
+      'This Kill Team already has the maximum of four members.',
+    )
+  }
+
+  if (text.includes('KILL_TEAM_MEMBER_NOT_FOUND')) {
+    return new DiscordTeamRegistrationError(
+      'MEMBER_NOT_FOUND',
+      'That Discord member is not on your Kill Team.',
+    )
+  }
+
+  if (text.includes('KILL_TEAM_LEADER_CANNOT_REMOVE_SELF')) {
+    return new DiscordTeamRegistrationError(
+      'LEADER_CANNOT_REMOVE_SELF',
+      'The Kill Team Leader cannot remove themselves from the roster.',
+    )
+  }
+
   if (text.includes('KILL_TEAM_REGISTRATION_LOCKED')) {
     return new DiscordTeamRegistrationError(
       'REGISTRATION_LOCKED',
@@ -49,7 +79,9 @@ function classifyRegistrationError(error: unknown) {
   )
 }
 
-function parseRegistrationResult(value: unknown): DiscordTeamRegistrationResult {
+function parseRegistrationResult(
+  value: unknown,
+): DiscordTeamRegistrationResult {
   const result = Array.isArray(value) ? value[0] : null
 
   if (!isRecord(result)) {
@@ -81,6 +113,86 @@ function parseRegistrationResult(value: unknown): DiscordTeamRegistrationResult 
   }
 }
 
+function parseMemberAddResult(
+  value: unknown,
+): DiscordTeamMemberAddResult {
+  const result = Array.isArray(value) ? value[0] : null
+
+  if (!isRecord(result)) {
+    throw new DiscordTeamRegistrationError(
+      'BACKEND_UNAVAILABLE',
+      'Kill Team member addition returned an invalid response.',
+    )
+  }
+
+  const campaignKillTeamId = result.campaign_kill_team_id
+  const killTeamName = result.kill_team_name
+  const memberCount = result.member_count
+  const missionTeamCount = result.mission_team_count
+  const newRevision = result.new_revision
+
+  if (
+    typeof campaignKillTeamId !== 'string' ||
+    typeof killTeamName !== 'string' ||
+    typeof memberCount !== 'number' ||
+    typeof missionTeamCount !== 'number' ||
+    typeof newRevision !== 'number'
+  ) {
+    throw new DiscordTeamRegistrationError(
+      'BACKEND_UNAVAILABLE',
+      'Kill Team member addition returned an invalid response.',
+    )
+  }
+
+  return {
+    campaignKillTeamId,
+    killTeamName,
+    memberCount,
+    missionTeamCount,
+    newRevision,
+  }
+}
+
+function parseMemberRemoveResult(
+  value: unknown,
+): DiscordTeamMemberRemoveResult {
+  const result = Array.isArray(value) ? value[0] : null
+
+  if (!isRecord(result)) {
+    throw new DiscordTeamRegistrationError(
+      'BACKEND_UNAVAILABLE',
+      'Kill Team member removal returned an invalid response.',
+    )
+  }
+
+  const campaignKillTeamId = result.campaign_kill_team_id
+  const killTeamName = result.kill_team_name
+  const memberCount = result.member_count
+  const missionTeamCount = result.mission_team_count
+  const newRevision = result.new_revision
+
+  if (
+    typeof campaignKillTeamId !== 'string' ||
+    typeof killTeamName !== 'string' ||
+    typeof memberCount !== 'number' ||
+    typeof missionTeamCount !== 'number' ||
+    typeof newRevision !== 'number'
+  ) {
+    throw new DiscordTeamRegistrationError(
+      'BACKEND_UNAVAILABLE',
+      'Kill Team member removal returned an invalid response.',
+    )
+  }
+
+  return {
+    campaignKillTeamId,
+    killTeamName,
+    memberCount,
+    missionTeamCount,
+    newRevision,
+  }
+}
+
 export function createSupabaseTeamRegistrationDatabase(
   client: SupabaseClient,
 ) {
@@ -106,6 +218,50 @@ export function createSupabaseTeamRegistrationDatabase(
       }
 
       return parseRegistrationResult(data)
+    },
+
+    async addMember(input: {
+      campaignId: string
+      leaderDiscordUserId: string
+      memberDiscordUserId: string
+      memberDisplayName: string
+    }) {
+      const { data, error } = await client.rpc(
+        'discord_add_campaign_kill_team_member',
+        {
+          p_campaign_id: input.campaignId,
+          p_leader_discord_user_id: input.leaderDiscordUserId,
+          p_member_discord_user_id: input.memberDiscordUserId,
+          p_member_display_name: input.memberDisplayName,
+        },
+      )
+
+      if (error) {
+        throw classifyRegistrationError(error)
+      }
+
+      return parseMemberAddResult(data)
+    },
+
+    async removeMember(input: {
+      campaignId: string
+      leaderDiscordUserId: string
+      memberDiscordUserId: string
+    }) {
+      const { data, error } = await client.rpc(
+        'discord_remove_campaign_kill_team_member',
+        {
+          p_campaign_id: input.campaignId,
+          p_leader_discord_user_id: input.leaderDiscordUserId,
+          p_member_discord_user_id: input.memberDiscordUserId,
+        },
+      )
+
+      if (error) {
+        throw classifyRegistrationError(error)
+      }
+
+      return parseMemberRemoveResult(data)
     },
 
     async findRegistrationCampaign() {

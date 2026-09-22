@@ -78,6 +78,22 @@ export type DiscordTeamRegistrationResult = {
   newRevision: number
 }
 
+export type DiscordTeamMemberAddResult = {
+  campaignKillTeamId: string
+  killTeamName: string
+  memberCount: number
+  missionTeamCount: number
+  newRevision: number
+}
+
+export type DiscordTeamMemberRemoveResult = {
+  campaignKillTeamId: string
+  killTeamName: string
+  memberCount: number
+  missionTeamCount: number
+  newRevision: number
+}
+
 export type DiscordTeamRegistrationService = {
   findRegistrationCampaign: () => Promise<DiscordTeamRegistrationCampaign>
 
@@ -87,14 +103,31 @@ export type DiscordTeamRegistrationService = {
     leaderDiscordUserId: string
     leaderDisplayName: string
   }) => Promise<DiscordTeamRegistrationResult>
+
+  addMember: (input: {
+    campaignId: string
+    leaderDiscordUserId: string
+    memberDiscordUserId: string
+    memberDisplayName: string
+  }) => Promise<DiscordTeamMemberAddResult>
+
+  removeMember: (input: {
+  campaignId: string
+  leaderDiscordUserId: string
+  memberDiscordUserId: string
+}) => Promise<DiscordTeamMemberRemoveResult>
 }
 
 export type DiscordTeamRegistrationErrorCode =
   | 'NO_REGISTRATION_CAMPAIGN'
   | 'NAME_TAKEN'
   | 'ALREADY_REGISTERED'
+  | 'LEADER_NOT_FOUND'
+  | 'ROSTER_FULL'
   | 'REGISTRATION_LOCKED'
   | 'BACKEND_UNAVAILABLE'
+  | 'MEMBER_NOT_FOUND'
+  | 'LEADER_CANNOT_REMOVE_SELF'
 
 export class DiscordTeamRegistrationError extends Error {
   constructor(
