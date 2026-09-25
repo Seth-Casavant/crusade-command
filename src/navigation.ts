@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
-export const PUBLIC_DASHBOARD_PATH = '/'
+export const WELCOME_PATH = '/'
+export const PUBLIC_DASHBOARD_PATH = '/dashboard'
 export const STAFF_LOGIN_PATH = '/staff/login'
 export const STAFF_SUBMISSIONS_PATH = '/admin/submissions'
 

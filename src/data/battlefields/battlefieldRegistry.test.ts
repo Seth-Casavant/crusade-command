@@ -53,6 +53,15 @@ describe('battlefield registry', () => {
     expect(findBattlefieldDefinitionBySlug('termination')).toBe(definition)
   })
 
+  it.each([
+    ['10000000-0000-4000-8000-000000000101', 'termination'],
+    ['10000000-0000-4000-8000-000000000102', 'vox-liberatis'],
+    ['10000000-0000-4000-8000-000000000103', 'reclamation'],
+    ['10000000-0000-4000-8000-000000000104', 'disruption'],
+  ])('resolves a Nexovar battlefield %s to %s', (id, slug) => {
+    expect(resolveBattlefieldDefinition(id)?.slug).toBe(slug)
+  })
+
   it('keeps reusable definitions separate from campaign-specific state', () => {
     for (const definition of battlefieldDefinitions) {
       expect(definition).not.toHaveProperty('campaignId')

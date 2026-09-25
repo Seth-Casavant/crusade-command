@@ -30,9 +30,9 @@ describe('application navigation', () => {
 
   it('rejects an unapproved return target', () => {
     expect(staffLoginPath('https://attacker.example.test')).toBe(
-      '/staff/login?returnTo=%2F',
+      '/staff/login?returnTo=%2Fdashboard',
     )
-    expect(staffReturnPath('?returnTo=https://attacker.example.test')).toBe('/')
+    expect(staffReturnPath('?returnTo=https://attacker.example.test')).toBe(PUBLIC_DASHBOARD_PATH)
   })
 
   it('preserves a validated receipt deep link through staff authentication', () => {
@@ -48,7 +48,7 @@ describe('application navigation', () => {
       staffReturnPath(
         '?returnTo=%2Fadmin%2Fsubmissions%3Freceipt%3D..%252Fprivate',
       ),
-    ).toBe('/')
+    ).toBe(PUBLIC_DASHBOARD_PATH)
   })
 
   it('accepts only authoritative receipt references for staff deep links', () => {

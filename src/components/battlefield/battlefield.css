@@ -265,6 +265,50 @@
   box-shadow: var(--shadow-panel), var(--shadow-inset);
 }
 
+.staff-checkpoint-control {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: var(--border-thin) solid var(--border-emphasis);
+  border-top: var(--border-heavy) solid var(--accent-primary);
+  color: var(--text-secondary);
+  background: var(--surface-panel);
+}
+
+.staff-checkpoint-control h2,
+.staff-checkpoint-control p {
+  margin: 0;
+}
+
+.staff-checkpoint-control h2 {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+}
+
+.staff-checkpoint-control__eyebrow,
+.staff-checkpoint-control label {
+  color: var(--accent-primary-hover);
+  font-family: var(--font-technical);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: var(--tracking-interface);
+  text-transform: uppercase;
+}
+
+.staff-checkpoint-control form {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.staff-checkpoint-control select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--space-2);
+  border: var(--border-thin) solid var(--border-emphasis);
+  color: var(--text-primary);
+  background: var(--surface-panel-inset);
+}
+
 .kill-team-intel h2,
 .kill-team-intel h3,
 .kill-team-intel p,

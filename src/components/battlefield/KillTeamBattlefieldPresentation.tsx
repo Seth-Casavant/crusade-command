@@ -12,6 +12,7 @@ export type KillTeamBattlefieldPresentationProps = {
   battlefieldId: string
   battlefieldName: string
   checkpoints: readonly BattlefieldCheckpointPresentation[]
+  battlefieldFooter?: ReactNode
   intelPanelFooter?: ReactNode
   killTeams: readonly KillTeamPresentation[]
 }
@@ -20,6 +21,7 @@ export function KillTeamBattlefieldPresentation({
   battlefieldId,
   battlefieldName,
   checkpoints,
+  battlefieldFooter,
   intelPanelFooter,
   killTeams,
 }: KillTeamBattlefieldPresentationProps) {
@@ -38,17 +40,20 @@ export function KillTeamBattlefieldPresentation({
 
   return (
     <div className="kill-team-battlefield-presentation">
-      <TacticalBattlefield
-        battlefieldId={battlefieldId}
-        battlefieldName={battlefieldName}
-      >
-        <KillTeamCheckpointMarkers
-          checkpoints={checkpoints}
-          killTeams={killTeams}
-          onSelectTeam={selectTeam}
-          selectedTeamId={selectedTeamId}
-        />
-      </TacticalBattlefield>
+      <div className="kill-team-battlefield-presentation__map-column">
+        <TacticalBattlefield
+          battlefieldId={battlefieldId}
+          battlefieldName={battlefieldName}
+        >
+          <KillTeamCheckpointMarkers
+            checkpoints={checkpoints}
+            killTeams={killTeams}
+            onSelectTeam={selectTeam}
+            selectedTeamId={selectedTeamId}
+          />
+        </TacticalBattlefield>
+        {battlefieldFooter}
+      </div>
       <div className="kill-team-battlefield-presentation__intel-column">
         <KillTeamIntelPanel
           checkpoint={selectedCheckpoint}

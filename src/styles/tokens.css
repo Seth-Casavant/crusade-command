@@ -2,19 +2,19 @@
   color-scheme: dark;
 
   /* Surfaces */
-  --color-void: #080908;
-  --color-canvas: #0d0f0e;
-  --color-iron-deep: #131615;
-  --color-iron: #1a1e1d;
-  --color-iron-raised: #222726;
-  --color-iron-inset: #101312;
-  --color-steel: #343a39;
-  --color-steel-bright: #505856;
+  --color-void: #020403;
+  --color-canvas: #030504;
+  --color-iron-deep: #070c09;
+  --color-iron: #090e0b;
+  --color-iron-raised: #0d1510;
+  --color-iron-inset: #040805;
+  --color-steel: #233a2b;
+  --color-steel-bright: #385b43;
 
   /* Text */
-  --color-bone: #eee8d7;
-  --color-parchment: #c8c0ad;
-  --color-ash: #96978f;
+  --color-bone: #eee9dc;
+  --color-parchment: #bebfb5;
+  --color-ash: #8b9e8f;
   --color-soot: #090a09;
 
   /* Command accents */
@@ -28,6 +28,8 @@
   --color-amber-dark: #68471f;
   --color-secured: #6f815e;
   --color-secured-dark: #3d4934;
+  --color-phosphor: #69c98a;
+  --color-phosphor-bright: #a0f4b5;
 
   /* Semantic aliases */
   --surface-page: var(--color-canvas);
@@ -39,13 +41,13 @@
   --text-muted: var(--color-ash);
   --border-structural: var(--color-steel);
   --border-emphasis: var(--color-steel-bright);
-  --accent-primary: var(--color-brass);
-  --accent-primary-hover: var(--color-brass-bright);
+  --accent-primary: var(--color-phosphor);
+  --accent-primary-hover: var(--color-phosphor-bright);
   --accent-danger: var(--color-crimson);
   --accent-danger-hover: var(--color-crimson-bright);
   --accent-warning: var(--color-amber);
   --accent-success: var(--color-secured);
-  --focus-ring: var(--color-brass-bright);
+  --focus-ring: var(--color-phosphor-bright);
 
   /* Typography */
   --font-display: Georgia, Cambria, 'Times New Roman', Times, serif;
@@ -85,7 +87,7 @@
   --content-width: 68rem;
   --shadow-panel: 0 1.75rem 5rem rgb(0 0 0 / 42%);
   --shadow-inset: inset 0 0 0 1px rgb(238 232 215 / 3%);
-  --grid-line: rgb(168 138 71 / 7%);
+  --grid-line: rgb(105 201 138 / 7%);
   --scan-line: rgb(238 232 215 / 2.5%);
-  --overlay-dark: rgb(8 9 8 / 84%);
+  --overlay-dark: rgb(2 4 3 / 75%);
 }

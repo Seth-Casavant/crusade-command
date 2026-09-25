@@ -39,6 +39,7 @@ export type TacticalBattlefieldViewportProps = {
   dimensions: TacticalDimensions
   disabled?: boolean
   isBusy?: boolean
+  toolbarAccessory?: ReactNode
   statusLayer?: ReactNode
 }
 
@@ -89,6 +90,7 @@ export function TacticalBattlefieldViewport({
   disabled = false,
   isBusy = false,
   statusLayer,
+  toolbarAccessory,
 }: TacticalBattlefieldViewportProps) {
   const instructionsId = useId()
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -427,9 +429,7 @@ export function TacticalBattlefieldViewport({
         >
           Show Full Map
         </button>
-        <output aria-label="Map zoom level" aria-live="polite">
-          Zoom {Math.round(transform.zoom * 100)}%
-        </output>
+        {toolbarAccessory}
       </div>
 
       <div aria-label="Pan map" className="tactical-battlefield__toolbar tactical-battlefield__pan-controls" role="group">
@@ -437,6 +437,9 @@ export function TacticalBattlefieldViewport({
         <button type="button" aria-label="Pan up" disabled={!canPan || transform.pan.y >= transform.maxPan.y} onClick={() => panBy(0, KEYBOARD_PAN_STEP * 3)}>↑</button>
         <button type="button" aria-label="Pan down" disabled={!canPan || transform.pan.y <= -transform.maxPan.y} onClick={() => panBy(0, -KEYBOARD_PAN_STEP * 3)}>↓</button>
         <button type="button" aria-label="Pan right" disabled={!canPan || transform.pan.x <= -transform.maxPan.x} onClick={() => panBy(-KEYBOARD_PAN_STEP * 3, 0)}>→</button>
+        <output aria-label="Map zoom level" aria-live="polite">
+          Zoom {Math.round(transform.zoom * 100)}%
+        </output>
       </div>
 
       <p className="screen-reader-only" id={instructionsId}>

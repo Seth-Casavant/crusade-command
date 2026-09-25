@@ -1,0 +1,440 @@
+@font-face {
+  font-family: 'Phantom Guardians';
+  src: url('../assets/fonts/PhantomGuardians-Bold.otf') format('opentype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+.welcome-screen {
+  min-height: 100svh;
+  padding: 22px;
+  background: #020403;
+  color: var(--text-primary);
+}
+
+.welcome-screen__frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - 44px);
+  overflow: hidden;
+  border: 1px solid #25372b;
+  background: radial-gradient(ellipse at 77% 62%, #102619 0, #050a07 34%, #020403 65%);
+}
+
+.welcome-screen__frame::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background: repeating-linear-gradient(0deg, transparent 0 3px, #8bffab05 3px 4px);
+}
+
+.welcome-screen__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 4%;
+  border-bottom: 1px solid #23372a;
+  font: 11px var(--font-technical);
+  letter-spacing: .14em;
+}
+
+.welcome-screen__brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: var(--color-brass-bright);
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 25px;
+}
+
+.welcome-screen__brand span { color: #c0ccbf; font-size: 10px; line-height: 1.6; }
+.welcome-screen__header button {
+  padding: 12px 0 12px 14px;
+  border: 0;
+  color: #a9b8a9;
+  background: transparent;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.welcome-screen__header button span { margin-left: 12px; color: #8bdb9f; }
+
+.welcome-screen__hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.08fr 1fr;
+  align-items: center;
+  flex: 1;
+  min-height: 640px;
+  padding: 60px 6%;
+}
+
+.welcome-screen__copy { position: relative; z-index: 1; }
+.welcome-screen__eyebrow {
+  margin: 0 0 26px;
+  color: var(--color-brass-bright);
+  font: 11px var(--font-technical);
+  letter-spacing: .2em;
+}
+.welcome-screen h1 {
+  margin: 0;
+  color: #e8f1df;
+  font-family: Impact, 'Arial Narrow', 'Franklin Gothic Medium', sans-serif;
+  font-size: clamp(3.5rem, 7.7vw, 8.5rem);
+  font-style: italic;
+  font-weight: 900;
+  line-height: .92;
+  letter-spacing: -.035em;
+}
+.welcome-screen h1 span { color: #a0f4b5; text-shadow: 0 0 45px #62d98620; }
+.welcome-screen__subtitle { margin: 27px 0; font: 12px var(--font-technical); letter-spacing: .23em; color: #b9c8b6; }
+.welcome-screen__description { margin: 0 0 32px; color: #91a593; font-size: 17px; line-height: 1.65; }
+.welcome-screen__enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 42px;
+  min-height: 64px;
+  padding: 18px 26px;
+  border: 1px solid #89e4a2;
+  border-left: 4px solid var(--color-brass-bright);
+  background: #a0f4b5;
+  color: #061109;
+  font: 900 15px var(--font-technical);
+  letter-spacing: .1em;
+  cursor: pointer;
+  box-shadow: 0 0 40px #72f39414;
+  transition: background .2s, box-shadow .2s;
+}
+.welcome-screen__enter:hover { background: #c0ffce; box-shadow: 0 0 45px #72f39435; }
+.welcome-screen__enter span { font-size: 24px; }
+.welcome-screen__hint { margin: 15px 0 0; font: 9px var(--font-technical); letter-spacing: .13em; color: #91a593; }
+.welcome-hologram { margin: -55px -15% -55px -20%; color: #70e594; filter: drop-shadow(0 0 9px #51ed8633); }
+.welcome-hologram svg { display: block; width: 100%; }
+.welcome-hologram__world { animation: holo-breathe 7s ease-in-out infinite; }
+@keyframes holo-breathe { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
+.welcome-screen__footer {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 22px 4%;
+  border-top: 1px solid #23372a;
+  color: #92a28f;
+  font: 9px var(--font-technical);
+  letter-spacing: .13em;
+}
+.welcome-screen__footer span:nth-child(2) { color: var(--color-brass-bright); }
+
+/* Shared black dataslate treatment across the live dashboard and staff views. */
+
+.crusade-header__title { font-size: clamp(2.4rem, 5.5vw, 5rem); }
+.tactical-battlefield { background: var(--surface-panel); }
+.tactical-battlefield__viewport {
+  background-color: #020503;
+  background-image: linear-gradient(#69c98a0a 1px, transparent 1px), linear-gradient(90deg, #69c98a0a 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.kill-team-checkpoint-marker { box-shadow: 0 0 0 2px #020403, 0 0 18px #69c98a55; }
+.tactical-battlefield__designation strong { max-width: 18ch; font-size: 1rem; overflow-wrap: normal; }
+.kill-team-intel__progress dl { grid-template-columns: 1fr; }
+.kill-team-intel__progress dl > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.kill-team-intel__progress dt { overflow-wrap: normal; }
+
+@media (max-width: 800px) {
+  .welcome-screen { padding: 10px; }
+  .welcome-screen__frame { min-height: calc(100svh - 20px); }
+  .welcome-screen__hero { grid-template-columns: 1fr; padding: 50px 7% 20px; min-height: auto; }
+  .welcome-screen h1 { font-size: clamp(3.1rem, 12vw, 6.5rem); }
+  .welcome-hologram { margin: -20px auto; max-width: 520px; width: 100%; }
+  .welcome-screen__eyebrow { font-size: 9px; }
+  .welcome-screen__enter { gap: 24px; padding-inline: 16px; font-size: 12px; }
+  .welcome-screen__header { padding-block: 20px; }
+  .welcome-screen__header button { font-size: 9px; }
+  .welcome-screen__footer { font-size: 8px; }
+}
+
+/* Open strategium layout: spacing establishes groups instead of card frames. */
+.player-dashboard {
+  background: radial-gradient(ellipse at 75% 12%, #102017 0, transparent 45%), #020403;
+}
+.player-dashboard::before,
+.player-dashboard::after,
+.player-dashboard .crusade-header::after,
+.player-dashboard .command-panel::before,
+.player-dashboard .command-panel::after { display: none; }
+
+.player-dashboard .crusade-header,
+.player-dashboard .command-panel,
+.player-dashboard .tactical-battlefield,
+.player-dashboard .kill-team-intel,
+.player-dashboard .staff-checkpoint-control,
+.player-dashboard .no-active-crusade,
+.player-dashboard .dashboard-state {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  clip-path: none;
+}
+.player-dashboard .crusade-header { padding: 32px 0 48px; }
+.player-dashboard .crusade-header__title {
+  font-family: Impact, 'Arial Narrow', sans-serif;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1.02;
+  overflow-wrap: break-word;
+}
+.player-dashboard .crusade-header__eyebrow,
+.player-dashboard .command-panel__eyebrow,
+.player-dashboard .tactical-battlefield__eyebrow,
+.player-dashboard .threat-panel__designation,
+.player-dashboard .threat-entry__type { color: var(--color-brass-bright); }
+
+.player-dashboard .command-panel__header,
+.player-dashboard .tactical-battlefield__header {
+  padding: 0 0 20px;
+  border: 0;
+  background: transparent;
+}
+.player-dashboard .command-panel__body { padding: 0; }
+.player-dashboard .command-panel__footer {
+  margin-top: 24px;
+  padding: 20px 0 0;
+  background: transparent;
+  border-color: #ffffff12;
+}
+.player-dashboard .kill-team-intel,
+.player-dashboard .staff-checkpoint-control { padding: 0; }
+.player-dashboard .kill-team-intel__header { border: 0; padding-bottom: 20px; }
+
+.player-dashboard .mission-summary__battlefield,
+.player-dashboard .campaign-progress__points,
+.player-dashboard .dashboard-entry,
+.player-dashboard .friendly-force-team,
+.player-dashboard .synchronization-status__times div,
+.player-dashboard .kill-team-intel__status,
+.player-dashboard .kill-team-intel__progress dl > div {
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.player-dashboard .dashboard-entry + .dashboard-entry,
+.player-dashboard .threat-panel__section + .threat-panel__section,
+.player-dashboard .kill-team-intel__progress,
+.player-dashboard .mission-summary__lock-note { border-color: #ffffff12; }
+.player-dashboard .dashboard-entry + .dashboard-entry { border-top: 1px solid #ffffff12; padding-top: 20px; }
+.player-dashboard .threat-entry__marker { border-color: var(--color-brass-bright); background: var(--color-brass-dark); }
+.player-dashboard .command-status { border: 0; padding-inline: 0; background: transparent; }
+.player-dashboard .command-progress__track { height: 6px; border: 0; background: #ffffff12; box-shadow: none; }
+.player-dashboard .command-progress__fill { background: var(--accent-primary); border: 0; }
+.player-dashboard .tactical-battlefield__toolbar { padding: 12px 0; border: 0; background: transparent; }
+.player-dashboard .command-button--secondary { background: transparent; border-color: #ffffff26; clip-path: none; }
+.player-dashboard .command-button--secondary:hover:not(:disabled) { background: #ffffff0d; }
+.player-dashboard .player-dashboard__primary,
+.player-dashboard .player-dashboard__grid { gap: clamp(28px, 4vw, 64px); margin-top: 32px; }
+.player-dashboard .player-dashboard__primary-rail,
+.player-dashboard .kill-team-battlefield-presentation__intel-column { gap: 40px; }
+.player-dashboard .player-dashboard__grid,
+.player-dashboard .player-dashboard__system { margin-top: 56px; }
+@media (max-width: 56rem) {
+  .player-dashboard .crusade-header { padding-block: 24px 32px; }
+  .player-dashboard .player-dashboard__primary,
+  .player-dashboard .player-dashboard__grid { row-gap: 40px; }
+}
+
+/* Faint boundaries placed around the annotated operational groups. */
+.player-dashboard { --operational-divider: rgb(190 191 181 / 18%); }
+.player-dashboard .crusade-header__statuses {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--operational-divider);
+}
+.player-dashboard .player-dashboard__primary-rail {
+  padding-left: clamp(20px, 2vw, 32px);
+  border-left: 1px solid var(--operational-divider);
+}
+.player-dashboard .player-dashboard__grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: start;
+}
+.player-dashboard .threat-panel {
+  padding: clamp(20px, 2vw, 32px);
+  border: 1px solid var(--operational-divider);
+}
+.player-dashboard .objective-panel .command-panel__header { padding-bottom: 12px; }
+.player-dashboard .objective-entry { column-gap: 12px; }
+.player-dashboard .objective-entry .dashboard-entry__heading {
+  justify-content: flex-start;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.player-dashboard .friendly-forces-panel__teams {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px 0;
+}
+.player-dashboard .friendly-force-team { padding-right: 28px; }
+.player-dashboard .friendly-force-team:nth-child(even) {
+  padding-left: 28px;
+  padding-right: 0;
+  border-left: 1px solid var(--operational-divider);
+}
+.player-dashboard .synchronization-status {
+  width: min(100%, 34rem);
+  padding: clamp(20px, 2vw, 32px);
+  border: 1px solid var(--operational-divider);
+}
+.player-dashboard .synchronization-status__times {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+@media (max-width: 56rem) {
+  .player-dashboard .player-dashboard__grid { grid-template-columns: 1fr; }
+  .player-dashboard .player-dashboard__primary-rail {
+    padding: 28px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--operational-divider);
+  }
+}
+@media (max-width: 40rem) {
+  .player-dashboard .friendly-forces-panel__teams { grid-template-columns: 1fr; }
+  .player-dashboard .friendly-force-team { padding: 12px 0; }
+  .player-dashboard .friendly-force-team:nth-child(even) { padding: 20px 0 0; border-left: 0; }
+  .player-dashboard .friendly-force-team + .friendly-force-team {
+    padding-top: 20px;
+    border-top: 1px solid var(--operational-divider);
+  }
+  .player-dashboard .objective-entry .dashboard-entry__heading { flex-direction: row; }
+}
+@media (max-width: 24rem) {
+  .player-dashboard .synchronization-status__times { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* Headings use the supplied Phantom Guardians face. */
+:root {
+  --font-imperial: 'Phantom Guardians', Georgia, serif;
+  --font-display: var(--font-imperial);
+}
+.player-dashboard .crusade-header__title,
+.player-dashboard .command-panel__title,
+.player-dashboard .tactical-battlefield__title,
+.player-dashboard .kill-team-intel h2,
+.player-dashboard .kill-team-intel h3,
+.player-dashboard .staff-checkpoint-control h2,
+.player-dashboard .mission-summary__name,
+.player-dashboard .mission-summary__battlefield-name,
+.player-dashboard .friendly-force-team h3,
+.player-dashboard .threat-panel__boss strong,
+.player-dashboard .no-active-crusade h1,
+.player-dashboard .dashboard-state h1 {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: .055em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+.player-dashboard .crusade-header__title { font-size: clamp(2rem, 4.5vw, 4.5rem); max-width: 23ch; }
+.player-dashboard .command-panel__title,
+.player-dashboard .staff-checkpoint-control h2,
+.player-dashboard .kill-team-intel h2 { font-size: clamp(1.1rem, 1.6vw, 1.45rem); }
+.player-dashboard .tactical-battlefield__title { font-size: clamp(1.35rem, 2.1vw, 2rem); }
+.welcome-screen h1 {
+  font-family: var(--font-imperial);
+  font-size: clamp(3rem, 6.1vw, 6.8rem);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: .025em;
+  line-height: 1.02;
+}
+@media (max-width: 800px) {
+  .welcome-screen h1 { font-size: clamp(2rem, 8vw, 4.5rem); }
+}
+
+.player-dashboard .objective-panel {
+  padding: clamp(20px, 2vw, 32px);
+  border: 1px solid var(--operational-divider);
+}
+.player-dashboard .kill-team-battlefield-presentation__map-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 24px;
+  min-width: 0;
+}
+.player-dashboard .player-dashboard__primary-rail { gap: 24px; }
+.player-dashboard .player-dashboard__grid { gap: 24px 32px; margin-top: 32px; }
+.player-dashboard .kill-team-battlefield-presentation__intel-column { gap: 24px; }
+.player-dashboard .kill-team-intel__empty { padding-block: 8px; }
+.player-dashboard .kill-team-intel__header { padding-bottom: 12px; }
+.player-dashboard .tactical-battlefield__toolbar .tactical-battlefield__designation {
+  margin: 0 0 0 auto;
+  text-align: left;
+  gap: 4px;
+}
+.player-dashboard .tactical-battlefield__pan-controls { justify-content: flex-start; }
+.player-dashboard .tactical-battlefield__pan-controls output { margin-left: 12px; }
+@media (max-width: 40rem) {
+  .player-dashboard .tactical-battlefield__toolbar .tactical-battlefield__designation { margin-left: 0; }
+}
+
+/* Body text and controls keep their standard UI faces. */
+.welcome-screen__brand,
+.welcome-screen h1,
+.player-dashboard .crusade-header__title { font-family: var(--font-imperial); }
+
+/* The ceremonial campaign subtitle uses the same heading face. */
+.welcome-screen__subtitle {
+  font-family: var(--font-imperial);
+  font-size: clamp(1.25rem, 2.5vw, 2.2rem);
+  letter-spacing: .05em;
+  line-height: 1.3;
+}
+.welcome-screen__enter, .welcome-screen__header button,
+.player-dashboard button, .player-dashboard select,
+.player-dashboard input { font-family: var(--font-interface); }
+
+.player-dashboard .mission-summary__name,
+.player-dashboard .crusade-header__title,
+.welcome-screen h1 { font-family: var(--font-imperial); }
+.player-dashboard .campaign-progress__points strong,
+.player-dashboard .kill-team-intel__progress dd,
+.player-dashboard .tactical-battlefield__toolbar output { font-family: var(--font-technical); }
+
+/* Titles across welcome, dashboard, and staff screens share one Gothic face. */
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-imperial); }
+
+/* Hololith projection: the original map outlines float over a fixed grid. */
+.player-dashboard .tactical-battlefield__viewport {
+  border: 1px solid rgb(132 221 159 / 36%);
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 50% 43%, rgb(33 91 55 / 25%), transparent 72%),
+    repeating-linear-gradient(0deg, transparent 0 39px, rgb(116 203 149 / 14%) 39px 40px),
+    repeating-linear-gradient(90deg, transparent 0 39px, rgb(116 203 149 / 14%) 39px 40px),
+    repeating-linear-gradient(0deg, transparent 0 199px, rgb(160 233 183 / 17%) 199px 200px),
+    repeating-linear-gradient(90deg, transparent 0 199px, rgb(160 233 183 / 17%) 199px 200px),
+    #030d09;
+  box-shadow: inset 0 0 46px rgb(5 18 11 / 88%), 0 0 20px rgb(79 183 112 / 13%);
+}
+.player-dashboard .tactical-battlefield__viewport::after {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(125deg, rgb(146 255 175 / 6%), transparent 37%),
+    repeating-linear-gradient(0deg, transparent 0 3px, rgb(2 8 5 / 10%) 3px 4px);
+  box-shadow: inset 0 0 38px rgb(1 8 4 / 75%);
+  content: '';
+  pointer-events: none;
+}
+.player-dashboard .tactical-battlefield__asset {
+  filter: grayscale(1) brightness(1.1) contrast(2.7);
+  opacity: .9;
+}
+.player-dashboard .tactical-battlefield__scene { mix-blend-mode: screen; }

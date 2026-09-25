@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 
 vi.mock('./pages/PlayerDashboard', () => ({
@@ -20,10 +20,13 @@ describe('App routes', () => {
     window.history.replaceState(null, '', '/')
   })
 
-  it('renders the public dashboard for the root route', () => {
+  it('opens the welcome screen and enters the dashboard without a campaign mutation', () => {
     window.history.replaceState(null, '', '/')
     render(<App />)
 
+    expect(screen.getByRole('heading', { name: /CRUSADE COMMAND/ })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /COMMENCE CRUSADE/ }))
+    expect(window.location.pathname).toBe('/dashboard')
     expect(screen.getByText('Public dashboard route')).toBeInTheDocument()
   })
 

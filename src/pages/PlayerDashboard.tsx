@@ -1,11 +1,12 @@
+import { currentCampaignLabels } from './currentCampaignLabels'
 import {
   KillTeamBattlefieldPresentation,
 } from '../components/battlefield'
+import { StaffCheckpointControl } from '../components/dashboard/StaffCheckpointControl'
 import {
   CampaignProgress,
   ConnectionIndicator,
   CrusadeHeader,
-  FriendlyForcesPanel,
   MissionSummary,
   NoActiveCrusade,
   ObjectivePanel,
@@ -129,7 +130,7 @@ export function PlayerDashboard({
   onNavigateToSubmissions = () => navigateTo(STAFF_SUBMISSIONS_PATH),
 }: PlayerDashboardProps) {
   const {
-    campaign,
+    campaign: sourceCampaign,
     connectionStatus,
     errorCode,
     isConfigured,
@@ -137,6 +138,7 @@ export function PlayerDashboard({
     lastSynchronizedAt,
     manualResynchronize,
   } = synchronization
+  const campaign = sourceCampaign ? currentCampaignLabels(sourceCampaign) : null
   const isAwaitingInitialState =
     isConfigured &&
     campaign === null &&
@@ -173,42 +175,52 @@ export function PlayerDashboard({
             />
 
             <div className="player-dashboard__primary">
-              <KillTeamBattlefieldPresentation
-                battlefieldId={campaign.battlefieldId}
-                battlefieldName={campaign.battlefieldName}
-                checkpoints={campaign.battlefieldCheckpoints}
-                intelPanelFooter={
-                  <SubmissionReviewControl
-                    campaignId={campaign.campaignId}
-                    missionId={campaign.missionId}
-                    onNavigate={onNavigateToSubmissions}
-                    role={staffRole}
-                  />
-                }
-                key={campaign.missionId}
-                killTeams={campaign.killTeams}
-              />
+                <KillTeamBattlefieldPresentation
+                  battlefieldId={campaign.battlefieldId}
+                  battlefieldName={campaign.battlefieldName}
+                  checkpoints={campaign.battlefieldCheckpoints}
+                  battlefieldFooter={
+                    <>
+                      <ObjectivePanel objectives={campaign.objectives} />
+                      <SynchronizationStatus
+                        authoritativeUpdatedAt={campaign.authoritativeUpdatedAt}
+                        connectionStatus={connectionStatus}
+                        isConfigured={isConfigured}
+                        isResynchronizing={isResynchronizing}
+                        lastSynchronizedAt={lastSynchronizedAt}
+                        onResynchronize={manualResynchronize}
+                      />
+                    </>
+                  }
+                  intelPanelFooter={
+                    <>
+                      <StaffCheckpointControl
+                        checkpoints={campaign.battlefieldCheckpoints}
+                        connectionStatus={connectionStatus}
+                        killTeams={campaign.killTeams}
+                        onResynchronize={manualResynchronize}
+                        revision={campaign.revision}
+                        role={staffRole}
+                      />
+                      <SubmissionReviewControl
+                        campaignId={campaign.campaignId}
+                        missionId={campaign.missionId}
+                        onNavigate={onNavigateToSubmissions}
+                        role={staffRole}
+                      />
+                    </>
+                  }
+                  key={campaign.missionId}
+                  killTeams={campaign.killTeams}
+                />
               <div className="player-dashboard__primary-rail">
                 <MissionSummary campaign={campaign} />
                 <CampaignProgress value={campaign.crusadePoints} />
+                <ThreatPanel
+                  crusadeScoringTargets={campaign.crusadeScoringTargets}
+                  missionBoss={campaign.missionBoss}
+                />
               </div>
-            </div>
-
-            <div className="player-dashboard__grid">
-              <ObjectivePanel objectives={campaign.objectives} />
-              <ThreatPanel
-                crusadeScoringTargets={campaign.crusadeScoringTargets}
-                missionBoss={campaign.missionBoss}
-              />
-              <FriendlyForcesPanel killTeams={campaign.killTeams} />
-              <SynchronizationStatus
-                authoritativeUpdatedAt={campaign.authoritativeUpdatedAt}
-                connectionStatus={connectionStatus}
-                isConfigured={isConfigured}
-                isResynchronizing={isResynchronizing}
-                lastSynchronizedAt={lastSynchronizedAt}
-                onResynchronize={manualResynchronize}
-              />
             </div>
 
             {errorCode ? (

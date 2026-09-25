@@ -23,6 +23,13 @@ export function TacticalBattlefieldFrame({
   const headingId = useId()
   const battlefieldNameId = useId()
 
+  const designation = (
+        <p className="tactical-battlefield__designation">
+          <span>Active battlefield</span>
+          <strong id={battlefieldNameId}>{battlefieldName}</strong>
+        </p>
+  )
+
   return (
     <section
       aria-labelledby={`${headingId} ${battlefieldNameId}`}
@@ -35,14 +42,12 @@ export function TacticalBattlefieldFrame({
             Tactical Battlefield
           </h2>
         </div>
-        <p className="tactical-battlefield__designation">
-          <span>Active battlefield</span>
-          <strong id={battlefieldNameId}>{battlefieldName}</strong>
-        </p>
+        {!isInteractive && designation}
       </header>
 
       {isInteractive ? (
         <TacticalBattlefieldViewport
+          toolbarAccessory={designation}
           battlefieldName={battlefieldName}
           dimensions={dimensions}
           disabled={isBusy}
