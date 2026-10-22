@@ -1,0 +1,26 @@
+begin;
+create extension if not exists pgtap;
+set local search_path = public, extensions, pg_catalog;
+select plan(8);
+select ok((select relrowsecurity from pg_class where oid = 'public.event_briefing'::regclass), 'briefing has RLS');
+select ok(not has_table_privilege('anon', 'public.event_briefing', 'INSERT'), 'anonymous cannot publish');
+select ok(not has_table_privilege('authenticated', 'public.event_briefing', 'UPDATE'), 'signed-in players cannot edit');
+select ok(not has_table_privilege('anon', 'public.event_briefing', 'DELETE'), 'anonymous cannot delete');
+delete from public.event_briefing;
+insert into public.event_briefing (title, description, targets, modes, rules)
+values ('Private preparation', '', '{}', '{}', '{}');
+set local role anon;
+select is((select count(*)::int from public.event_briefing), 0, 'unpublished copy is hidden from anonymous visitors');
+reset role;
+set local role authenticated;
+select is((select count(*)::int from public.event_briefing), 0, 'unpublished copy is hidden from signed-in visitors');
+reset role;
+update public.event_briefing set published = true;
+set local role anon;
+select is((select count(*)::int from public.event_briefing), 1, 'published copy is publicly readable');
+reset role;
+set local role authenticated;
+select is((select count(*)::int from public.event_briefing), 1, 'published copy is readable when signed in');
+reset role;
+select * from finish();
+rollback;

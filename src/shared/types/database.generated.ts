@@ -9,6 +9,12 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      event_briefing: {
+        Row: { id: boolean; published: boolean; title: string; description: string; targets: string[]; modes: string[]; rules: string[]; updated_at: string }
+        Insert: { id?: boolean; published?: boolean; title: string; description: string; targets: string[]; modes: string[]; rules: string[]; updated_at?: string }
+        Update: { id?: boolean; published?: boolean; title?: string; description?: string; targets?: string[]; modes?: string[]; rules?: string[]; updated_at?: string }
+        Relationships: []
+      }
       app_users: {
         Row: {
           created_at: string

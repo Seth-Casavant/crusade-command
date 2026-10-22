@@ -1,3 +1,5 @@
+import { EventBriefing } from '../components/dashboard/EventBriefing'
+import { useEventBriefing } from '../state/useEventBriefing'
 import { navigateTo, PUBLIC_DASHBOARD_PATH, staffLoginPath } from '../navigation'
 
 function HolographicTable() {
@@ -31,26 +33,27 @@ function HolographicTable() {
         <path d="M300 467L230 586M500 467L570 586M400 500V600" stroke="currentColor" strokeOpacity=".2"/>
         <g fill="currentColor"><circle cx="295" cy="303" r="5"/><circle cx="495" cy="379" r="4"/><circle cx="355" cy="200" r="3"/></g>
         <path d="M295 303H178L140 270H90M495 379H615L650 345H715" stroke="currentColor" strokeOpacity=".7"/>
-        <g fill="currentColor" fontFamily="monospace" fontSize="11" letterSpacing="2"><text x="87" y="258">NEXOVAR</text><text x="645" y="333">WAR ZONE</text><text x="295" y="742">TACTICAL PROJECTION</text></g>
+        <g fill="currentColor" fontFamily="monospace" fontSize="11" letterSpacing="2"><text x="87" y="258">MIDNIGHT</text><text x="645" y="333">WAR ZONE</text><text x="295" y="742">TACTICAL PROJECTION</text></g>
       </svg>
     </div>
   )
 }
 
 export function WelcomePage() {
+  const { briefing, status, retry } = useEventBriefing()
   return (
     <main className="welcome-screen">
       <div className="welcome-screen__frame">
         <header className="welcome-screen__header">
-          <a href="/" className="welcome-screen__brand">FT <span>FLESH TEARERS<br/>CRUSADE COMMAND</span></a>
+          <a href="/" className="welcome-screen__brand">NL <span>NIGHT LORDS<br/>CRUSADE COMMAND</span></a>
           <button type="button" onClick={() => navigateTo(staffLoginPath())}>COMMAND STAFF <span aria-hidden="true">↗</span></button>
         </header>
         <div className="welcome-screen__hero">
           <div className="welcome-screen__copy">
-            <p className="welcome-screen__eyebrow">FLESH TEARERS // IMPERIAL COMMAND</p>
+            <p className="welcome-screen__eyebrow">NIGHT LORDS // CRUSADE COMMAND</p>
             <h1>CRUSADE <br/><span>COMMAND</span></h1>
-            <p className="welcome-screen__subtitle">THE WAR CALL OF NEXOVAR</p>
-            <p className="welcome-screen__description">By the blood of Sanguinius.<br/>Let the Emperor’s enemies fall.</p>
+            <p className="welcome-screen__subtitle">{briefing?.title ?? 'AWAITING DEPLOYMENT ORDERS'}</p>
+            <p className="welcome-screen__description">Ave Dominus Nox.<br/>Let the hunt begin.</p>
             <button className="welcome-screen__enter" type="button" onClick={() => navigateTo(PUBLIC_DASHBOARD_PATH)}>
               COMMENCE CRUSADE <span aria-hidden="true">→</span>
             </button>
@@ -58,7 +61,10 @@ export function WelcomePage() {
           </div>
           <HolographicTable />
         </div>
-        <footer className="welcome-screen__footer"><span>IMPERIAL TACTICAL DISPLAY</span><span>BY BLOOD. BY WILL.</span><span>FLESH TEARERS // NEXOVAR</span></footer>
+        {briefing ? <EventBriefing briefing={briefing} headingLevel={2} /> : null}
+        {status === 'loading' ? <p role="status">Receiving event briefing...</p> : null}
+        {status === 'error' ? <p role="status">Event briefing unavailable. <button onClick={retry}>Retry briefing</button></p> : null}
+        <footer className="welcome-screen__footer"><span>CRUSADE TACTICAL DISPLAY</span><span>AVE DOMINUS NOX.</span><span>NIGHT LORDS // THE MIDNIGHT HUNT</span></footer>
       </div>
     </main>
   )
