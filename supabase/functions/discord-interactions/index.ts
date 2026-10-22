@@ -88,7 +88,15 @@ const handler = createDiscordInteractionHandler({
   applicationId: requiredEnvironmentValue('DISCORD_APPLICATION_ID'),
   publicKey: requiredEnvironmentValue('DISCORD_PUBLIC_KEY'),
   publicAppUrl: requiredEnvironmentValue('PUBLIC_APP_URL'),
-  guildId: edgeRuntime.env.get('DISCORD_GUILD_ID')?.trim() || undefined,
+  
+ guildIds: (
+  edgeRuntime.env.get('DISCORD_GUILD_IDS')?.trim() ||
+  edgeRuntime.env.get('DISCORD_GUILD_ID')?.trim() ||
+  ''
+)
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean),
   maxAttachmentBytes,
   intake,
     teamRegistration: createSupabaseTeamRegistrationDatabase(client),

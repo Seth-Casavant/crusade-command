@@ -22,7 +22,7 @@
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "test:auth:local": "node scripts/verify-email-otp.mjs",
-    "test:discord": "vitest run supabase/functions/_shared/discord supabase/functions/discord-interactions/supabase-database.test.ts && node --test scripts/discord-registration.test.mjs",
+    "test:discord": "vitest run supabase/functions/_shared/discord supabase/functions/discord-interactions/supabase-database.test.ts scripts/discord-registration.test.mjs",
     "test:discord:local": "node --experimental-transform-types scripts/verify-discord-edge-adapter.mjs",
     "test:sync:local": "node scripts/verify-multi-client-sync.mjs",
     "test:watch": "vitest"

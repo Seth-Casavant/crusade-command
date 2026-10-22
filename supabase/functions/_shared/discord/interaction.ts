@@ -30,7 +30,7 @@ type DiscordInteractionHandlerConfig = {
   applicationId: string
   publicKey: string
   publicAppUrl: string
-  guildId?: string
+  guildIds?: string[]
 maxAttachmentBytes?: number
 intake: DiscordSubmissionIntake
 teamRegistration?: DiscordTeamRegistrationService
@@ -275,12 +275,15 @@ function parseAttachment(
 function parseSubmission(
   interaction: Record<string, unknown>,
   maximumBytes: number,
-  allowedGuildId?: string,
+  allowedGuildIds?: string[],
 ): DiscordSubmissionInput {
   const interactionId = readSnowflake(interaction, 'id')
   const guildId = readSnowflake(interaction, 'guild_id')
 
-  if (allowedGuildId && guildId !== allowedGuildId) {
+  if (
+  allowedGuildIds?.length &&
+  !allowedGuildIds.includes(guildId)
+) {
     throw new InvalidInteractionError(
       'This command is not available in this Discord server.',
     )
@@ -311,11 +314,14 @@ function parseSubmission(
 }
 function parseTeamRegistration(
   interaction: Record<string, unknown>,
-  allowedGuildId?: string,
+  allowedGuildIds?: string[],
 ) {
   const guildId = readSnowflake(interaction, 'guild_id')
 
-  if (allowedGuildId && guildId !== allowedGuildId) {
+  if (
+    allowedGuildIds?.length &&
+    !allowedGuildIds.includes(guildId)
+  ) {
     throw new InvalidInteractionError(
       'This command is not available in this Discord server.',
     )
@@ -653,7 +659,7 @@ export function createDiscordInteractionHandler({
   applicationId,
   publicKey,
   publicAppUrl,
-  guildId,
+  guildIds,
   maxAttachmentBytes = DEFAULT_MAX_ATTACHMENT_BYTES,
   intake,
 teamRegistration,
@@ -732,7 +738,7 @@ if (commandName === 'crusade-team') {
           )
         }
 
-        const input = parseTeamRegistration(interaction, guildId)
+        const input = parseTeamRegistration(interaction, guildIds)
         const campaign =
           await teamRegistration.findRegistrationCampaign()
 
@@ -827,7 +833,7 @@ if (commandName === 'crusade-team') {
         let receipt: DiscordSubmissionReceipt
 
         try {
-          input = parseSubmission(interaction, maxAttachmentBytes, guildId)
+          input = parseSubmission(interaction, maxAttachmentBytes, guildIds)
           receipt = await intake.createSubmission(input)
         } catch (error) {
           logUnexpectedError(

@@ -276,7 +276,7 @@ function createHandler({
       applicationId,
       publicKey: '11'.repeat(32),
       publicAppUrl: 'https://crusade.example',
-      guildId,
+      guildIds: [guildId],
       maxAttachmentBytes: 5_000_000,
       intake,
       teamRegistration,
