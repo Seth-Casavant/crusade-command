@@ -1,3 +1,5 @@
+import { EventBriefing } from '../components/dashboard/EventBriefing'
+import { useEventBriefing } from '../state/useEventBriefing'
 import { currentCampaignLabels } from './currentCampaignLabels'
 import {
   KillTeamBattlefieldPresentation,
@@ -39,6 +41,7 @@ export type PlayerDashboardProps = {
   authentication?: AuthenticationState
   onNavigateToStaffLogin?: () => void
   onNavigateToSubmissions?: () => void
+  eventBriefing?: ReturnType<typeof useEventBriefing>
 }
 
 const publicAuthentication: AuthenticationState = {
@@ -128,6 +131,7 @@ export function PlayerDashboard({
   authentication = publicAuthentication,
   onNavigateToStaffLogin = () => navigateTo(staffLoginPath()),
   onNavigateToSubmissions = () => navigateTo(STAFF_SUBMISSIONS_PATH),
+  eventBriefing,
 }: PlayerDashboardProps) {
   const {
     campaign: sourceCampaign,
@@ -231,7 +235,11 @@ export function PlayerDashboard({
           </>
         ) : (
           <>
-            <NoActiveCrusade />
+            {eventBriefing?.briefing ? <EventBriefing briefing={eventBriefing.briefing} /> :
+              eventBriefing?.status === 'loading' ? <p role="status">Receiving event briefing...</p> :
+              eventBriefing?.status === 'error' ? <section className="no-active-crusade"><h1>Event briefing unavailable</h1><button onClick={eventBriefing.retry}>Retry briefing</button></section> :
+              <NoActiveCrusade />}
+
             <div className="player-dashboard__system">
               <SynchronizationStatus
                 authoritativeUpdatedAt={null}
@@ -253,10 +261,12 @@ export function PlayerDashboard({
 
 export function PlayerDashboardPage() {
   const synchronization = useCampaignSynchronization()
+  const eventBriefing = useEventBriefing()
   const { state: authentication } = useAuthentication()
 
   return (
     <PlayerDashboard
+      eventBriefing={eventBriefing}
       authentication={authentication}
       synchronization={synchronization}
     />

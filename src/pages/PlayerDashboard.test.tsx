@@ -588,3 +588,19 @@ describe('PlayerDashboard', () => {
     expect(screen.getByText('Operation Ashen Spear')).toBeInTheDocument()
   })
 })
+
+
+it('shows the published event briefing while the mission is inactive, without a map or score counters', () => {
+  render(<PlayerDashboard
+    synchronization={createSynchronization({ campaign: null, signal: null })}
+    eventBriefing={{ status: 'ready', retry: vi.fn(), briefing: {
+      title: 'The Midnight Hunt', description: 'Published orders.',
+      targets: ['Carnifex', 'Terminator Sorcerer'], modes: ['Siege', 'PvE / Operations'], rules: ['Staff assign points manually.'],
+    } }}
+  />)
+  expect(screen.getByRole('heading', { level: 1, name: 'The Midnight Hunt' })).toBeInTheDocument()
+  expect(screen.getByText('Carnifex')).toBeInTheDocument()
+  expect(screen.queryByText('No Active Operation')).not.toBeInTheDocument()
+  expect(screen.queryByRole('group', { name: 'Current Crusade points' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: /Tactical Battlefield/ })).not.toBeInTheDocument()
+})
