@@ -1,7 +1,12 @@
 select
-  display_name,
-  discord_user_id,
-  kill_team_id
-from public.kill_team_members
-where kill_team_id = '00000000-0000-4000-8000-000000000501'
-order by display_name;
+  u.id,
+  u.email,
+  a.role
+from auth.users u
+left join public.app_users a
+  on a.user_id = u.id
+where u.email in (
+  'administrator@crusade-command.invalid',
+  'moderator@crusade-command.invalid',
+  'player@crusade-command.invalid'
+);
