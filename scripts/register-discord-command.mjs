@@ -9,13 +9,14 @@ const commandName = process.argv[3] ?? 'crusade-submit'
 const commandFiles = {
   'crusade-submit': 'crusade-submit-command.json',
   'crusade-team': 'crusade-team-command.json',
+  'kill-team': 'kill-team-command.json',
 }
 
 const commandFile = commandFiles[commandName]
 
 if (!commandFile) {
   console.error(
-    `Unknown Discord command "${commandName}". Use crusade-submit or crusade-team.`,
+    `Unknown Discord command "${commandName}". Use crusade-submit, crusade-team, or kill-team.`,
   )
   process.exitCode = 1
 } else {
