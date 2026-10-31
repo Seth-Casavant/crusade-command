@@ -17,7 +17,29 @@ import {
   type SubmissionQueueFilters,
 } from '../data/services/staffSubmissions'
 import type { StaffSubmissionsRouteProps } from './StaffSubmissions'
-import { StaffSubmissionsRoute } from './StaffSubmissions'
+import { CampaignControls, StaffSubmissionsRoute } from './StaffSubmissions'
+
+const { controlsRpc } = vi.hoisted(() => ({ controlsRpc: vi.fn(async (_name: string, args: Record<string, unknown>) => ({ data: { registration_locked: args.p_registration_locked ?? false, data_locked: args.p_data_locked ?? false }, error: null })) }))
+vi.mock('../data/services/supabase', () => ({ supabase: { rpc: controlsRpc } }))
+
+it('saves one campaign lock without changing the other', async () => {
+  const resync = vi.fn(async () => undefined)
+  render(<CampaignControls campaignId="test-campaign" revision={8} canWrite onResynchronize={resync} />)
+  const registration = screen.getByRole('switch', { name: 'Lock registration' })
+  await waitFor(() => expect(registration).toBeEnabled())
+  fireEvent.click(registration)
+  await waitFor(() => expect(resync).toHaveBeenCalledOnce())
+  expect(controlsRpc).toHaveBeenCalledWith('set_campaign_controls', { p_campaign_id: 'test-campaign', p_expected_revision: 8, p_registration_locked: true, p_data_locked: false })
+  expect(registration).toHaveAttribute('aria-checked', 'true')
+  expect(screen.getByRole('switch', { name: 'Lock campaign data' })).toHaveAttribute('aria-checked', 'false')
+})
+
+it('keeps campaign lock writes disabled while offline', async () => {
+  render(<CampaignControls campaignId="offline-test" revision={9} canWrite={false} onResynchronize={async () => undefined} />)
+  await screen.findByText(/Open — teams can register/)
+  expect(screen.getByRole('switch', { name: 'Lock registration' })).toBeDisabled()
+  expect(screen.getByRole('switch', { name: 'Lock campaign data' })).toBeDisabled()
+})
 
 const campaign: PublicCampaignState = {
   campaignId: '00000000-0000-4000-8000-000000000001',
