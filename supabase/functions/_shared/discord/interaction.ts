@@ -386,18 +386,45 @@ function parseTeamRegistration(
     )
   }
 
+  if ((subcommand.name === 'chapter' || subcommand.name === 'team-chapter')) {
+    const options = subcommand.options
+    if (!Array.isArray(options) || options.length !== 1 || !isRecord(options[0]) ||
+        options[0].name !== 'name' || options[0].type !== 3 || typeof options[0].value !== 'string') {
+      throw new InvalidInteractionError('Enter your Chapter / Warband name.')
+    }
+    const chapter = options[0].value.trim()
+    if (chapter.length < 2 || chapter.length > 80 || Array.from(chapter).some((char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127)) {
+      throw new InvalidInteractionError('Chapter / Warband must be between 2 and 80 characters on one line.')
+    }
+    return { action: 'chapter' as const, discordUserId, chapter, forTeam: subcommand.name === 'team-chapter' }
+  }
+
   if (subcommand.name === 'register') {
     if (
       !Array.isArray(subcommand.options) ||
-      subcommand.options.length !== 1 ||
-      !isRecord(subcommand.options[0])
+      (subcommand.options.length < 1 || subcommand.options.length > 2) ||
+      !subcommand.options.every(isRecord)
     ) {
       throw new InvalidInteractionError(
         'Enter a valid Kill Team name.',
       )
     }
 
-    const nameOption = subcommand.options[0]
+    const nameOption = subcommand.options.find((option) => option.name === 'name')
+    const chapterOption = subcommand.options.find((option) => option.name === 'chapter')
+    if (!nameOption || new Set(subcommand.options.map((option) => option.name)).size !== subcommand.options.length || subcommand.options.some((option) => (typeof option.name !== 'string' || !['name', 'chapter'].includes(option.name)))) {
+      throw new InvalidInteractionError('Enter a valid Kill Team name and chapter.')
+    }
+    let chapter: string | undefined
+    if (chapterOption) {
+      if (chapterOption.type !== 3 || typeof chapterOption.value !== 'string') {
+        throw new InvalidInteractionError('Enter a valid Chapter / Warband name.')
+      }
+      chapter = chapterOption.value.trim()
+      if (chapter.length < 2 || chapter.length > 80 || Array.from(chapter).some((char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127)) {
+        throw new InvalidInteractionError('Chapter / Warband must be between 2 and 80 characters on one line.')
+      }
+    }
 
     if (
       nameOption.name !== 'name' ||
@@ -422,6 +449,7 @@ function parseTeamRegistration(
       discordUserId,
       leaderDisplayName,
       name,
+      ...(chapter ? { chapter } : {}),
     }
   }
 
@@ -748,6 +776,7 @@ if (commandName === 'crusade-team') {
             name: input.name,
             leaderDiscordUserId: input.discordUserId,
             leaderDisplayName: input.leaderDisplayName,
+            ...(input.chapter ? { chapter: input.chapter } : {}),
           })
 
           await editOriginalResponse(
@@ -760,6 +789,15 @@ if (commandName === 'crusade-team') {
               result.missionTeamCount,
             ),
           )
+        } else if (input.action === 'chapter') {
+          await teamRegistration.setChapter({
+            campaignId: campaign.id,
+            discordUserId: input.discordUserId,
+            chapter: input.chapter,
+            forTeam: input.forTeam,
+          })
+          await editOriginalResponse(fetcher, applicationId, interactionToken,
+            input.forTeam ? 'Your Kill Team’s default Chapter / Warband has been updated.' : 'Your Chapter / Warband has been updated on your Kill Team roster.')
         } else if (input.action === 'add') {
           const result = await teamRegistration.addMember({
             campaignId: campaign.id,
