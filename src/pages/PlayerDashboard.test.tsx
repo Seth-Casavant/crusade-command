@@ -136,6 +136,21 @@ function createSynchronization(
 }
 
 describe('PlayerDashboard', () => {
+  it('uses the leader chapter abbreviation in the badge while retaining full member affiliations', () => {
+    render(<PlayerDashboard synchronization={createSynchronization({ campaign: {
+      ...campaign, missionId: '20261021-0000-4000-8000-000000000201',
+      killTeams: [{ ...campaign.killTeams[0], chapter: 'Dark Angels', leaderChapter: 'Night Lords', members: [
+        { displayName: 'First Hunter', chapter: 'Night Lords' },
+        { displayName: 'Second Hunter', chapter: 'Dark Angels' },
+      ] }],
+    } })} />)
+    expect(screen.getByRole('img', { name: 'Leader Chapter / Warband: Night Lords' })).toHaveTextContent('NL')
+    expect(screen.queryByText('KT')).not.toBeInTheDocument()
+    const roster = screen.getByRole('list', { name: /members$/ })
+    expect(within(roster).getByText('Night Lords')).toBeInTheDocument()
+    expect(within(roster).getByText('Dark Angels')).toBeInTheDocument()
+  })
+
   it('shows each member chapter with the team default as fallback', () => {
     render(<PlayerDashboard synchronization={createSynchronization({ campaign: {
       ...campaign, missionId: '20261021-0000-4000-8000-000000000201',
