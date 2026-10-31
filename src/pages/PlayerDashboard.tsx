@@ -131,24 +131,26 @@ function HuntKillTeams({ teams }: { teams: PublicKillTeam[] }) {
   const [selectedId, setSelectedId] = useState('')
   const team = teams.find(({ id }) => id === selectedId) ?? teams[0]
   return (
-    <Panel className="dashboard-panel" eyebrow="Registered forces" title="Kill Team Overview">
+    <Panel className="dashboard-panel hunt-team" eyebrow="Registered forces" title="Kill Team Overview">
       {team ? <>
+        <div className="hunt-team__selector">
         <label htmlFor="hunt-kill-team">Kill Team</label>
         <select id="hunt-kill-team" value={team.id} onChange={(event) => setSelectedId(event.target.value)}>
           {teams.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
         </select>
-        <section aria-label="Selected Kill Team">
-          <h3>{team.name}</h3>
-          <dl>
+        </div>
+        <section aria-label="Selected Kill Team" className="hunt-team__dossier">
+          <div className="hunt-team__identity"><span className="hunt-team__sigil" aria-hidden="true">VIII</span><div><p className="hunt-team__designation">Night Lords // Kill Team</p><h3>{team.name}</h3></div></div>
+          <dl className="hunt-team__stats">
             <div><dt>Team points</dt><dd>{team.crusadePoints}</dd></div>
             <div><dt>Verified Terminus kills</dt><dd>{team.terminusKills}</dd></div>
             <div><dt>Objectives completed</dt><dd>{team.objectivesCompleted}</dd></div>
           </dl>
           <h4>Members ({team.members.length})</h4>
-          <ul aria-label={`${team.name} members`}>
-            {team.members.map((member, index) => <li key={`${member.displayName}:${index}`}>{member.displayName}</li>)}
+          <ul className="hunt-team__roster" aria-label={`${team.name} members`}>
+            {team.members.map((member, index) => <li key={`${member.displayName}:${index}`}><span className="hunt-team__number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><span>{member.displayName}</span></li>)}
           </ul>
-          <p>Points and kills update after staff approval.</p>
+          <p className="hunt-team__note">Points and kills update after staff approval.</p>
         </section>
       </> : <p>No Kill Teams are registered for this mission.</p>}
     </Panel>
