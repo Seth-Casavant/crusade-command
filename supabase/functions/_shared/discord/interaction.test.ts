@@ -370,6 +370,18 @@ it('accepts a free-text chapter at registration', async () => {
   expect(teamRegistration.registerTeam).toHaveBeenCalledWith(expect.objectContaining({ chapter: 'Dark Angels', leaderDiscordUserId: discordUserId }))
 })
 
+it('routes /kill-team add chapter with separate requester and selected member identities', async () => {
+  const teamRegistration = createTeamRegistration()
+  const { handler, finishBackground } = createHandler({ teamRegistration })
+  const payload = { ...teamInteraction(), data: { name: 'kill-team', options: [{ name: 'add', type: 2, options: [{ name: 'chapter', type: 1, options: [
+    { name: 'member', type: 6, value: '900000000000000002' },
+    { name: 'chapter', type: 3, value: '  Raven Guard  ' },
+  ] }] }] } }
+  await handler(request(payload))
+  await finishBackground()
+  expect(teamRegistration.setChapter).toHaveBeenCalledWith({ campaignId: '13000000-0000-4000-8000-000000000001', discordUserId, memberDiscordUserId: '900000000000000002', chapter: 'Raven Guard', forTeam: false })
+})
+
 it('changes only the invoking member chapter', async () => {
   const teamRegistration = createTeamRegistration()
   const { handler, finishBackground } = createHandler({ teamRegistration })
