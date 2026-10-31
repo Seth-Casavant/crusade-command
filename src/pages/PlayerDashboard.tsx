@@ -140,7 +140,7 @@ function HuntKillTeams({ teams }: { teams: PublicKillTeam[] }) {
         </select>
         </div>
         <section aria-label="Selected Kill Team" className="hunt-team__dossier">
-          <div className="hunt-team__identity"><span className="hunt-team__sigil" aria-hidden="true">VIII</span><div><p className="hunt-team__designation">Night Lords // Kill Team</p><h3>{team.name}</h3></div></div>
+          <div className="hunt-team__identity"><span className="hunt-team__sigil" aria-hidden="true">KT</span><div><p className="hunt-team__designation">{team.chapter ?? 'Chapter / Warband not specified'} // Kill Team</p><h3>{team.name}</h3></div></div>
           <dl className="hunt-team__stats">
             <div><dt>Team points</dt><dd>{team.crusadePoints}</dd></div>
             <div><dt>Verified Terminus kills</dt><dd>{team.terminusKills}</dd></div>
@@ -148,7 +148,7 @@ function HuntKillTeams({ teams }: { teams: PublicKillTeam[] }) {
           </dl>
           <h4>Members ({team.members.length})</h4>
           <ul className="hunt-team__roster" aria-label={`${team.name} members`}>
-            {team.members.map((member, index) => <li key={`${member.displayName}:${index}`}><span className="hunt-team__number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><span>{member.displayName}</span></li>)}
+            {team.members.map((member, index) => <li key={`${member.displayName}:${index}`}><span className="hunt-team__number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><span>{member.displayName}</span><span className="hunt-team__chapter">{member.chapter ?? team.chapter ?? 'Unspecified'}</span></li>)}
           </ul>
           <p className="hunt-team__note">Points and kills update after staff approval.</p>
         </section>
