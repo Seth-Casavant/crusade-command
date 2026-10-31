@@ -202,14 +202,16 @@ export function createSupabaseTeamRegistrationDatabase(
       name: string
       leaderDiscordUserId: string
       leaderDisplayName: string
+      chapter?: string
     }) {
       const { data, error } = await client.rpc(
-        'discord_register_campaign_kill_team',
+        'discord_register_campaign_kill_team_with_chapter',
         {
           p_campaign_id: input.campaignId,
           p_name: input.name,
           p_leader_discord_user_id: input.leaderDiscordUserId,
           p_leader_display_name: input.leaderDisplayName,
+          p_chapter: input.chapter ?? null,
         },
       )
 
@@ -218,6 +220,16 @@ export function createSupabaseTeamRegistrationDatabase(
       }
 
       return parseRegistrationResult(data)
+    },
+
+    async setChapter(input: { campaignId: string; discordUserId: string; chapter: string; forTeam: boolean }) {
+      const { error } = await client.rpc('discord_set_chapter', {
+        p_campaign_id: input.campaignId,
+        p_discord_user_id: input.discordUserId,
+        p_chapter: input.chapter,
+        p_for_team: input.forTeam,
+      })
+      if (error) throw classifyRegistrationError(error)
     },
 
     async addMember(input: {
