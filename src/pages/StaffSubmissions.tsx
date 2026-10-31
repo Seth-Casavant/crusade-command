@@ -7,6 +7,7 @@ import {
 } from 'react'
 
 import { Button } from '../components/ui'
+import { supabase } from '../data/services/supabase'
 import {
   isCommandStaffRole,
   signOutCommandStaff,
@@ -35,6 +36,71 @@ import {
 } from '../state/campaignSync/useCampaignSynchronization'
 
 const FILTERS: SubmissionStatus[] = ['PENDING', 'APPROVED', 'REJECTED']
+
+type CampaignLocks = { registration_locked: boolean; data_locked: boolean }
+
+function parseCampaignLocks(data: unknown): CampaignLocks {
+  if (!data || typeof data !== 'object' || !('registration_locked' in data) || !('data_locked' in data) || typeof data.registration_locked !== 'boolean' || typeof data.data_locked !== 'boolean') {
+    throw new Error('Campaign controls could not be verified.')
+  }
+  return { registration_locked: data.registration_locked, data_locked: data.data_locked }
+}
+
+export function CampaignControls({ campaignId, revision, canWrite, onResynchronize }: {
+  campaignId: string; revision: number; canWrite: boolean; onResynchronize: () => Promise<void>
+}) {
+  const [locks, setLocks] = useState<CampaignLocks | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [loadedRevision, setLoadedRevision] = useState(-1)
+  const [controlError, setControlError] = useState<string | null>(null)
+  useEffect(() => {
+    let active = true
+    const client = supabase
+    if (!client) return
+    void (async () => {
+      try {
+        const { data, error } = await client.rpc('get_campaign_controls', { p_campaign_id: campaignId })
+        if (error) throw new Error('Unable to load campaign controls.')
+        const next = parseCampaignLocks(data)
+        if (active) { setLocks(next); setLoadedRevision(revision); setControlError(null) }
+      } catch (error) {
+        if (active) setControlError(error instanceof Error ? error.message : 'Unable to load campaign controls.')
+      }
+    })()
+    return () => { active = false }
+  }, [campaignId, revision])
+
+  async function toggle(key: keyof CampaignLocks) {
+    if (!supabase || !locks || saving || !canWrite) return
+    setSaving(true)
+    setControlError(null)
+    try {
+      const next = { ...locks, [key]: !locks[key] }
+      const { data, error } = await supabase.rpc('set_campaign_controls', {
+        p_campaign_id: campaignId, p_expected_revision: revision,
+        p_registration_locked: next.registration_locked, p_data_locked: next.data_locked,
+      })
+      if (error) throw new Error(error.message.includes('REVISION_CONFLICT') ? 'Campaign changed. Refreshing controls; please try again.' : 'Unable to change campaign locks.')
+      setLocks(parseCampaignLocks(data))
+      await onResynchronize()
+    } catch (error) {
+      await onResynchronize()
+      setControlError(error instanceof Error ? error.message : 'Unable to change campaign locks.')
+    } finally { setSaving(false) }
+  }
+
+  return <section className="campaign-controls" aria-label="Campaign controls">
+    <h2>Campaign Controls</h2>
+    <p>Administrator access // Locks are saved for this campaign.</p>
+    <div className="campaign-controls__toggles">
+      <div><Button role="switch" aria-checked={locks?.registration_locked ?? false} disabled={!locks || loadedRevision !== revision || saving || !canWrite} onClick={() => void toggle('registration_locked')} variant="secondary">Lock registration</Button>
+        <p>{locks ? (locks.registration_locked ? 'Locked — new teams and roster changes are paused.' : 'Open — teams can register and manage their roster at any time.') : 'Loading registration status…'}</p></div>
+      <div><Button role="switch" aria-checked={locks?.data_locked ?? false} disabled={!locks || loadedRevision !== revision || saving || !canWrite} onClick={() => void toggle('data_locked')} variant="secondary">Lock campaign data</Button>
+        <p>{locks ? (locks.data_locked ? 'Locked — campaign settings and mission changes are protected.' : 'Unlocked — campaign settings can be changed.') : 'Loading campaign status…'} Submissions, approvals, and points remain available.</p></div>
+    </div>
+    {controlError ? <p role="alert">{controlError}</p> : null}
+  </section>
+}
 
 type StaffSynchronization = CampaignSynchronizationState & {
   isConfigured: boolean
@@ -535,6 +601,7 @@ function StaffSubmissionReview({
           </div>
         </header>
 
+        {role === 'ADMINISTRATOR' ? <CampaignControls key={campaignId} campaignId={campaignId} revision={revision} canWrite={canPerformAuthoritativeWrite(role, synchronization.connectionStatus)} onResynchronize={synchronization.manualResynchronize} /> : null}
         <nav aria-label="Submission status filters" className="submission-filters">
           {FILTERS.map((filter) => (
             <Button
