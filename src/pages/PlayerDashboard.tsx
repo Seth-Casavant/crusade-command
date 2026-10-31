@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { EventBriefing } from '../components/dashboard/EventBriefing'
 import { useEventBriefing } from '../state/useEventBriefing'
 import { currentCampaignLabels } from './currentCampaignLabels'
@@ -17,9 +18,9 @@ import {
   SynchronizationStatus,
   ThreatPanel,
 } from '../components/dashboard'
-import { Button } from '../components/ui'
+import { Button, Panel } from '../components/ui'
 import type { AuthenticationState } from '../data/services/auth'
-import type { SyncErrorCode } from '../data/services/publicCampaign'
+import type { PublicKillTeam, SyncErrorCode } from '../data/services/publicCampaign'
 import {
   navigateTo,
   STAFF_SUBMISSIONS_PATH,
@@ -126,6 +127,34 @@ function InitialError({
   )
 }
 
+function HuntKillTeams({ teams }: { teams: PublicKillTeam[] }) {
+  const [selectedId, setSelectedId] = useState('')
+  const team = teams.find(({ id }) => id === selectedId) ?? teams[0]
+  return (
+    <Panel className="dashboard-panel" eyebrow="Registered forces" title="Kill Team Overview">
+      {team ? <>
+        <label htmlFor="hunt-kill-team">Kill Team</label>
+        <select id="hunt-kill-team" value={team.id} onChange={(event) => setSelectedId(event.target.value)}>
+          {teams.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
+        </select>
+        <section aria-label="Selected Kill Team">
+          <h3>{team.name}</h3>
+          <dl>
+            <div><dt>Team points</dt><dd>{team.crusadePoints}</dd></div>
+            <div><dt>Verified Terminus kills</dt><dd>{team.terminusKills}</dd></div>
+            <div><dt>Objectives completed</dt><dd>{team.objectivesCompleted}</dd></div>
+          </dl>
+          <h4>Members ({team.members.length})</h4>
+          <ul aria-label={`${team.name} members`}>
+            {team.members.map((member, index) => <li key={`${member.displayName}:${index}`}>{member.displayName}</li>)}
+          </ul>
+          <p>Points and kills update after staff approval.</p>
+        </section>
+      </> : <p>No Kill Teams are registered for this mission.</p>}
+    </Panel>
+  )
+}
+
 export function PlayerDashboard({
   synchronization,
   authentication = publicAuthentication,
@@ -182,6 +211,7 @@ export function PlayerDashboard({
             <div className="player-dashboard__primary">
               {isMaplessHunt ? (
                 <div>
+                  <HuntKillTeams key={campaign.missionId} teams={campaign.killTeams} />
                   <ObjectivePanel objectives={campaign.objectives} />
                   <SubmissionReviewControl
                     campaignId={campaign.campaignId}
