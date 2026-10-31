@@ -270,6 +270,17 @@ export function PlayerDashboard({
               )}
               <div className="player-dashboard__primary-rail">
                 <MissionSummary campaign={campaign} />
+                {isMaplessHunt ? (
+                  <Panel className="dashboard-panel" eyebrow="The Midnight Hunt" title="Scoring Guide">
+                    <ul>
+                      <li><strong>5 points</strong> per Carnifex kill</li>
+                      <li><strong>10 points</strong> per Terminator Sorcerer kill</li>
+                      <li><strong>2 points</strong> per completed Operation on Absolute difficulty</li>
+                      <li><strong>5 points</strong> per 5 completed waves in Loyalist or Chaos Siege</li>
+                    </ul>
+                    <p>Points are awarded after staff approval of screenshot evidence.</p>
+                  </Panel>
+                ) : null}
                 <CampaignProgress value={campaign.crusadePoints} />
                 <ThreatPanel
                   crusadeScoringTargets={campaign.crusadeScoringTargets}
