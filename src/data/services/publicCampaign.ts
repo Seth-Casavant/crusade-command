@@ -68,6 +68,7 @@ export type PublicKillTeam = {
   id: string
   name: string
   chapter?: string | null
+  leaderChapter?: string | null
   members: PublicKillTeamMember[]
   currentCheckpointId: string | null
   operationalStatus: PublicKillTeamOperationalStatus
@@ -359,6 +360,7 @@ function parseKillTeam(value: unknown): PublicKillTeam {
     id: readUuid(value, 'id'),
     name: readString(value, 'name'),
     ...(value.chapter === undefined ? {} : { chapter: readNullableString(value, 'chapter') }),
+    ...(value.leader_chapter === undefined ? {} : { leaderChapter: readNullableString(value, 'leader_chapter') }),
     members: readArray(value, 'members').map(parseKillTeamMember),
     currentCheckpointId: readNullableUuid(value, 'current_checkpoint_id'),
     operationalStatus: operationalStatus as PublicKillTeamOperationalStatus,
