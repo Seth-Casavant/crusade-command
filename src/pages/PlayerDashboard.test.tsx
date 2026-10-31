@@ -136,6 +136,20 @@ function createSynchronization(
 }
 
 describe('PlayerDashboard', () => {
+  it('shows each member chapter with the team default as fallback', () => {
+    render(<PlayerDashboard synchronization={createSynchronization({ campaign: {
+      ...campaign, missionId: '20261021-0000-4000-8000-000000000201',
+      killTeams: [{ ...campaign.killTeams[0], chapter: 'Night Lords', members: [
+        { displayName: 'First Hunter', chapter: 'Dark Angels' },
+        { displayName: 'Second Hunter', chapter: null },
+      ] }],
+    } })} />)
+    const roster = screen.getByRole('list', { name: /members$/ })
+    expect(within(roster).getByText('Dark Angels').closest('li')).toHaveTextContent('First Hunter')
+    expect(within(roster).getByText('Night Lords').closest('li')).toHaveTextContent('Second Hunter')
+    expect(screen.queryByText('VIII')).not.toBeInTheDocument()
+  })
+
   it('switches map-free Kill Team rosters and scores while preserving Crusade totals', () => {
     render(<PlayerDashboard synchronization={createSynchronization({ campaign: {
       ...campaign, missionId: '20261021-0000-4000-8000-000000000201',
