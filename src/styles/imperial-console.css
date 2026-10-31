@@ -529,3 +529,12 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-imperial); }
   .player-dashboard .hunt-team__stats dt { font-size: .6rem; letter-spacing: .02em; }
   .player-dashboard .hunt-team__identity { gap: 12px; }
 }
+
+.campaign-controls { border: 1px solid var(--color-steel-bright); border-top: 2px solid var(--color-phosphor); padding: 24px; margin-bottom: 28px; background: var(--color-iron-inset); }
+.campaign-controls h2 { margin: 0 0 12px; }
+.campaign-controls p { color: var(--color-ash); font: .85rem/1.6 var(--font-interface); }
+.campaign-controls__toggles { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; margin-top: 20px; }
+.campaign-controls [role="switch"]::before { content: '○'; margin-right: 10px; }
+.campaign-controls [role="switch"][aria-checked="true"] { border-color: var(--color-brass-bright); color: var(--color-brass-bright); }
+.campaign-controls [role="switch"][aria-checked="true"]::before { content: '●'; }
+@media (max-width: 40rem) { .campaign-controls__toggles { grid-template-columns: 1fr; gap: 12px; } }
