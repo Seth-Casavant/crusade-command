@@ -2,8 +2,12 @@
   "name": "crusade-team",
   "description": "Manage your Crusade Kill Team registration",
   "type": 1,
-  "integration_types": [0],
-  "contexts": [0],
+  "integration_types": [
+    0
+  ],
+  "contexts": [
+    0
+  ],
   "options": [
     {
       "name": "register",
@@ -17,6 +21,14 @@
           "required": true,
           "min_length": 2,
           "max_length": 50
+        },
+        {
+          "name": "chapter",
+          "description": "Your Kill Team’s Chapter or Warband name",
+          "type": 3,
+          "required": false,
+          "min_length": 2,
+          "max_length": 80
         }
       ]
     },
@@ -43,6 +55,36 @@
           "description": "Discord member to remove",
           "type": 6,
           "required": true
+        }
+      ]
+    },
+    {
+      "name": "chapter",
+      "description": "Set or change your own Chapter / Warband on your Kill Team roster",
+      "type": 1,
+      "options": [
+        {
+          "name": "name",
+          "description": "Your Chapter or Warband name",
+          "type": 3,
+          "required": true,
+          "min_length": 2,
+          "max_length": 80
+        }
+      ]
+    },
+    {
+      "name": "team-chapter",
+      "description": "Leader only: set or change your Kill Team’s default Chapter / Warband",
+      "type": 1,
+      "options": [
+        {
+          "name": "name",
+          "description": "Default Chapter or Warband name",
+          "type": 3,
+          "required": true,
+          "min_length": 2,
+          "max_length": 80
         }
       ]
     }
