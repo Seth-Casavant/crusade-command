@@ -52,6 +52,7 @@ export type PublicCrusadeScoringTarget = {
 
 export type PublicKillTeamMember = {
   displayName: string
+  chapter?: string | null
 }
 
 export type PublicKillTeamOperationalStatus =
@@ -66,6 +67,7 @@ export type PublicKillTeamOperationalStatus =
 export type PublicKillTeam = {
   id: string
   name: string
+  chapter?: string | null
   members: PublicKillTeamMember[]
   currentCheckpointId: string | null
   operationalStatus: PublicKillTeamOperationalStatus
@@ -328,6 +330,7 @@ function parseKillTeamMember(value: unknown): PublicKillTeamMember {
 
   return {
     displayName: readString(value, 'display_name'),
+    ...(value.chapter === undefined ? {} : { chapter: readNullableString(value, 'chapter') }),
   }
 }
 
@@ -355,6 +358,7 @@ function parseKillTeam(value: unknown): PublicKillTeam {
   return {
     id: readUuid(value, 'id'),
     name: readString(value, 'name'),
+    ...(value.chapter === undefined ? {} : { chapter: readNullableString(value, 'chapter') }),
     members: readArray(value, 'members').map(parseKillTeamMember),
     currentCheckpointId: readNullableUuid(value, 'current_checkpoint_id'),
     operationalStatus: operationalStatus as PublicKillTeamOperationalStatus,
