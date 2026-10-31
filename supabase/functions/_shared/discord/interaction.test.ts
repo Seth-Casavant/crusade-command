@@ -217,6 +217,7 @@ function createIntake(
 
 function createTeamRegistration(): DiscordTeamRegistrationService {
   return {
+    setChapter: vi.fn(async () => undefined),
     findRegistrationCampaign: vi.fn(async () => ({
       id: '13000000-0000-4000-8000-000000000001',
       name: 'Nexovar Crusade',
@@ -358,6 +359,58 @@ describe('Discord interaction handler', () => {
       evidenceFileSizeBytes: 2048,
     })
   })
+
+it('accepts a free-text chapter at registration', async () => {
+  const teamRegistration = createTeamRegistration()
+  const { handler, finishBackground } = createHandler({ teamRegistration })
+  const payload = teamInteraction()
+  payload.data.options[0].options.push({ name: 'chapter', type: 3, value: '  Dark Angels  ' })
+  await handler(request(payload))
+  await finishBackground()
+  expect(teamRegistration.registerTeam).toHaveBeenCalledWith(expect.objectContaining({ chapter: 'Dark Angels', leaderDiscordUserId: discordUserId }))
+})
+
+it('changes only the invoking member chapter', async () => {
+  const teamRegistration = createTeamRegistration()
+  const { handler, finishBackground } = createHandler({ teamRegistration })
+  const payload = teamInteraction('  Night Lords  ')
+  payload.data.options[0].name = 'chapter'
+  await handler(request(payload))
+  await finishBackground()
+  expect(teamRegistration.setChapter).toHaveBeenCalledWith({ campaignId: '13000000-0000-4000-8000-000000000001', discordUserId, chapter: 'Night Lords', forTeam: false })
+  expect(teamRegistration.registerTeam).not.toHaveBeenCalled()
+})
+
+it('routes a team default change with the invoking leader identity', async () => {
+  const teamRegistration = createTeamRegistration()
+  const { handler, finishBackground } = createHandler({ teamRegistration })
+  const payload = teamInteraction('Night Lords')
+  payload.data.options[0].name = 'team-chapter'
+  await handler(request(payload))
+  await finishBackground()
+  expect(teamRegistration.setChapter).toHaveBeenCalledWith({ campaignId: '13000000-0000-4000-8000-000000000001', discordUserId, chapter: 'Night Lords', forTeam: true })
+})
+
+it.each([' ', 'A', 'A'.repeat(81), 'Night\nLords'])('rejects invalid chapter %j', async (chapter) => {
+  const teamRegistration = createTeamRegistration()
+  const { handler, finishBackground } = createHandler({ teamRegistration })
+  const payload = teamInteraction(chapter)
+  payload.data.options[0].name = 'chapter'
+  await handler(request(payload))
+  await finishBackground()
+  expect(teamRegistration.setChapter).not.toHaveBeenCalled()
+})
+
+it('rejects selecting another member for a chapter change', async () => {
+  const teamRegistration = createTeamRegistration()
+  const { handler, finishBackground } = createHandler({ teamRegistration })
+  const payload = teamInteraction('Night Lords')
+  payload.data.options[0].name = 'chapter'
+  payload.data.options[0].options.push({ name: 'member', type: 6, value: '900000000000000002' })
+  await handler(request(payload))
+  await finishBackground()
+  expect(teamRegistration.setChapter).not.toHaveBeenCalled()
+})
 
 it('routes /crusade-team register using the Discord identity', async () => {
   const teamRegistration = createTeamRegistration()
