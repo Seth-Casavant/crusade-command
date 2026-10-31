@@ -1,0 +1,41 @@
+{
+  "name": "kill-team",
+  "description": "Manage Kill Team member chapter affiliations",
+  "type": 1,
+  "integration_types": [
+    0
+  ],
+  "contexts": [
+    0
+  ],
+  "options": [
+    {
+      "name": "add",
+      "description": "Add or update Kill Team details",
+      "type": 2,
+      "options": [
+        {
+          "name": "chapter",
+          "description": "Set your chapter, or a teammate’s chapter if you are the Kill Team leader",
+          "type": 1,
+          "options": [
+            {
+              "name": "member",
+              "description": "Discord member whose chapter should be updated",
+              "type": 6,
+              "required": true
+            },
+            {
+              "name": "chapter",
+              "description": "Chapter or Warband name",
+              "type": 3,
+              "required": true,
+              "min_length": 2,
+              "max_length": 80
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
