@@ -136,6 +136,21 @@ function createSynchronization(
 }
 
 describe('PlayerDashboard', () => {
+  it('shows Midnight Hunt eligibility without a missing-map warning or checkpoint controls', () => {
+    render(<PlayerDashboard synchronization={createSynchronization({ campaign: {
+      ...campaign,
+      missionId: '20261021-0000-4000-8000-000000000201',
+      battlefieldName: 'Loyalist Siege // Chaos Siege // Operations (Absolute only)',
+      battlefieldDescription: 'Loyalist Siege, Chaos Siege, and Operations on Absolute difficulty only.',
+    } })} />)
+    expect(screen.getByText('Loyalist Siege // Chaos Siege // Operations (Absolute only)')).toBeInTheDocument()
+    expect(screen.queryByText('Tactical Cartography Unavailable')).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: /Tactical Battlefield/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Current Objectives' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Campaign Synchronization' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Staff checkpoint control' })).not.toBeInTheDocument()
+  })
+
   it('renders the authoritative ACTIVE Crusade hierarchy without development data', () => {
     render(<PlayerDashboard synchronization={createSynchronization()} />)
 
