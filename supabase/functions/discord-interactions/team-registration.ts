@@ -222,7 +222,17 @@ export function createSupabaseTeamRegistrationDatabase(
       return parseRegistrationResult(data)
     },
 
-    async setChapter(input: { campaignId: string; discordUserId: string; chapter: string; forTeam: boolean }) {
+    async setChapter(input: { campaignId: string; discordUserId: string; chapter: string; forTeam: boolean; memberDiscordUserId?: string }) {
+      if (input.memberDiscordUserId) {
+        const { error } = await client.rpc('discord_set_chapter_for_member', {
+          p_campaign_id: input.campaignId,
+          p_requesting_discord_user_id: input.discordUserId,
+          p_member_discord_user_id: input.memberDiscordUserId,
+          p_chapter: input.chapter,
+        })
+        if (error) throw classifyRegistrationError(error)
+        return
+      }
       const { error } = await client.rpc('discord_set_chapter', {
         p_campaign_id: input.campaignId,
         p_discord_user_id: input.discordUserId,
