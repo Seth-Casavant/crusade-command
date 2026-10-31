@@ -136,6 +136,22 @@ function createSynchronization(
 }
 
 describe('PlayerDashboard', () => {
+  it('switches map-free Kill Team rosters and scores while preserving Crusade totals', () => {
+    render(<PlayerDashboard synchronization={createSynchronization({ campaign: {
+      ...campaign, missionId: '20261021-0000-4000-8000-000000000201',
+    } })} />)
+    const selected = screen.getByRole('region', { name: 'Selected Kill Team' })
+    expect(within(selected).getByText('Current Kill Team Alpha')).toBeInTheDocument()
+    fireEvent.change(screen.getByRole('combobox', { name: 'Kill Team' }), {
+      target: { value: campaign.killTeams[1].id },
+    })
+    expect(within(selected).getByText('Current Kill Team Beta')).toBeInTheDocument()
+    expect(within(selected).getByText('Current Beta One')).toBeInTheDocument()
+    expect(within(selected).queryByText('Current Kill Team Alpha')).not.toBeInTheDocument()
+    expect(within(selected).getByText('4')).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Current Crusade points' })).toHaveTextContent('24')
+  })
+
   it('shows Midnight Hunt eligibility without a missing-map warning or checkpoint controls', () => {
     render(<PlayerDashboard synchronization={createSynchronization({ campaign: {
       ...campaign,
