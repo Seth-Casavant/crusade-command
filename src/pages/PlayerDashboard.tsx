@@ -127,9 +127,27 @@ function InitialError({
   )
 }
 
+function chapterAbbreviation(chapter: string | null | undefined) {
+  if (!chapter) return 'KT'
+  const names: Record<string, string> = {
+    'night lords': 'NL', 'dark angels': 'DA', 'blood angels': 'BA',
+    'ultramarines': 'UM', 'salamanders': 'SAL', 'space wolves': 'SW',
+    'imperial fists': 'IF', 'raven guard': 'RG', 'iron hands': 'IH',
+    'white scars': 'WS', 'black templars': 'BT', 'flesh tearers': 'FT',
+    'death guard': 'DG', 'thousand sons': 'TS', 'world eaters': 'WE',
+    "emperor's children": 'EC', 'iron warriors': 'IW', 'word bearers': 'WB',
+    'alpha legion': 'AL', 'deathwatch': 'DW',
+  }
+  const normalized = chapter.trim().toLowerCase().replace(/[’‘]/g, "'")
+  if (names[normalized]) return names[normalized]
+  const words = normalized.match(/[\p{L}\p{N}]+/gu) ?? []
+  return (words.length > 1 ? words.map((word) => Array.from(word)[0]).join('') : words[0] ?? 'KT').slice(0, 3).toUpperCase()
+}
+
 function HuntKillTeams({ teams }: { teams: PublicKillTeam[] }) {
   const [selectedId, setSelectedId] = useState('')
   const team = teams.find(({ id }) => id === selectedId) ?? teams[0]
+  const leaderChapter = team?.leaderChapter ?? team?.chapter
   return (
     <Panel className="dashboard-panel hunt-team" eyebrow="Registered forces" title="Kill Team Overview">
       {team ? <>
@@ -140,7 +158,7 @@ function HuntKillTeams({ teams }: { teams: PublicKillTeam[] }) {
         </select>
         </div>
         <section aria-label="Selected Kill Team" className="hunt-team__dossier">
-          <div className="hunt-team__identity"><span className="hunt-team__sigil" aria-hidden="true">KT</span><div><p className="hunt-team__designation">{team.chapter ?? 'Chapter / Warband not specified'} // Kill Team</p><h3>{team.name}</h3></div></div>
+          <div className="hunt-team__identity"><span className="hunt-team__sigil" role="img" aria-label={leaderChapter ? `Leader Chapter / Warband: ${leaderChapter}` : 'Kill Team'} title={leaderChapter ?? 'Kill Team'}>{chapterAbbreviation(leaderChapter)}</span><div><p className="hunt-team__designation">{leaderChapter ? `${leaderChapter} // Kill Team` : 'Kill Team'}</p><h3>{team.name}</h3></div></div>
           <dl className="hunt-team__stats">
             <div><dt>Team points</dt><dd>{team.crusadePoints}</dd></div>
             <div><dt>Verified Terminus kills</dt><dd>{team.terminusKills}</dd></div>
