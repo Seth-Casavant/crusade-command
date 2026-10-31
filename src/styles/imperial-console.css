@@ -522,6 +522,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-imperial); }
   overflow-wrap: anywhere;
 }
 .player-dashboard .hunt-team__number { flex: 0 0 24px; color: var(--color-brass-bright); font: .75rem var(--font-technical); }
+.player-dashboard .hunt-team__chapter { margin-left: auto; color: var(--color-brass-bright); font: .7rem/1.5 var(--font-technical); text-align: right; max-width: 45%; }
 .player-dashboard .hunt-team__note { margin: 20px 0 0; font-size: .65rem; }
 @media (max-width: 40rem) {
   .player-dashboard .hunt-team__stats > div { padding-inline: 10px; }
