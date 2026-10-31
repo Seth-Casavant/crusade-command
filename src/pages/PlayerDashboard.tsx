@@ -143,6 +143,7 @@ export function PlayerDashboard({
     manualResynchronize,
   } = synchronization
   const campaign = sourceCampaign ? currentCampaignLabels(sourceCampaign) : null
+  const isMaplessHunt = campaign?.missionId === '20261021-0000-4000-8000-000000000201'
   const isAwaitingInitialState =
     isConfigured &&
     campaign === null &&
@@ -179,6 +180,25 @@ export function PlayerDashboard({
             />
 
             <div className="player-dashboard__primary">
+              {isMaplessHunt ? (
+                <div>
+                  <ObjectivePanel objectives={campaign.objectives} />
+                  <SubmissionReviewControl
+                    campaignId={campaign.campaignId}
+                    missionId={campaign.missionId}
+                    onNavigate={onNavigateToSubmissions}
+                    role={staffRole}
+                  />
+                  <SynchronizationStatus
+                    authoritativeUpdatedAt={campaign.authoritativeUpdatedAt}
+                    connectionStatus={connectionStatus}
+                    isConfigured={isConfigured}
+                    isResynchronizing={isResynchronizing}
+                    lastSynchronizedAt={lastSynchronizedAt}
+                    onResynchronize={manualResynchronize}
+                  />
+                </div>
+              ) : (
                 <KillTeamBattlefieldPresentation
                   battlefieldId={campaign.battlefieldId}
                   battlefieldName={campaign.battlefieldName}
@@ -217,6 +237,7 @@ export function PlayerDashboard({
                   key={campaign.missionId}
                   killTeams={campaign.killTeams}
                 />
+              )}
               <div className="player-dashboard__primary-rail">
                 <MissionSummary campaign={campaign} />
                 <CampaignProgress value={campaign.crusadePoints} />
