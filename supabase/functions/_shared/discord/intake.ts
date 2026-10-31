@@ -78,11 +78,19 @@ export function createAuthoritativeSubmissionIntake(
         )
       }
 
-      const target = input.scoringTargetKey
-        ? campaign.scoringTargets.find(
-            ({ key }) => key === input.scoringTargetKey,
-          )
+      const normalizeTarget = (value: string) =>
+        value.trim().toLowerCase().replace(/[\s-]+/g, '-')
+      const requestedTarget = input.scoringTargetKey
+        ? normalizeTarget(input.scoringTargetKey)
         : null
+      const matchingTargets = requestedTarget
+        ? campaign.scoringTargets.filter(
+            ({ key, name }) =>
+              normalizeTarget(key) === requestedTarget ||
+              normalizeTarget(name) === requestedTarget,
+          )
+        : []
+      const target = matchingTargets.length === 1 ? matchingTargets[0] : null
 
       if (input.eventType === 'TERMINUS_KILL' && !target) {
         throw new DiscordIntakeError(
@@ -99,6 +107,7 @@ export function createAuthoritativeSubmissionIntake(
 
       const result = await database.createSubmission({
         ...input,
+        ...(target ? { scoringTargetKey: target.key } : {}),
         campaignId: campaign.campaignId,
         missionId: campaign.missionId,
         killTeamId: membership.killTeamId,
