@@ -460,3 +460,71 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-imperial); }
   font: 12px/1.7 var(--font-technical);
   letter-spacing: .08em;
 }
+
+/* Midnight Hunt: compact team selector and roster dataslate. */
+.player-dashboard .hunt-team {
+  margin-bottom: 28px;
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--color-steel-bright);
+  border-top: 2px solid var(--color-phosphor);
+  background: radial-gradient(ellipse at top right, rgb(105 201 138 / 8%), transparent 65%), var(--color-iron-inset);
+}
+.player-dashboard .hunt-team__selector { width: min(100%, 22rem); margin: 4px 0 28px; }
+.player-dashboard .hunt-team__selector label,
+.player-dashboard .hunt-team__designation,
+.player-dashboard .hunt-team__stats dt,
+.player-dashboard .hunt-team__note {
+  font: 0.7rem/1.6 var(--font-technical);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-ash);
+}
+.player-dashboard .hunt-team__selector label { display: block; margin-bottom: 8px; }
+.player-dashboard .hunt-team__selector select {
+  width: 100%; min-height: 44px; padding: 10px 12px;
+  border: 1px solid var(--color-steel-bright); border-radius: 2px;
+  background: var(--color-iron-raised); color: var(--color-bone);
+  font: .9rem var(--font-interface);
+}
+.player-dashboard .hunt-team__selector select:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.player-dashboard .hunt-team__identity { display: flex; align-items: center; gap: 18px; margin-bottom: 26px; }
+.player-dashboard .hunt-team__identity > div { min-width: 0; }
+.player-dashboard .hunt-team__sigil {
+  display: grid; place-items: center; flex: 0 0 58px; height: 66px;
+  border: 1px solid var(--color-brass-dark);
+  color: var(--color-brass-bright); font: 1.6rem var(--font-imperial);
+  background: linear-gradient(145deg, rgb(197 168 98 / 10%), transparent);
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+}
+.player-dashboard .hunt-team__designation { margin: 0 0 7px; color: var(--color-brass-bright); }
+.player-dashboard .hunt-team__identity h3 {
+  margin: 0; font: clamp(1.6rem, 3vw, 2.4rem)/1.2 var(--font-imperial);
+  text-transform: uppercase; overflow-wrap: anywhere;
+}
+.player-dashboard .hunt-team__stats {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 0 28px; padding: 20px 0;
+  border-block: 1px solid var(--color-steel);
+}
+.player-dashboard .hunt-team__stats > div { padding-inline: 18px; border-left: 1px solid var(--color-steel); }
+.player-dashboard .hunt-team__stats > div:first-child { padding-left: 0; border: 0; }
+.player-dashboard .hunt-team__stats dd {
+  margin: 10px 0 0; font: 600 clamp(1.7rem, 4vw, 3rem)/1 var(--font-technical);
+  color: var(--color-bone);
+}
+.player-dashboard .hunt-team__stats > div:first-child dd { color: var(--color-phosphor-bright); }
+.player-dashboard .hunt-team__dossier h4 { margin: 0 0 12px; font-size: 1.2rem; text-transform: uppercase; }
+.player-dashboard .hunt-team__roster { list-style: none; padding: 0; margin: 0; }
+.player-dashboard .hunt-team__roster li {
+  display: flex; align-items: baseline; gap: 16px; padding: 13px 0;
+  border-bottom: 1px solid rgb(105 201 138 / 12%);
+  color: var(--color-parchment); font: .95rem/1.5 var(--font-interface);
+  overflow-wrap: anywhere;
+}
+.player-dashboard .hunt-team__number { flex: 0 0 24px; color: var(--color-brass-bright); font: .75rem var(--font-technical); }
+.player-dashboard .hunt-team__note { margin: 20px 0 0; font-size: .65rem; }
+@media (max-width: 40rem) {
+  .player-dashboard .hunt-team__stats > div { padding-inline: 10px; }
+  .player-dashboard .hunt-team__stats dt { font-size: .6rem; letter-spacing: .02em; }
+  .player-dashboard .hunt-team__identity { gap: 12px; }
+}
