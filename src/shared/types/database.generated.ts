@@ -733,6 +733,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_campaign_controls: {
+        Args: { p_campaign_id: string }
+        Returns: Json
+      }
+      set_campaign_controls: {
+        Args: { p_campaign_id: string; p_expected_revision: number; p_registration_locked: boolean; p_data_locked: boolean }
+        Returns: Json
+      }
       approve_crusade_submission: {
         Args: {
           p_awarded_point_delta: number
