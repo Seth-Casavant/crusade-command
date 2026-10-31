@@ -65,6 +65,50 @@ function createEvidenceStore(): SubmissionEvidenceStore {
 }
 
 describe('authoritative Discord submission intake', () => {
+  it.each([
+    ['carnifex', 'carnifex'],
+    ['Carnifex', 'carnifex'],
+    ['CARNIFEX', 'carnifex'],
+    ['terminator-sorcerer', 'terminator-sorcerer'],
+    ['Terminator Sorcerer', 'terminator-sorcerer'],
+    ['TERMINATOR SORCERER', 'terminator-sorcerer'],
+    ['TERMINATOR-SORCERER', 'terminator-sorcerer'],
+    ['  Terminator   Sorcerer  ', 'terminator-sorcerer'],
+  ])('accepts target %s and persists canonical key %s', async (entered, canonical) => {
+    const database = createDatabase()
+    const campaign = await database.getActiveCampaign()
+    vi.mocked(database.getActiveCampaign).mockResolvedValue({
+      ...campaign!,
+      scoringTargets: [
+        { key: 'carnifex', name: 'Carnifex' },
+        { key: 'terminator-sorcerer', name: 'Terminator Sorcerer' },
+      ],
+    })
+    await createAuthoritativeSubmissionIntake(database, createEvidenceStore())
+      .createSubmission({ ...input, eventType: 'TERMINUS_KILL', scoringTargetKey: entered })
+    expect(database.createSubmission).toHaveBeenCalledWith(expect.objectContaining({
+      scoringTargetKey: canonical,
+    }))
+  })
+
+  it('rejects ambiguous normalized target names before storing evidence', async () => {
+    const database = createDatabase()
+    const campaign = await database.getActiveCampaign()
+    vi.mocked(database.getActiveCampaign).mockResolvedValue({
+      ...campaign!,
+      scoringTargets: [
+        { key: 'first', name: 'Carnifex' },
+        { key: 'second', name: 'CARNIFEX' },
+      ],
+    })
+    const evidence = createEvidenceStore()
+    await expect(createAuthoritativeSubmissionIntake(database, evidence)
+      .createSubmission({ ...input, eventType: 'TERMINUS_KILL', scoringTargetKey: 'carnifex' }))
+      .rejects.toMatchObject({ code: 'INVALID_TARGET' })
+    expect(evidence.persist).not.toHaveBeenCalled()
+    expect(database.createSubmission).not.toHaveBeenCalled()
+  })
+
   it('derives campaign, mission, and Kill Team exclusively from authoritative membership', async () => {
     const database = createDatabase()
     const evidenceStore = createEvidenceStore()
