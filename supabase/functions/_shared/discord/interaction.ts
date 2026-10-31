@@ -378,7 +378,14 @@ function parseTeamRegistration(
     )
   }
 
-  const subcommand = topLevelOptions[0]
+  let subcommand = topLevelOptions[0]
+  const isChapterAlias = interaction.data.name === 'kill-team'
+  if (isChapterAlias) {
+    if (subcommand.name !== 'add' || subcommand.type !== 2 || !Array.isArray(subcommand.options) || subcommand.options.length !== 1 || !isRecord(subcommand.options[0]) || subcommand.options[0].name !== 'chapter') {
+      throw new InvalidInteractionError('Use /kill-team add chapter with a member and chapter name.')
+    }
+    subcommand = subcommand.options[0]
+  }
 
   if (subcommand.type !== 1 || typeof subcommand.name !== 'string') {
     throw new InvalidInteractionError(
@@ -388,15 +395,20 @@ function parseTeamRegistration(
 
   if ((subcommand.name === 'chapter' || subcommand.name === 'team-chapter')) {
     const options = subcommand.options
-    if (!Array.isArray(options) || options.length !== 1 || !isRecord(options[0]) ||
-        options[0].name !== 'name' || options[0].type !== 3 || typeof options[0].value !== 'string') {
-      throw new InvalidInteractionError('Enter your Chapter / Warband name.')
+    if (!Array.isArray(options) || options.length !== (isChapterAlias ? 2 : 1) || !options.every(isRecord)) {
+      throw new InvalidInteractionError('Choose a member and enter a Chapter / Warband name.')
     }
-    const chapter = options[0].value.trim()
+    const nameOption = options.find((option) => option.name === (isChapterAlias ? 'chapter' : 'name'))
+    const memberOption = options.find((option) => option.name === 'member')
+    if (!nameOption || nameOption.type !== 3 || typeof nameOption.value !== 'string' ||
+        (isChapterAlias && (!memberOption || memberOption.type !== 6 || typeof memberOption.value !== 'string' || !snowflakePattern.test(memberOption.value)))) {
+      throw new InvalidInteractionError('Choose a member and enter a Chapter / Warband name.')
+    }
+    const chapter = nameOption.value.trim()
     if (chapter.length < 2 || chapter.length > 80 || Array.from(chapter).some((char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127)) {
       throw new InvalidInteractionError('Chapter / Warband must be between 2 and 80 characters on one line.')
     }
-    return { action: 'chapter' as const, discordUserId, chapter, forTeam: subcommand.name === 'team-chapter' }
+    return { action: 'chapter' as const, discordUserId, chapter, forTeam: subcommand.name === 'team-chapter', ...(isChapterAlias ? { memberDiscordUserId: memberOption!.value as string } : {}) }
   }
 
   if (subcommand.name === 'register') {
@@ -739,7 +751,8 @@ const commandName = interaction.data.name
 
 if (
   commandName !== 'crusade-submit' &&
-  commandName !== 'crusade-team'
+  commandName !== 'crusade-team' &&
+  commandName !== 'kill-team'
 ) {
   return ephemeralResponse('This Discord interaction is not supported.')
 }
@@ -755,7 +768,7 @@ if (
       return ephemeralResponse(errorMessage(error))
     }
 
-if (commandName === 'crusade-team') {
+if (commandName === 'crusade-team' || commandName === 'kill-team') {
   waitUntil(
     (async () => {
       try {
@@ -795,9 +808,10 @@ if (commandName === 'crusade-team') {
             discordUserId: input.discordUserId,
             chapter: input.chapter,
             forTeam: input.forTeam,
+            ...(input.memberDiscordUserId ? { memberDiscordUserId: input.memberDiscordUserId } : {}),
           })
           await editOriginalResponse(fetcher, applicationId, interactionToken,
-            input.forTeam ? 'Your Kill Team’s default Chapter / Warband has been updated.' : 'Your Chapter / Warband has been updated on your Kill Team roster.')
+            input.forTeam ? 'Your Kill Team’s default Chapter / Warband has been updated.' : 'The member’s Chapter / Warband has been updated on the Kill Team roster.')
         } else if (input.action === 'add') {
           const result = await teamRegistration.addMember({
             campaignId: campaign.id,
