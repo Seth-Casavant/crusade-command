@@ -105,7 +105,7 @@ export type DiscordTeamRegistrationService = {
       chapter?: string
   }) => Promise<DiscordTeamRegistrationResult>
 
-  setChapter: (input: { campaignId: string; discordUserId: string; chapter: string; forTeam: boolean }) => Promise<void>
+  setChapter: (input: { campaignId: string; discordUserId: string; chapter: string; forTeam: boolean; memberDiscordUserId?: string }) => Promise<void>
 
   addMember: (input: {
     campaignId: string
